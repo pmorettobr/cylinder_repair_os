@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<template id="report_machine_schedule_document">
+    <t t-call="web.external_layout">
+        <div class="page">
+
+            <!-- Cabeçalho -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <h3 style="margin:0;color:#4f46e5">Programação por Máquina</h3>
+                    <div style="font-size:12px;color:#666;margin-top:4px">
+                        Data: <strong><t t-esc="report_date.strftime('%d/%m/%Y')"/></strong>
+                        <t t-if="docs.machine_id">
+                            · Máquina: <strong><t t-esc="docs.machine_id.name"/></strong>
+                        </t>
+                        <t t-else="">
+                            · Todas as máquinas
+                        </t>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="margin:8px 0"/>
+
+            <!-- Por máquina -->
+            <t t-foreach="machines" t-as="machine_data">
+                <h5 style="margin:14px 0 4px;background:#f3f4f6;padding:5px 8px;border-left:3px solid #4f46e5;font-size:12px">
+                    <i class="fa fa-industry me-1"/>
+                    <t t-esc="machine_data['label']"/>
+                </h5>
+                <table class="table table-sm table-bordered" style="font-size:11px;margin-bottom:6px">
+                    <thead style="background:#f8f9fa">
+                        <tr>
+                            <th style="width:12%">Nº OS</th>
+                            <th style="width:18%">Componente</th>
+                            <th style="width:18%">Operação</th>
+                            <th style="width:13%">Data Prog.</th>
+                            <th style="width:13%">Data Início</th>
+                            <th style="width:13%">Data Fim</th>
+                            <th style="width:8%">Tempo</th>
+                            <th style="width:5%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="machine_data['processes']" t-as="proc">
+                            <tr t-attf-style="#{proc.state == 'done' and 'background:#f0fdf4' or proc.state == 'progress' and 'background:#fffbeb' or ''}">
+                                <td>
+                                    <strong>
+                                        <t t-esc="proc.repair_id.os_number if proc.repair_id else '—'"/>
+                                    </strong>
+                                </td>
+                                <td><t t-esc="proc.component_type_id.name if proc.component_type_id else '—'"/></td>
+                                <td><t t-esc="proc.name"/></td>
+                                <td>
+                                    <t t-if="proc.date_planned">
+                                        <t t-esc="proc.date_planned.strftime('%d/%m %H:%M')"/>
+                                    </t>
+                                    <t t-else="">—</t>
+                                </td>
+                                <td>
+                                    <t t-if="proc.date_start_orig">
+                                        <t t-esc="proc.date_start_orig.strftime('%d/%m %H:%M')"/>
+                                    </t>
+                                    <t t-else="">—</t>
+                                </td>
+                                <td>
+                                    <t t-if="proc.date_finished">
+                                        <t t-esc="proc.date_finished.strftime('%d/%m %H:%M')"/>
+                                    </t>
+                                    <t t-else="">—</t>
+                                </td>
+                                <td class="text-center"><t t-esc="proc.duration_display"/></td>
+                                <td class="text-center" style="font-size:10px">
+                                    <t t-esc="dict(proc._fields['state'].selection).get(proc.state, '')"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </t>
+
+            <t t-if="not machines">
+                <div class="text-center text-muted mt-4" style="font-size:13px">
+                    Nenhum processo encontrado para os filtros selecionados.
+                </div>
+            </t>
+
+        </div>
+    </t>
+</template>
+
+<record id="action_report_machine_schedule" model="ir.actions.report">
+    <field name="name">Programação por Máquina</field>
+    <field name="model">repair.machine.report.wizard</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">cylinder_repair_os.report_machine_schedule_document</field>
+    <field name="report_file">cylinder_repair_os.report_machine_schedule_document</field>
+</record>
+
+</odoo>

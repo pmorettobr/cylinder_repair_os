@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- TREE -->
+    <record id="view_repair_machine_tree" model="ir.ui.view">
+        <field name="name">repair.machine.tree</field>
+        <field name="model">repair.machine</field>
+        <field name="arch" type="xml">
+            <tree string="Máquinas"
+                  decoration-danger="is_busy == True">
+                <field name="code" string="Código"/>
+                <field name="name" string="Máquina"/>
+                <field name="operator_name" string="Operador Padrão"/>
+                <field name="is_busy" string="Ocupada?" widget="boolean"/>
+                <field name="current_process_id" string="Processo em Andamento" optional="show"/>
+                <field name="active" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- FORM -->
+    <record id="view_repair_machine_form" model="ir.ui.view">
+        <field name="name">repair.machine.form</field>
+        <field name="model">repair.machine</field>
+        <field name="arch" type="xml">
+            <form string="Máquina">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Máquina"/>
+                        <h1>
+                            <field name="name" placeholder="Nome da máquina..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code" string="Código"/>
+                            <field name="operator_name" string="Operador Padrão"/>
+                            <field name="active" string="Ativo"/>
+                        </group>
+                        <group string="Status Atual">
+                            <field name="is_busy" string="Ocupada?" readonly="1"/>
+                            <field name="current_process_id" string="Processo em Andamento"
+                                   readonly="1"
+                                   attrs="{'invisible': [('is_busy', '=', False)]}"/>
+                        </group>
+                    </group>
+                    <group string="Observações">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- SEARCH -->
+    <record id="view_repair_machine_search" model="ir.ui.view">
+        <field name="name">repair.machine.search</field>
+        <field name="model">repair.machine</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Máquinas">
+                <field name="name" string="Máquina"/>
+                <field name="code" string="Código"/>
+                <filter name="busy" string="Ocupadas"
+                        domain="[('is_busy', '=', True)]"/>
+                <filter name="free" string="Disponíveis"
+                        domain="[('is_busy', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_repair_machines" model="ir.actions.act_window">
+        <field name="name">Máquinas</field>
+        <field name="res_model">repair.machine</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_repair_machine_search"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_repair_machine_report_wizard" model="ir.ui.view">
+        <field name="name">repair.machine.report.wizard.form</field>
+        <field name="model">repair.machine.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Programação por Máquina">
+                <sheet>
+                    <div class="o_repair_wizard_header">
+                        <h3>Relatório — Programação por Máquina</h3>
+                        <p class="text-muted">
+                            Gera todos os processos com Data Programada ou
+                            Data de Início na data selecionada.
+                        </p>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="report_date"
+                                   string="Data"
+                                   widget="date"
+                                   required="1"/>
+                            <field name="machine_id"
+                                   string="Máquina"
+                                   placeholder="Deixe vazio para todas as máquinas"/>
+                        </group>
+                        <group>
+                            <field name="include_done"
+                                   string="Incluir processos Concluídos?"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_print_report"
+                            string="Gerar Relatório PDF"
+                            type="object"
+                            class="btn-primary"
+                            close="1"/>
+                    <button string="Fechar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_repair_machine_report_wizard" model="ir.actions.act_window">
+        <field name="name">Programação por Máquina</field>
+        <field name="res_model">repair.machine.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

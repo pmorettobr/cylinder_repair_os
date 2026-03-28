@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══ Kanban de Processos — Acompanhamento ═══════════════════════════ -->
+    <record id="view_repair_process_kanban" model="ir.ui.view">
+        <field name="name">repair.os.process.kanban</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" create="0"
+                    class="o_repair_process_kanban">
+                <field name="state"/>
+                <field name="repair_id"/>
+                <field name="component_type_id"/>
+                <field name="name"/>
+                <field name="machine_id"/>
+                <field name="has_deviation"/>
+                <field name="duration_display"/>
+                <field name="date_planned"/>
+                <field name="quality_result"/>
+                <field name="sequence"/>
+
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card o_repair_process_card
+                            #{record.state.raw_value == 'done' ? 'o_repair_card_done' :
+                              record.state.raw_value == 'progress' ? 'o_repair_card_progress' :
+                              record.state.raw_value == 'paused' ? 'o_repair_card_paused' :
+                              'o_repair_card_ready'}">
+
+                            <!-- OS + Seq -->
+                            <div class="o_repair_proc_os">
+                                <span class="o_repair_proc_os_num">
+                                    <field name="repair_id"/>
+                                </span>
+                                <span class="o_repair_proc_seq badge bg-secondary ms-1">
+                                    #<field name="sequence"/>
+                                </span>
+                            </div>
+
+                            <!-- Componente → Operação -->
+                            <div class="o_repair_proc_title">
+                                <t t-if="record.component_type_id.raw_value">
+                                    <span class="o_repair_proc_comp">
+                                        <field name="component_type_id"/>
+                                    </span>
+                                    <span class="text-muted mx-1">›</span>
+                                </t>
+                                <span class="o_repair_proc_op">
+                                    <field name="name"/>
+                                </span>
+                            </div>
+
+                            <!-- Máquina -->
+                            <t t-if="record.machine_id.raw_value">
+                                <div class="o_repair_proc_machine">
+                                    <i class="fa fa-industry me-1 text-muted"/>
+                                    <field name="machine_id"/>
+                                </div>
+                            </t>
+
+                            <!-- Data programada -->
+                            <t t-if="record.date_planned.raw_value">
+                                <div class="o_repair_proc_date">
+                                    <i class="fa fa-calendar me-1 text-muted"/>
+                                    <field name="date_planned"/>
+                                </div>
+                            </t>
+
+                            <!-- Rodapé: tempo + desvio + QC -->
+                            <div class="o_repair_proc_footer">
+                                <span class="o_repair_timer"
+                                      t-attf-class="#{record.state.raw_value == 'progress' ? 'o_repair_timer_running' : ''}">
+                                    <i class="fa fa-clock-o me-1"/>
+                                    <field name="duration_display"/>
+                                </span>
+                                <t t-if="record.has_deviation.raw_value">
+                                    <span class="badge bg-warning ms-1" title="Desvio registrado">
+                                        ⚠ Desvio
+                                    </span>
+                                </t>
+                                <t t-if="record.quality_result.raw_value == 'flagged'">
+                                    <span class="badge bg-danger ms-1" title="QC com ressalvas">
+                                        QC ⚑
+                                    </span>
+                                </t>
+                            </div>
+
+                            <!-- Botão Abrir OS -->
+                            <div class="o_repair_proc_actions">
+                                <button name="action_open_parent_os" type="object"
+                                        class="btn btn-sm o_repair_btn_os w-100">
+                                    <i class="fa fa-external-link me-1"/> Abrir OS
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ══ Actions de Acompanhamento ══════════════════════════════════════ -->
+
+    <!-- Status Geral -->
+    <record id="action_repair_tracking_all" model="ir.actions.act_window">
+        <field name="name">Status Geral</field>
+        <field name="res_model">repair.os.process</field>
+        <field name="view_mode">kanban,tree</field>
+        <field name="view_ids" eval="[(5,0,0),
+            (0,0,{'view_mode':'kanban','view_id':ref('cylinder_repair_os.view_repair_process_kanban')}),
+            (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_process_tree')})]"/>
+        <field name="search_view_id" ref="cylinder_repair_os.view_repair_process_search"/>
+        <field name="context">{'search_default_progress': 1}</field>
+    </record>
+
+    <!-- Por OS -->
+    <record id="action_repair_tracking_by_os" model="ir.actions.act_window">
+        <field name="name">Por OS</field>
+        <field name="res_model">repair.os.process</field>
+        <field name="view_mode">kanban,tree</field>
+        <field name="view_ids" eval="[(5,0,0),
+            (0,0,{'view_mode':'kanban','view_id':ref('cylinder_repair_os.view_repair_process_kanban')}),
+            (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_process_tree')})]"/>
+        <field name="search_view_id" ref="cylinder_repair_os.view_repair_process_search"/>
+        <field name="context">{'search_default_group_os': 1}</field>
+    </record>
+
+    <!-- Por Máquina -->
+    <record id="action_repair_tracking_by_machine" model="ir.actions.act_window">
+        <field name="name">Por Máquina</field>
+        <field name="res_model">repair.os.process</field>
+        <field name="view_mode">kanban,tree</field>
+        <field name="view_ids" eval="[(5,0,0),
+            (0,0,{'view_mode':'kanban','view_id':ref('cylinder_repair_os.view_repair_process_kanban')}),
+            (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_process_tree')})]"/>
+        <field name="search_view_id" ref="cylinder_repair_os.view_repair_process_search"/>
+        <field name="context">{'search_default_group_machine': 1}</field>
+    </record>
+
+    <!-- Por Cliente -->
+    <record id="action_repair_tracking_by_partner" model="ir.actions.act_window">
+        <field name="name">Por Cliente</field>
+        <field name="res_model">repair.order</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_ids" eval="[(5,0,0),
+            (0,0,{'view_mode':'kanban','view_id':ref('cylinder_repair_os.view_repair_dashboard_kanban')}),
+            (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_order_os_tree')}),
+            (0,0,{'view_mode':'form','view_id':ref('cylinder_repair_os.view_repair_order_os_form')})]"/>
+        <field name="search_view_id" ref="cylinder_repair_os.view_repair_order_os_search"/>
+        <field name="context">{'search_default_group_partner': 1}</field>
+        <field name="domain">[('os_state', 'not in', ['cancel'])]</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<template id="report_os_document">
+    <t t-call="web.external_layout">
+        <div class="page">
+
+            <!-- Cabeçalho da OS -->
+            <div class="row mb-3">
+                <div class="col-8">
+                    <h3 style="margin:0">
+                        Ordem de Serviço — <span t-field="doc.os_number"/>
+                        <small class="ms-2 text-muted">
+                            [<t t-esc="dict(doc._fields['order_type'].selection).get(doc.order_type, '')"/>]
+                        </small>
+                    </h3>
+                    <table style="margin-top:8px;font-size:12px;width:100%">
+                        <tr>
+                            <td style="width:120px;color:#666">Cliente:</td>
+                            <td><strong><span t-field="doc.partner_id"/></strong></td>
+                            <td style="width:120px;color:#666">Produto / Cilindro:</td>
+                            <td><t t-esc="doc.product_name or '—'"/></td>
+                        </tr>
+                        <tr>
+                            <td style="color:#666">Nº Série / TAG:</td>
+                            <td><t t-esc="doc.serial_code or '—'"/></td>
+                            <td style="color:#666">Prazo:</td>
+                            <td>
+                                <t t-if="doc.deadline_date">
+                                    <t t-esc="doc.deadline_date.strftime('%d/%m/%Y')"/>
+                                </t>
+                                <t t-else="">—</t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color:#666">Responsável:</td>
+                            <td><t t-esc="doc.responsible_id.name if doc.responsible_id else '—'"/></td>
+                            <td style="color:#666">Estado:</td>
+                            <td><t t-esc="dict(doc._fields['os_state'].selection).get(doc.os_state, '')"/></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-4 text-end">
+                    <div style="border:1px solid #dee2e6;border-radius:6px;padding:10px;display:inline-block;min-width:120px">
+                        <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.5px">Progresso</div>
+                        <div style="font-size:28px;font-weight:700;color:#4f46e5">
+                            <t t-esc="'%.0f%%' % doc.progress_percent"/>
+                        </div>
+                        <div style="font-size:11px;color:#666">
+                            <t t-esc="doc.process_done_count"/> / <t t-esc="doc.process_count"/> concluídos
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="margin:8px 0"/>
+
+            <!-- Processos agrupados por componente -->
+            <t t-set="components_seen" t-value="[]"/>
+            <t t-foreach="doc.process_ids.mapped('component_type_id')" t-as="comp">
+                <t t-set="procs" t-value="doc.process_ids.filtered(lambda p: p.component_type_id == comp)"/>
+                <t t-if="procs">
+                    <h5 style="margin:12px 0 4px;background:#f3f4f6;padding:4px 8px;border-left:3px solid #4f46e5;font-size:12px">
+                        <t t-esc="comp.name if comp else 'Sem Componente'"/>
+                    </h5>
+                    <table class="table table-sm table-bordered" style="font-size:11px;margin-bottom:4px">
+                        <thead style="background:#f8f9fa">
+                            <tr>
+                                <th style="width:4%">Seq.</th>
+                                <th style="width:18%">Operação</th>
+                                <th style="width:14%">Máquina</th>
+                                <th style="width:10%">Status</th>
+                                <th style="width:13%">Data Prog.</th>
+                                <th style="width:13%">Data Início</th>
+                                <th style="width:13%">Conclusão</th>
+                                <th style="width:9%">Tempo</th>
+                                <th style="width:6%">QC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="procs" t-as="proc">
+                                <tr t-attf-style="#{proc.state == 'done' and 'background:#f0fdf4' or proc.state == 'progress' and 'background:#fffbeb' or ''}">
+                                    <td class="text-center"><t t-esc="proc.sequence"/></td>
+                                    <td><t t-esc="proc.name"/></td>
+                                    <td><t t-esc="proc.machine_id.name if proc.machine_id else '—'"/></td>
+                                    <td>
+                                        <t t-esc="dict(proc._fields['state'].selection).get(proc.state, '')"/>
+                                    </td>
+                                    <td>
+                                        <t t-if="proc.date_planned">
+                                            <t t-esc="proc.date_planned.strftime('%d/%m %H:%M')"/>
+                                        </t>
+                                        <t t-else="">—</t>
+                                    </td>
+                                    <td>
+                                        <t t-if="proc.date_start_orig">
+                                            <t t-esc="proc.date_start_orig.strftime('%d/%m %H:%M')"/>
+                                        </t>
+                                        <t t-else="">—</t>
+                                    </td>
+                                    <td>
+                                        <t t-if="proc.date_finished">
+                                            <t t-esc="proc.date_finished.strftime('%d/%m %H:%M')"/>
+                                        </t>
+                                        <t t-else="">—</t>
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-esc="proc.duration_display"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-esc="dict(proc._fields['quality_result'].selection).get(proc.quality_result, '—')"/>
+                                    </td>
+                                </tr>
+                                <!-- Linha de desvio se houver -->
+                                <t t-if="proc.has_deviation and proc.deviation_notes">
+                                    <tr style="background:#fff8f0">
+                                        <td colspan="9" style="color:#b45309;font-size:10px;padding-left:16px">
+                                            ⚠ Desvio: <t t-esc="proc.deviation_notes"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+            </t>
+
+        </div>
+    </t>
+</template>
+
+<record id="action_report_os" model="ir.actions.report">
+    <field name="name">Ordem de Serviço</field>
+    <field name="model">repair.order</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">cylinder_repair_os.report_os_document</field>
+    <field name="report_file">cylinder_repair_os.report_os_document</field>
+    <field name="binding_model_id" ref="repair.model_repair_order"/>
+    <field name="binding_type">report</field>
+</record>
+
+</odoo>

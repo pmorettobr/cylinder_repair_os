@@ -1,0 +1,401 @@
+/**
+ * cylinder_repair_os — Estilos principais
+ * Inclui: progressbar degradê, kanban, form OS, popups, timer, cards de processo
+ */
+
+/* ══════════════════════════════════════════════════════════════
+   BARRA DE PROGRESSO DEGRADÊ
+   (inspirado em web_widget_progressbar_gradient OCA)
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_progress_bar_wrap {
+    width: 100%;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 4px 0;
+}
+
+.o_repair_progress_bar_fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #6366f1 0%, #4f46e5 40%, #22d3ee 100%);
+    transition: width 0.6s ease;
+    min-width: 2px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CABEÇALHO COMPACTO DA OS (form)
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_progress_header {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.o_repair_progress_info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.o_repair_os_num {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: .5px;
+}
+
+.o_repair_sep {
+    color: #94a3b8;
+}
+
+.o_repair_progress_label {
+    font-size: 11px;
+    color: #64748b;
+    text-align: right;
+}
+
+.o_repair_header_fields .o_wrap_field {
+    margin-bottom: 4px !important;
+}
+
+/* Seção de processos */
+.o_repair_processes_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 12px 0 6px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.o_repair_section_title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TIMER / CRONÔMETRO
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_timer {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    letter-spacing: .5px;
+}
+
+.o_repair_timer_running {
+    color: #059669 !important;
+    animation: o_repair_pulse 2s ease-in-out infinite;
+}
+
+@keyframes o_repair_pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   KANBAN DE OS
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_kanban .o_kanban_group {
+    background: #f8fafc;
+}
+
+.o_repair_card {
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 10px 12px !important;
+    transition: box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.o_repair_card:hover {
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15) !important;
+}
+
+.o_repair_overdue {
+    border-left: 4px solid #ef4444 !important;
+    background: #fff7f7 !important;
+}
+
+.o_repair_card_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+.o_repair_card_badges {
+    display: flex;
+    gap: 4px;
+}
+
+.o_repair_badge_reparo {
+    background: #dbeafe !important;
+    color: #1d4ed8 !important;
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+}
+
+.o_repair_badge_fabricacao {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+}
+
+.o_repair_deadline {
+    font-size: 10px;
+    color: #64748b;
+}
+
+.o_repair_card_title {
+    margin-bottom: 4px;
+}
+
+.o_repair_os_number {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: .5px;
+}
+
+.o_repair_card_info {
+    font-size: 11px;
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.o_repair_card_progress {
+    margin-bottom: 8px;
+}
+
+.o_repair_progress_stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2px;
+}
+
+.o_repair_pct {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.o_repair_card_footer {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 6px;
+    text-align: right;
+}
+
+.o_repair_btn_open {
+    background: #ede9fe !important;
+    color: #4f46e5 !important;
+    border: none !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 3px 10px !important;
+    border-radius: 4px !important;
+}
+
+.o_repair_btn_open:hover {
+    background: #ddd6fe !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   KANBAN DE PROCESSOS (Acompanhamento)
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_process_card {
+    border-radius: 6px !important;
+    padding: 8px 10px !important;
+    border: 1px solid #e2e8f0 !important;
+    font-size: 12px !important;
+}
+
+.o_repair_card_done {
+    border-left: 4px solid #10b981 !important;
+    background: #f0fdf4 !important;
+}
+
+.o_repair_card_progress {
+    border-left: 4px solid #f59e0b !important;
+    background: #fffbeb !important;
+}
+
+.o_repair_card_paused {
+    border-left: 4px solid #60a5fa !important;
+    background: #eff6ff !important;
+}
+
+.o_repair_card_ready {
+    border-left: 4px solid #d1d5db !important;
+    background: #f9fafb !important;
+}
+
+.o_repair_proc_os {
+    font-size: 10px;
+    color: #6b7280;
+    font-family: monospace;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.o_repair_proc_os_num {
+    font-weight: 600;
+}
+
+.o_repair_proc_title {
+    font-weight: 700;
+    font-size: 12px;
+    color: #1f2937;
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.o_repair_proc_comp {
+    color: #4f46e5;
+}
+
+.o_repair_proc_machine,
+.o_repair_proc_date {
+    font-size: 10px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.o_repair_proc_footer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    flex-wrap: wrap;
+}
+
+.o_repair_proc_actions {
+    margin-top: 6px;
+}
+
+.o_repair_btn_os {
+    background: #ede9fe !important;
+    color: #4f46e5 !important;
+    border: none !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    border-radius: 4px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   POPUPS
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_popup_header {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border-left: 4px solid #4f46e5;
+}
+
+.o_repair_popup_title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.o_repair_popup_meta {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.o_repair_popup_timer {
+    margin-top: 8px;
+    font-size: 22px;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: #059669;
+}
+
+.o_repair_timer_label {
+    font-size: 11px;
+    color: #64748b;
+    font-family: inherit;
+    font-weight: normal;
+}
+
+.o_repair_action_buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    justify-content: center;
+}
+
+.o_repair_action_buttons .btn-lg {
+    min-width: 120px;
+    font-weight: 600;
+}
+
+/* Aviso QC */
+.o_repair_qc_warning {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #92400e;
+    margin-top: 8px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   WIZARD HEADER
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_wizard_header {
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.o_repair_wizard_header h3,
+.o_repair_wizard_header h4 {
+    color: #1e293b;
+    margin: 0 0 4px;
+}
+
+.o_repair_loader_actions {
+    display: flex;
+    align-items: center;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UTILITÁRIOS
+══════════════════════════════════════════════════════════════ */
+
+/* Suprime tooltip bubble (equivalente a web_no_bubble) */
+.o_field_widget .o_field_translate {
+    display: none !important;
+}
+
+.o_form_view .o_statusbar_status .o_arrow_button {
+    font-size: 12px;
+}

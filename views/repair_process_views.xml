@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══ Popup de Ações (Iniciar / Pausar / Concluir) ══════════════════ -->
+    <record id="view_repair_process_actions_popup" model="ir.ui.view">
+        <field name="name">repair.os.process.actions.popup</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <form string="Ações do Processo">
+                <sheet>
+                    <!-- Cabeçalho do processo -->
+                    <div class="o_repair_popup_header">
+                        <div class="o_repair_popup_title">
+                            <field name="operation_label" readonly="1"/>
+                        </div>
+                        <div class="o_repair_popup_meta">
+                            <span>Máquina: </span>
+                            <field name="machine_id" readonly="1" class="d-inline"/>
+                            <span class="mx-2">·</span>
+                            <field name="state" readonly="1" widget="badge"
+                                   decoration-success="state == 'done'"
+                                   decoration-warning="state == 'progress'"
+                                   decoration-info="state == 'paused'"
+                                   decoration-muted="state == 'ready'"
+                                   class="d-inline"/>
+                        </div>
+                        <!-- Cronômetro em tempo real -->
+                        <div class="o_repair_popup_timer"
+                             attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}">
+                            <span class="o_repair_timer_label">Tempo: </span>
+                            <span class="o_repair_timer_value o_repair_timer"
+                                  t-att-data-start="date_start"
+                                  t-att-data-acc="duration_acc">
+                                <field name="duration_display" readonly="1"/>
+                            </span>
+                        </div>
+                    </div>
+
+                    <field name="state" invisible="1"/>
+
+                    <!-- Botões de ação -->
+                    <div class="o_repair_action_buttons"
+                         attrs="{'invisible': [('state', '=', 'done')]}">
+                        <button name="action_start" type="object"
+                                string="▶ Iniciar" class="btn-lg btn-success"
+                                attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"
+                                close="1"/>
+                        <button name="action_pause" type="object"
+                                string="⏸ Pausar" class="btn-lg btn-warning"
+                                attrs="{'invisible': [('state', '!=', 'progress')]}"
+                                close="1"/>
+                        <button name="action_finish" type="object"
+                                string="✓ Concluir" class="btn-lg btn-primary"
+                                attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
+                    </div>
+
+                    <!-- Data Programada -->
+                    <group string="Programação"
+                           attrs="{'invisible': [('state', 'in', ('done', 'cancel'))]}">
+                        <field name="date_planned" string="Data Programada" widget="datetime"/>
+                    </group>
+
+                </sheet>
+                <footer>
+                    <button string="Fechar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══ Popup de Detalhes / Desvio / Anexo ════════════════════════════ -->
+    <record id="view_repair_process_details_popup" model="ir.ui.view">
+        <field name="name">repair.os.process.details.popup</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <form string="Detalhes do Processo">
+                <sheet>
+                    <!-- Cabeçalho -->
+                    <div class="o_repair_popup_header">
+                        <div class="o_repair_popup_title">
+                            <field name="operation_label" readonly="1"/>
+                        </div>
+                        <div class="o_repair_popup_meta">
+                            <span>OS: </span>
+                            <field name="repair_id" readonly="1" class="d-inline"/>
+                            <span class="mx-2">·</span>
+                            <span>Máquina: </span>
+                            <field name="machine_id" readonly="1" class="d-inline"/>
+                        </div>
+                    </div>
+
+                    <!-- Data Programada -->
+                    <group string="Programação">
+                        <field name="date_planned" string="Data Programada" widget="datetime"/>
+                        <field name="service_description" string="Descrição Detalhada"/>
+                    </group>
+
+                    <!-- Desvio -->
+                    <group string="Desvio">
+                        <field name="has_deviation" string="Registrar Desvio?"
+                               widget="boolean_toggle"/>
+                        <field name="deviation_notes" string="Descrição do Desvio"
+                               attrs="{'invisible': [('has_deviation', '=', False)]}"
+                               placeholder="Descreva o desvio encontrado..."/>
+                    </group>
+
+                    <!-- Anexos -->
+                    <group string="Anexos / Desenhos">
+                        <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
+                    </group>
+
+                </sheet>
+                <footer>
+                    <button string="Salvar e Fechar" class="btn-primary"
+                            special="save" close="1"/>
+                    <button string="Fechar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══ Popup de Controle de Qualidade ════════════════════════════════ -->
+    <record id="view_repair_process_quality_popup" model="ir.ui.view">
+        <field name="name">repair.os.process.quality.popup</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <form string="Controle de Qualidade">
+                <sheet>
+                    <!-- Cabeçalho -->
+                    <div class="o_repair_popup_header">
+                        <div class="o_repair_popup_title">
+                            <field name="operation_label" readonly="1"/>
+                        </div>
+                        <div class="o_repair_popup_meta">
+                            <span>Checklist de Qualidade para conclusão do processo</span>
+                        </div>
+                    </div>
+
+                    <field name="block_on_quality_fail" invisible="1"/>
+
+                    <!-- Checklist -->
+                    <field name="quality_check_ids">
+                        <tree editable="bottom"
+                              decoration-success="result == 'pass'"
+                              decoration-danger="result == 'fail'"
+                              decoration-muted="result == 'pending'">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name" string="Verificação" readonly="1"/>
+                            <field name="is_required" string="Obrigatório" readonly="1"/>
+                            <field name="result" string="Resultado" widget="badge"
+                                   decoration-success="result == 'pass'"
+                                   decoration-danger="result == 'fail'"
+                                   decoration-muted="result == 'pending'"/>
+                            <field name="notes" string="Observação" optional="show"/>
+                        </tree>
+                    </field>
+
+                    <div class="o_repair_qc_warning"
+                         attrs="{'invisible': [('block_on_quality_fail', '=', False)]}">
+                        ⚠ Este processo bloqueia conclusão se houver itens obrigatórios Reprovados.
+                    </div>
+
+                </sheet>
+                <footer>
+                    <!-- Concluir normalmente (bloqueia se configurado) -->
+                    <button name="action_finish" type="object"
+                            string="Concluir Processo" class="btn-success"
+                            close="1"/>
+                    <!-- Concluir com flag (sempre disponível) -->
+                    <button name="action_finish_with_flag" type="object"
+                            string="Concluir com Ressalvas" class="btn-warning"
+                            close="1"/>
+                    <button string="Fechar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══ Tree standalone de processos (Acompanhamento) ═════════════════ -->
+    <record id="view_repair_process_tree" model="ir.ui.view">
+        <field name="name">repair.os.process.tree</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <tree string="Processos"
+                  decoration-success="state == 'done'"
+                  decoration-warning="state == 'progress'"
+                  decoration-info="state == 'paused'"
+                  decoration-muted="state in ('ready', 'cancel')"
+                  create="0">
+                <field name="repair_id" string="OS"/>
+                <field name="sequence" string="Seq." optional="hide"/>
+                <field name="component_type_id" string="Componente"/>
+                <field name="name" string="Operação"/>
+                <field name="machine_id" string="Máquina"/>
+                <field name="date_planned" string="Data Prog." optional="show"/>
+                <field name="date_start_orig" string="Dt. Início" optional="show"/>
+                <field name="date_finished" string="Dt. Conclusão" optional="show"/>
+                <field name="duration_display" string="Tempo" readonly="1"/>
+                <field name="state" string="Situação" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-warning="state == 'progress'"
+                       decoration-info="state == 'paused'"
+                       decoration-muted="state in ('ready', 'cancel')"
+                       readonly="1"/>
+                <field name="quality_result" string="QC" widget="badge"
+                       decoration-success="quality_result == 'passed'"
+                       decoration-danger="quality_result in ('failed','flagged')"
+                       decoration-muted="quality_result == 'pending'"
+                       readonly="1" optional="show"/>
+                <field name="has_deviation" string="Desvio" widget="boolean"
+                       readonly="1" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form standalone de processo -->
+    <record id="view_repair_process_form" model="ir.ui.view">
+        <field name="name">repair.os.process.form</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <form string="Processo">
+                <header>
+                    <button name="action_start" string="▶ Iniciar"
+                            type="object" class="btn-success"
+                            attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
+                    <button name="action_pause" string="⏸ Pausar"
+                            type="object" class="btn-warning"
+                            attrs="{'invisible': [('state', '!=', 'progress')]}"/>
+                    <button name="action_finish" string="✓ Concluir"
+                            type="object" class="btn-primary"
+                            attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
+                    <button name="action_open_parent_os" string="🔗 Abrir OS"
+                            type="object" class="btn-secondary"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="ready,progress,paused,done"
+                           readonly="1"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="operation_label" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Identificação">
+                            <field name="repair_id" string="OS" readonly="1"/>
+                            <field name="component_type_id" string="Componente" readonly="1"/>
+                            <field name="sub_component_id" string="Sub-componente" readonly="1"/>
+                            <field name="name" string="Operação" readonly="1"/>
+                            <field name="sequence" string="Ordem" readonly="1"/>
+                        </group>
+                        <group string="Execução">
+                            <field name="machine_id" string="Máquina" readonly="1"/>
+                            <field name="date_planned" string="Data Programada" widget="datetime"/>
+                            <field name="date_start_orig" string="Data Início" readonly="1"/>
+                            <field name="date_finished" string="Data Conclusão" readonly="1"/>
+                            <field name="duration_display" string="Tempo Total" readonly="1"
+                                   class="o_repair_timer"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Desvio / Anexo" name="deviation">
+                            <group>
+                                <field name="has_deviation" string="Registrar Desvio?"
+                                       widget="boolean_toggle"/>
+                                <field name="deviation_notes" string="Descrição"
+                                       attrs="{'invisible': [('has_deviation', '=', False)]}"/>
+                            </group>
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                        </page>
+                        <page string="Controle de Qualidade" name="quality"
+                              attrs="{'invisible': [('quality_check_ids', '=', [])]}">
+                            <field name="quality_result" string="Resultado Geral" readonly="1"
+                                   widget="badge"
+                                   decoration-success="quality_result == 'passed'"
+                                   decoration-danger="quality_result in ('failed','flagged')"/>
+                            <field name="quality_check_ids">
+                                <tree editable="bottom"
+                                      decoration-success="result == 'pass'"
+                                      decoration-danger="result == 'fail'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" string="Verificação"/>
+                                    <field name="is_required" string="Obrigatório"/>
+                                    <field name="result" string="Resultado"/>
+                                    <field name="notes" string="Observação" optional="show"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Descrição" name="description"
+                              attrs="{'invisible': [('service_description', '=', False)]}">
+                            <field name="service_description" nolabel="1" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search de processos -->
+    <record id="view_repair_process_search" model="ir.ui.view">
+        <field name="name">repair.os.process.search</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Processos">
+                <field name="repair_id" string="OS"/>
+                <field name="name" string="Operação"/>
+                <field name="machine_id" string="Máquina"/>
+                <field name="component_type_id" string="Componente"/>
+                <separator/>
+                <filter name="progress" string="Em Andamento"
+                        domain="[('state','=','progress')]"/>
+                <filter name="paused" string="Pausados"
+                        domain="[('state','=','paused')]"/>
+                <filter name="done" string="Concluídos"
+                        domain="[('state','=','done')]"/>
+                <filter name="ready" string="Pronto"
+                        domain="[('state','=','ready')]"/>
+                <separator/>
+                <filter name="deviation" string="Com Desvio"
+                        domain="[('has_deviation','=',True)]"/>
+                <filter name="qc_failed" string="QC com Ressalvas"
+                        domain="[('quality_result','in',['failed','flagged'])]"/>
+                <group expand="1" string="Agrupar por">
+                    <filter name="group_os" string="Por OS"
+                            context="{'group_by': 'repair_id'}"/>
+                    <filter name="group_machine" string="Por Máquina"
+                            context="{'group_by': 'machine_id'}"/>
+                    <filter name="group_component" string="Por Componente"
+                            context="{'group_by': 'component_type_id'}"/>
+                    <filter name="group_state" string="Por Status"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>
