@@ -113,6 +113,17 @@ class RepairOsProcess(models.Model):
         default=False,
         tracking=True,
     )
+    deviation_icon = fields.Char(
+        string='Desvio',
+        compute='_compute_deviation_icon',
+        store=False,
+    )
+
+    @api.depends('has_deviation')
+    def _compute_deviation_icon(self):
+        for rec in self:
+            rec.deviation_icon = '⚠' if rec.has_deviation else '○'
+
     deviation_notes = fields.Text(string='Descrição do Desvio')
     attachment_ids = fields.Many2many(
         comodel_name='ir.attachment',

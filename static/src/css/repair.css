@@ -530,3 +530,38 @@
 .o_repair_form .o_form_view {
     flex-direction: column !important;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   COLUNA DESVIO — ícone em vez de checkbox
+══════════════════════════════════════════════════════════════ */
+
+/* Esconde o checkbox padrão do boolean */
+.o_repair_deviation_field .o_checkbox,
+.o_repair_deviation_field input[type="checkbox"] {
+    display: none !important;
+}
+
+/* Mostra ícone baseado no valor */
+.o_repair_deviation_field .o_field_boolean::before {
+    font-family: FontAwesome;
+    font-size: 14px;
+}
+
+/* Sem desvio: círculo vazio cinza */
+td .o_repair_deviation_field .o_field_boolean:not(.o_field_boolean_true)::before {
+    content: "\f10c";  /* fa-circle-o */
+    color: #d1d5db;
+}
+
+/* Com desvio: triângulo laranja */
+td .o_repair_deviation_field .o_field_boolean.o_field_boolean_true::before,
+td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
+    content: "\f071";  /* fa-exclamation-triangle */
+    color: #f59e0b;
+}
+
+/* Desvio icon column */
+.o_repair_deviation_icon {
+    font-size: 15px;
+    text-align: center;
+}

@@ -154,7 +154,7 @@
 
                             <!-- Data Programada com datepicker OCA -->
                             <field name="date_planned" string="Data Prog."
-                                   widget="datetime"
+                                   widget="date"
                                    optional="show"/>
 
                             <!-- Data Início real -->
@@ -174,17 +174,12 @@
                                    decoration-muted="state in ('ready', 'cancel')"
                                    readonly="1"/>
 
-                            <!-- Desvio: ícone de alerta ou neutro -->
-                            <button name="action_open_details_popup" type="object"
-                                    attrs="{'invisible': [('has_deviation', '=', True)]}"
-                                    icon="fa-circle-o"
-                                    class="btn-sm btn-link text-muted o_repair_deviation_none"
-                                    title="Sem desvio — clique para registrar"/>
-                            <button name="action_open_details_popup" type="object"
-                                    attrs="{'invisible': [('has_deviation', '=', False)]}"
-                                    icon="fa-exclamation-triangle"
-                                    class="btn-sm btn-link text-warning o_repair_deviation_alert"
-                                    title="Desvio registrado"/>
+                            <!-- Coluna Desvio — ícone ⚠ ou ○ -->
+                            <field name="deviation_icon" string="Desvio"
+                                   readonly="1"
+                                   class="o_repair_deviation_icon"
+                                   decoration-warning="has_deviation == True"
+                                   decoration-muted="has_deviation == False"/>
 
                             <!-- Botão Iniciar -->
                             <button name="action_start" type="object"
@@ -207,7 +202,7 @@
                                     class="btn-sm btn-outline-secondary"
                                     title="Detalhes / Desvio / Anexo"/>
 
-                            <!-- Botão Excluir (lixeira) -->
+                            <!-- Botão Excluir (lixeira) — única lixeira -->
                             <button name="action_cancel" type="object"
                                     icon="fa-trash"
                                     class="btn-sm btn-link text-danger"
