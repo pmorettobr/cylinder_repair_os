@@ -57,7 +57,7 @@ class RepairOsProcess(models.Model):
     )
 
     # ── Datas ─────────────────────────────────────────────────────────────────
-    date_planned = fields.Datetime(
+    date_planned = fields.Date(
         string='Data Programada',
         help='Data prevista para início deste processo.',
     )
@@ -209,7 +209,7 @@ class RepairOsProcess(models.Model):
                     % rec.operation_label
                 )
             today = date.today()
-            if rec.date_planned.date() < today:
+            if rec.date_planned < today:
                 raise UserError(
                     'Processo "%s": a Data Programada (%s) não pode ser anterior a hoje (%s).'
                     % (

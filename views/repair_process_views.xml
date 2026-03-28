@@ -55,7 +55,7 @@
                     <!-- Data Programada -->
                     <group string="Programação"
                            attrs="{'invisible': [('state', 'in', ('done', 'cancel'))]}">
-                        <field name="date_planned" string="Data Programada" widget="datetime"/>
+                        <field name="date_planned" string="Data Programada" widget="date"/>
                     </group>
 
                 </sheet>
@@ -89,7 +89,7 @@
 
                     <!-- Data Programada -->
                     <group string="Programação">
-                        <field name="date_planned" string="Data Programada" widget="datetime"/>
+                        <field name="date_planned" string="Data Programada" widget="date"/>
                         <field name="service_description" string="Descrição Detalhada"/>
                     </group>
 
@@ -246,7 +246,7 @@
                         </group>
                         <group string="Execução">
                             <field name="machine_id" string="Máquina" readonly="1"/>
-                            <field name="date_planned" string="Data Programada" widget="datetime"/>
+                            <field name="date_planned" string="Data Programada" widget="date"/>
                             <field name="date_start_orig" string="Data Início" readonly="1"/>
                             <field name="date_finished" string="Data Conclusão" readonly="1"/>
                             <field name="duration_display" string="Tempo Total" readonly="1"

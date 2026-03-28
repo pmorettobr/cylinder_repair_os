@@ -32,11 +32,9 @@ class RepairMachineReportWizard(models.TransientModel):
         self.ensure_one()
         domain = [
             '|',
-            # Processos com Data Prog. na data pesquisada
-            '&',
-            ('date_planned', '>=', '%s 00:00:00' % self.report_date),
-            ('date_planned', '<=', '%s 23:59:59' % self.report_date),
-            # Processos com Data Início na data pesquisada
+            # Processos com Data Prog. na data pesquisada (Date field)
+            ('date_planned', '=', self.report_date),
+            # Processos com Data Início na data pesquisada (Datetime field)
             '&',
             ('date_start_orig', '>=', '%s 00:00:00' % self.report_date),
             ('date_start_orig', '<=', '%s 23:59:59' % self.report_date),
