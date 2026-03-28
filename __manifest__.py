@@ -19,7 +19,7 @@ Funcionalidades:
     ''',
     'author': 'pmorettobr',
     'website': '',
-    'depends': ['repair', 'stock', 'base', 'mail', 'web'],
+    'depends': ['repair', 'base', 'mail', 'web'],
     'external_dependencies': {},
     'data': [
         'security/res_groups.xml',
