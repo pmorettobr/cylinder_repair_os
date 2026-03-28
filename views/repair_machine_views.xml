@@ -60,10 +60,7 @@
             <search string="Buscar Máquinas">
                 <field name="name" string="Máquina"/>
                 <field name="code" string="Código"/>
-                <filter name="busy" string="Ocupadas"
-                        domain="[('is_busy', '=', True)]"/>
-                <filter name="free" string="Disponíveis"
-                        domain="[('is_busy', '=', False)]"/>
+                <field name="operator_name" string="Operador"/>
             </search>
         </field>
     </record>

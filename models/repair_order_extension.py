@@ -191,10 +191,7 @@ class RepairOrder(models.Model):
         self.write({'os_state': 'confirmed'})
 
     def action_start_os(self):
-        self.write({
-            'os_state': 'in_progress',
-            'date_start': fields.Datetime.now(),
-        })
+        self.write({'os_state': 'in_progress'})
 
     def action_done_os(self):
         for rec in self:

@@ -27,15 +27,18 @@ class RepairMachine(models.Model):
     active = fields.Boolean(default=True)
     notes = fields.Text(string='Observações')
 
-    # Campo computado: processo em andamento nesta máquina
+    # is_busy store=True para permitir uso em filtros/domain de busca.
+    # Recomputado explicitamente pelos métodos do repair.os.process.
+    is_busy = fields.Boolean(
+        string='Ocupada?',
+        default=False,
+        index=True,
+    )
+
+    # current_process_id store=False — sempre ao vivo, só para exibição
     current_process_id = fields.Many2one(
         comodel_name='repair.os.process',
         string='Processo em Andamento',
-        compute='_compute_current_process',
-        store=False,
-    )
-    is_busy = fields.Boolean(
-        string='Ocupada?',
         compute='_compute_current_process',
         store=False,
     )
@@ -47,7 +50,20 @@ class RepairMachine(models.Model):
                 ('state', '=', 'progress'),
             ], limit=1)
             rec.current_process_id = process
-            rec.is_busy = bool(process)
+
+    def _update_busy_status(self):
+        """
+        Atualiza is_busy baseado nos processos em andamento.
+        Chamado pelos métodos action_start / action_pause / action_finish
+        do repair.os.process após mudança de estado.
+        """
+        for rec in self:
+            has_active = self.env['repair.os.process'].search_count([
+                ('machine_id', '=', rec.id),
+                ('state', '=', 'progress'),
+            ]) > 0
+            if rec.is_busy != has_active:
+                rec.is_busy = has_active
 
     _sql_constraints = [
         ('code_unique', 'unique(code)', 'Já existe uma máquina com este código.'),

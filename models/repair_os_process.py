@@ -286,6 +286,7 @@ class RepairOsProcess(models.Model):
         self._validate_machine_available()
 
         now = datetime.now()
+        machines = self.env['repair.machine']
         for rec in self:
             vals = {
                 'state': 'progress',
@@ -297,9 +298,13 @@ class RepairOsProcess(models.Model):
                 if rec.repair_id.os_state == 'confirmed':
                     rec.repair_id.action_start_os()
             rec.write(vals)
+            if rec.machine_id:
+                machines |= rec.machine_id
+        machines._update_busy_status()
 
     def action_pause(self):
         """Pausar processo — acumula tempo decorrido."""
+        machines = self.env['repair.machine']
         for rec in self:
             if rec.state != 'progress':
                 continue
@@ -311,6 +316,9 @@ class RepairOsProcess(models.Model):
                 'duration_acc': (rec.duration_acc or 0.0) + elapsed,
                 'date_start': False,
             })
+            if rec.machine_id:
+                machines |= rec.machine_id
+        machines._update_busy_status()
 
     def action_finish(self):
         """
@@ -364,17 +372,23 @@ class RepairOsProcess(models.Model):
                 'date_start': False,
                 'quality_result': quality_result,
             })
+            if rec.machine_id:
+                rec.machine_id._update_busy_status()
 
     def action_cancel(self):
         """Cancelar processo."""
+        machines = self.env['repair.machine']
         for rec in self:
             if rec.state == 'progress':
                 # Acumula tempo antes de cancelar
                 if rec.date_start:
                     elapsed = (datetime.now() - rec.date_start.replace(tzinfo=None)).total_seconds() / 60
                     rec.duration_acc = (rec.duration_acc or 0.0) + elapsed
+                if rec.machine_id:
+                    machines |= rec.machine_id
             rec.state = 'cancel'
             rec.date_start = False
+        machines._update_busy_status()
 
     def action_reset_to_ready(self):
         """Volta processo cancelado/pausado para Pronto."""
