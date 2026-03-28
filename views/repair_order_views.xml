@@ -5,7 +5,7 @@
     <record id="view_repair_order_os_tree" model="ir.ui.view">
         <field name="name">repair.order.os.tree</field>
         <field name="model">repair.order</field>
-        <field name="priority">20</field>
+        <field name="priority">1</field>
         <field name="arch" type="xml">
             <tree string="Ordens de Serviço"
                   decoration-success="os_state == 'done'"
@@ -36,7 +36,7 @@
     <record id="view_repair_order_os_form" model="ir.ui.view">
         <field name="name">repair.order.os.form</field>
         <field name="model">repair.order</field>
-        <field name="priority">20</field>
+        <field name="priority">1</field>
         <field name="arch" type="xml">
             <form string="Ordem de Serviço" class="o_repair_form">
 
@@ -230,7 +230,7 @@
     <record id="view_repair_order_os_search" model="ir.ui.view">
         <field name="name">repair.order.os.search</field>
         <field name="model">repair.order</field>
-        <field name="priority">20</field>
+        <field name="priority">1</field>
         <field name="arch" type="xml">
             <search string="Buscar OS">
                 <field name="os_number" string="Nº OS"/>
@@ -276,6 +276,9 @@
         <field name="name">Ordens de Serviço</field>
         <field name="res_model">repair.order</field>
         <field name="view_mode">kanban,tree,form</field>
+        <field name="view_ids" eval="[(5,0,0),
+            (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_order_os_tree')}),
+            (0,0,{'view_mode':'form','view_id':ref('cylinder_repair_os.view_repair_order_os_form')})]"/>
         <field name="search_view_id" ref="view_repair_order_os_search"/>
         <field name="context">{'search_default_in_progress': 1}</field>
     </record>
@@ -284,6 +287,9 @@
         <field name="name">Reparos</field>
         <field name="res_model">repair.order</field>
         <field name="view_mode">kanban,tree,form</field>
+        <field name="view_ids" eval="[(5,0,0),
+            (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_order_os_tree')}),
+            (0,0,{'view_mode':'form','view_id':ref('cylinder_repair_os.view_repair_order_os_form')})]"/>
         <field name="search_view_id" ref="view_repair_order_os_search"/>
         <field name="domain">[('order_type', '=', 'repair')]</field>
         <field name="context">{'default_order_type': 'repair'}</field>
@@ -293,6 +299,9 @@
         <field name="name">Fabricações</field>
         <field name="res_model">repair.order</field>
         <field name="view_mode">kanban,tree,form</field>
+        <field name="view_ids" eval="[(5,0,0),
+            (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_order_os_tree')}),
+            (0,0,{'view_mode':'form','view_id':ref('cylinder_repair_os.view_repair_order_os_form')})]"/>
         <field name="search_view_id" ref="view_repair_order_os_search"/>
         <field name="domain">[('order_type', '=', 'fabrication')]</field>
         <field name="context">{'default_order_type': 'fabrication'}</field>
