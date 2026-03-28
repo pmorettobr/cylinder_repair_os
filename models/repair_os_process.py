@@ -230,21 +230,31 @@ class RepairOsProcess(models.Model):
                 )
 
     def _validate_sequence(self):
-        """Valida que o processo anterior do mesmo componente está concluído."""
+        """
+        Valida sequência de processos dentro do componente.
+
+        Regra:
+        - Processos com a MESMA sequência rodam em paralelo (sem bloqueio).
+        - Um processo só pode iniciar se TODOS os processos com sequência
+          ESTRITAMENTE MENOR estiverem concluídos (done) ou cancelados.
+        """
         for rec in self:
             if not rec.component_type_id:
                 continue
-            # Busca processo anterior (menor sequência) no mesmo componente
+            # Busca processos com sequência ESTRITAMENTE menor que a atual
+            # que ainda não estejam concluídos ou cancelados
             prev = self.search([
                 ('repair_id', '=', rec.repair_id.id),
                 ('component_type_id', '=', rec.component_type_id.id),
                 ('sequence', '<', rec.sequence),
+                ('id', '!=', rec.id),
                 ('state', 'not in', ('done', 'cancel')),
             ], limit=1, order='sequence desc')
             if prev:
                 raise UserError(
                     'Processo "%s" (seq. %d): o processo anterior "%s" '
-                    '(seq. %d) ainda não foi concluído.'
+                    '(seq. %d) ainda não foi concluído. '
+                    'Processos com a mesma sequência podem ser iniciados em paralelo.'
                     % (
                         rec.operation_label,
                         rec.sequence,

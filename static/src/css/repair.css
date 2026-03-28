@@ -612,3 +612,28 @@ td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
     font-size: 15px !important;
     padding: 0 4px !important;
 }
+
+/* ══ Nº OS — mantém tamanho grande em readonly/span também ══ */
+.o_repair_os_input span,
+.o_repair_os_input .o_field_widget span,
+.o_repair_os_input .o_form_uri,
+.o_repair_os_input .o_field_char span {
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    color: #1e293b !important;
+    letter-spacing: .5px !important;
+}
+
+/* Remove o fundo cinza do readonly no campo Nº OS */
+.o_repair_os_input.o_readonly .o_field_char,
+.o_repair_os_input .o_field_widget.o_readonly {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+/* ══ Handle de arrastar — coluna estreita ══ */
+.o_handle_cell {
+    width: 20px !important;
+    min-width: 20px !important;
+}

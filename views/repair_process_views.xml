@@ -359,7 +359,8 @@
                                string="Descrição do Desvio"
                                attrs="{'invisible': [('has_deviation', '=', False)]}"
                                placeholder="Descreva o desvio encontrado..."
-                               nolabel="1"/>
+                               nolabel="1"
+                               options="{'rows': 6}"/>
                     </group>
                 </sheet>
                 <footer>

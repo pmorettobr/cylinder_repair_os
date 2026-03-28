@@ -151,7 +151,10 @@
                             <field name="state" invisible="1"/>
                             <field name="has_deviation" invisible="1"/>
 
-                            <!-- Seq -->
+                            <!-- Handle drag para reordenar -->
+                            <field name="sequence" widget="handle"/>
+
+                            <!-- Seq numérica -->
                             <field name="sequence" string="Seq." readonly="1" width="40"/>
 
                             <!-- Componente -->
@@ -212,11 +215,11 @@
                                     string="Concluir" class="btn-sm o_repair_btn_concluir"
                                     attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
 
-                            <!-- Botão Excluir (lixeira) — só aparece em Pronto/Pausado -->
+                            <!-- Botão Cancelar processo -->
                             <button name="action_cancel" type="object"
-                                    icon="fa-trash"
+                                    icon="fa-ban"
                                     class="btn-sm btn-link text-danger"
-                                    title="Excluir processo"
+                                    title="Cancelar processo"
                                     attrs="{'invisible': [('state', 'not in', ('ready', 'paused'))]}"/>
 
                         </tree>
