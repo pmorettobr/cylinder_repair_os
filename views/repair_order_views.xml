@@ -276,10 +276,6 @@
         <field name="name">Ordens de Serviço</field>
         <field name="res_model">repair.order</field>
         <field name="view_mode">kanban,tree,form</field>
-        <field name="view_ids" eval="[(5,0,0),
-            (0,0,{'view_mode':'kanban','view_id':ref('cylinder_repair_os.view_repair_dashboard_kanban')}),
-            (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_order_os_tree')}),
-            (0,0,{'view_mode':'form','view_id':ref('cylinder_repair_os.view_repair_order_os_form')})]"/>
         <field name="search_view_id" ref="view_repair_order_os_search"/>
         <field name="context">{'search_default_in_progress': 1}</field>
     </record>
@@ -288,10 +284,6 @@
         <field name="name">Reparos</field>
         <field name="res_model">repair.order</field>
         <field name="view_mode">kanban,tree,form</field>
-        <field name="view_ids" eval="[(5,0,0),
-            (0,0,{'view_mode':'kanban','view_id':ref('cylinder_repair_os.view_repair_dashboard_kanban')}),
-            (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_order_os_tree')}),
-            (0,0,{'view_mode':'form','view_id':ref('cylinder_repair_os.view_repair_order_os_form')})]"/>
         <field name="search_view_id" ref="view_repair_order_os_search"/>
         <field name="domain">[('order_type', '=', 'repair')]</field>
         <field name="context">{'default_order_type': 'repair'}</field>
@@ -301,10 +293,6 @@
         <field name="name">Fabricações</field>
         <field name="res_model">repair.order</field>
         <field name="view_mode">kanban,tree,form</field>
-        <field name="view_ids" eval="[(5,0,0),
-            (0,0,{'view_mode':'kanban','view_id':ref('cylinder_repair_os.view_repair_dashboard_kanban')}),
-            (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_order_os_tree')}),
-            (0,0,{'view_mode':'form','view_id':ref('cylinder_repair_os.view_repair_order_os_form')})]"/>
         <field name="search_view_id" ref="view_repair_order_os_search"/>
         <field name="domain">[('order_type', '=', 'fabrication')]</field>
         <field name="context">{'default_order_type': 'fabrication'}</field>
