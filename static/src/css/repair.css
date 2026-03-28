@@ -565,3 +565,50 @@ td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
     font-size: 15px;
     text-align: center;
 }
+
+/* ══ Tipo badge grande (após confirmar) ══ */
+.o_repair_badge_reparo_lg {
+    background: #dbeafe !important;
+    color: #1d4ed8 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    padding: 5px 14px !important;
+    border-radius: 20px !important;
+    letter-spacing: .3px;
+}
+
+.o_repair_badge_fabricacao_lg {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    padding: 5px 14px !important;
+    border-radius: 20px !important;
+    letter-spacing: .3px;
+}
+
+/* ══ Botão Concluir — indigo/roxo ══ */
+.o_repair_btn_concluir {
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+    color: #fff !important;
+    font-size: 12px !important;
+}
+
+.o_repair_btn_concluir:hover {
+    background-color: #4338ca !important;
+    border-color: #4338ca !important;
+}
+
+/* ══ Ícones de desvio na coluna ══ */
+.o_repair_deviation_alert {
+    color: #f59e0b !important;
+    font-size: 15px !important;
+    padding: 0 4px !important;
+}
+
+.o_repair_deviation_none {
+    color: #d1d5db !important;
+    font-size: 15px !important;
+    padding: 0 4px !important;
+}

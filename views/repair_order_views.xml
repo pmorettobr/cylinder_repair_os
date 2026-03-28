@@ -68,7 +68,7 @@
                     <field name="progress_percent" invisible="1"
                            class="o_repair_progress_value"/>
 
-                    <!-- ── Título: Nº OS grande + Tipo colorido ─────── -->
+                    <!-- ── Título: Nº OS grande + Tipo ─────────────── -->
                     <div class="o_repair_form_title">
                         <div class="o_repair_title_row">
                             <div class="o_repair_os_number_big">
@@ -78,10 +78,20 @@
                                        placeholder="Nº da OS do cliente..."
                                        attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"/>
                             </div>
-                            <div class="o_repair_type_selector">
+                            <!-- Radio editável só no rascunho -->
+                            <div class="o_repair_type_selector"
+                                 attrs="{'invisible': [('os_state', '!=', 'draft')]}">
                                 <field name="order_type"
                                        widget="radio"
                                        class="o_repair_type_radio"/>
+                            </div>
+                            <!-- Badge colorido após confirmar -->
+                            <div class="o_repair_type_badge"
+                                 attrs="{'invisible': [('os_state', '=', 'draft')]}">
+                                <span attrs="{'invisible': [('order_type', '!=', 'repair')]}"
+                                      class="badge o_repair_badge_reparo_lg">Reparo</span>
+                                <span attrs="{'invisible': [('order_type', '!=', 'fabrication')]}"
+                                      class="badge o_repair_badge_fabricacao_lg">Fabricação</span>
                             </div>
                             <div class="o_repair_overdue_badge"
                                  attrs="{'invisible': [('is_overdue', '=', False)]}">
@@ -175,12 +185,17 @@
                                    decoration-muted="state in ('ready', 'cancel')"
                                    readonly="1"/>
 
-                            <!-- Coluna Desvio — ícone ⚠ ou ○ -->
-                            <field name="deviation_icon" string="Desvio"
-                                   readonly="1"
-                                   class="o_repair_deviation_icon"
-                                   decoration-warning="has_deviation == True"
-                                   decoration-muted="has_deviation == False"/>
+                            <!-- Coluna Desvio — botão ícone abre popup de desvio -->
+                            <button name="action_open_deviation_popup" type="object"
+                                    attrs="{'invisible': [('has_deviation', '=', False)]}"
+                                    icon="fa-exclamation-triangle"
+                                    class="btn-sm btn-link o_repair_deviation_alert"
+                                    title="Desvio registrado — clique para editar"/>
+                            <button name="action_open_deviation_popup" type="object"
+                                    attrs="{'invisible': [('has_deviation', '=', True)]}"
+                                    icon="fa-circle-o"
+                                    class="btn-sm btn-link o_repair_deviation_none"
+                                    title="Sem desvio — clique para registrar"/>
 
                             <!-- Botão Iniciar -->
                             <button name="action_start" type="object"
@@ -194,15 +209,15 @@
 
                             <!-- Botão Concluir -->
                             <button name="action_finish" type="object"
-                                    string="Concluir" class="btn-sm btn-primary"
+                                    string="Concluir" class="btn-sm o_repair_btn_concluir"
                                     attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
 
-                            <!-- Botão Excluir (lixeira) — única lixeira -->
+                            <!-- Botão Excluir (lixeira) — só aparece em Pronto/Pausado -->
                             <button name="action_cancel" type="object"
                                     icon="fa-trash"
                                     class="btn-sm btn-link text-danger"
                                     title="Excluir processo"
-                                    attrs="{'invisible': [('state', 'in', ('progress',))]}"/>
+                                    attrs="{'invisible': [('state', 'not in', ('ready', 'paused'))]}"/>
 
                         </tree>
                     </field>

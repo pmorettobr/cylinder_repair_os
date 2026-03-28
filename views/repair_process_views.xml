@@ -333,4 +333,43 @@
         </field>
     </record>
 
+
+    <!-- ══ Popup de Desvio (coluna Desvio) ══════════════════════════════ -->
+    <record id="view_repair_process_deviation_popup" model="ir.ui.view">
+        <field name="name">repair.os.process.deviation.popup</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <form string="Desvio">
+                <sheet>
+                    <!-- Cabeçalho com nome da operação -->
+                    <div class="o_repair_popup_header">
+                        <div class="o_repair_popup_title">
+                            <field name="operation_label" readonly="1"/>
+                        </div>
+                        <div class="o_repair_popup_meta">
+                            OS: <field name="repair_id" readonly="1" class="d-inline"/>
+                        </div>
+                    </div>
+
+                    <group>
+                        <field name="has_deviation"
+                               string="Registrar Desvio?"
+                               widget="boolean_toggle"/>
+                        <field name="deviation_notes"
+                               string="Descrição do Desvio"
+                               attrs="{'invisible': [('has_deviation', '=', False)]}"
+                               placeholder="Descreva o desvio encontrado..."
+                               nolabel="1"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Salvar" class="btn-primary"
+                            special="save" close="1"/>
+                    <button string="Fechar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
 </odoo>

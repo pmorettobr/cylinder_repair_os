@@ -425,6 +425,19 @@ class RepairOsProcess(models.Model):
             'context': {'default_repair_id': self.repair_id.id},
         }
 
+    def action_open_deviation_popup(self):
+        """Abre popup simples de desvio (ícone na coluna Desvio)."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': self.operation_label or self.name or 'Desvio',
+            'res_model': 'repair.os.process',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'view_id': self.env.ref('cylinder_repair_os.view_repair_process_deviation_popup').id,
+            'target': 'new',
+        }
+
     # ── Popup de Qualidade ────────────────────────────────────────────────────
 
     def _open_quality_popup(self):
