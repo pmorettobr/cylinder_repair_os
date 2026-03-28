@@ -7,6 +7,7 @@
         <field name="arch" type="xml">
             <form string="Carregar Processos em Lote">
                 <sheet>
+                    <field name="catalog_empty" invisible="1"/>
                     <div class="o_repair_wizard_header">
                         <h4>Carregar Processos do Catálogo</h4>
                         <p class="text-muted">
