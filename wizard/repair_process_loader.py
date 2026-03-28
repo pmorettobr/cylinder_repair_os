@@ -11,10 +11,6 @@ class RepairProcessLoaderLine(models.TransientModel):
     selected = fields.Boolean(string='✓', default=True)
     template_id = fields.Many2one('repair.process.template', string='Template')
     component_type_id = fields.Many2one('repair.component.type', string='Componente')
-    sub_component_id = fields.Many2one(
-        'repair.sub.component', string='Sub-componente',
-        domain="[('component_type_id', 'in', [component_type_id, False])]",
-    )
     name = fields.Char(string='Operação', required=True)
     service_description = fields.Text(string='Descrição Detalhada')
     machine_id = fields.Many2one('repair.machine', string='Máquina')
@@ -64,7 +60,6 @@ class RepairProcessLoader(models.TransientModel):
                 'sequence': tmpl.sequence,
                 'selected': True,
                 'component_type_id': tmpl.component_type_id.id,
-                'sub_component_id': tmpl.sub_component_id.id if tmpl.sub_component_id else False,
                 'name': tmpl.name,
                 'service_description': tmpl.service_description or False,
                 'machine_id': tmpl.machine_id.id if tmpl.machine_id else False,
@@ -129,7 +124,6 @@ class RepairProcessLoader(models.TransientModel):
                 'name': line.name,
                 'service_description': line.service_description or False,
                 'component_type_id': line.component_type_id.id if line.component_type_id else False,
-                'sub_component_id': line.sub_component_id.id if line.sub_component_id else False,
                 'machine_id': line.machine_id.id if line.machine_id else False,
                 'block_on_quality_fail': line.block_on_quality_fail,
                 'state': 'ready',

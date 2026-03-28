@@ -72,14 +72,15 @@ class RepairMachine(models.Model):
     def name_get(self):
         result = []
         for rec in self:
-            name = '[%s] %s' % (rec.code, rec.name) if rec.code else rec.name
-            result.append((rec.id, name))
+            # Exibe apenas o nome — sem código prefix
+            result.append((rec.id, rec.name))
         return result
 
     @api.model
     def _name_search(self, name, args=None, operator='ilike', limit=100, name_get_uid=None):
         args = args or []
         if name:
+            # Busca por código OU nome para facilitar localização
             domain = ['|', ('code', operator, name), ('name', operator, name)]
             return self._search(domain + args, limit=limit, access_rights_uid=name_get_uid)
         return super()._name_search(name, args, operator, limit, name_get_uid)

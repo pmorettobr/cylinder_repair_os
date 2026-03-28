@@ -29,11 +29,6 @@ class RepairProcessTemplate(models.Model):
         required=True,
         index=True,
     )
-    sub_component_id = fields.Many2one(
-        comodel_name='repair.sub.component',
-        string='Sub-componente',
-        domain="[('component_type_id', 'in', [component_type_id, False])]",
-    )
     machine_id = fields.Many2one(
         comodel_name='repair.machine',
         string='Máquina Padrão',
@@ -57,12 +52,6 @@ class RepairProcessTemplate(models.Model):
     def name_get(self):
         result = []
         for rec in self:
-            name = '%s — %s' % (rec.component_type_id.name, rec.name)
-            if rec.sub_component_id:
-                name = '%s › %s — %s' % (
-                    rec.component_type_id.name,
-                    rec.sub_component_id.name,
-                    rec.name,
-                )
+            name = '%s — %s' % (rec.component_type_id.name, rec.name) if rec.component_type_id else rec.name
             result.append((rec.id, name))
         return result

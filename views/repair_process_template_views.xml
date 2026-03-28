@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- TREE -->
+    <!-- TREE — somente Componente, Operação, Máquina -->
     <record id="view_repair_process_template_tree" model="ir.ui.view">
         <field name="name">repair.process.template.tree</field>
         <field name="model">repair.process.template</field>
@@ -10,14 +10,9 @@
                   editable="bottom"
                   default_order="component_type_id, sequence">
                 <field name="sequence" widget="handle"/>
-                <field name="component_type_id" string="Componente"/>
-                <field name="sub_component_id" string="Sub-componente"
-                       domain="[('component_type_id', 'in', [component_type_id, False])]"
-                       optional="show"/>
-                <field name="name" string="Operação"/>
-                <field name="machine_id" string="Máquina Padrão"/>
-                <field name="quality_template_id" string="Template QC" optional="hide"/>
-                <field name="block_on_quality_fail" optional="hide"/>
+                <field name="component_type_id" string="Componente" required="1"/>
+                <field name="name" string="Operação" required="1"/>
+                <field name="machine_id" string="Máquina"/>
                 <field name="active" optional="hide"/>
             </tree>
         </field>
@@ -37,8 +32,6 @@
                     <group>
                         <group string="Classificação">
                             <field name="component_type_id" string="Componente" required="1"/>
-                            <field name="sub_component_id" string="Sub-componente"
-                                   domain="[('component_type_id', 'in', [component_type_id, False])]"/>
                             <field name="machine_id" string="Máquina Padrão"/>
                             <field name="sequence" string="Ordem de Execução"/>
                             <field name="active"/>
@@ -51,9 +44,6 @@
                     <group string="Descrição Detalhada">
                         <field name="service_description" nolabel="1"
                                placeholder="Descreva o processo em detalhes..."/>
-                    </group>
-                    <group string="Observações">
-                        <field name="notes" nolabel="1"/>
                     </group>
                 </sheet>
             </form>

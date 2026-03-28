@@ -43,11 +43,6 @@ class RepairOsProcess(models.Model):
         string='Componente',
         index=True,
     )
-    sub_component_id = fields.Many2one(
-        comodel_name='repair.sub.component',
-        string='Sub-componente',
-        domain="[('component_type_id', 'in', [component_type_id, False])]",
-    )
     name = fields.Char(
         string='Operação',
         required=True,
@@ -164,14 +159,12 @@ class RepairOsProcess(models.Model):
 
     # ── Computes ──────────────────────────────────────────────────────────────
 
-    @api.depends('component_type_id.name', 'sub_component_id.name', 'name')
+    @api.depends('component_type_id.name', 'name')
     def _compute_operation_label(self):
         for rec in self:
             parts = []
             if rec.component_type_id:
                 parts.append(rec.component_type_id.name)
-            if rec.sub_component_id:
-                parts.append(rec.sub_component_id.name)
             if rec.name:
                 parts.append(rec.name)
             rec.operation_label = ' — '.join(filter(None, parts))
@@ -197,27 +190,21 @@ class RepairOsProcess(models.Model):
     # ── Validações ────────────────────────────────────────────────────────────
 
     def _validate_date_planned(self):
-        """Valida que date_planned não está em branco nem é retroativa."""
+        """Valida que date_planned não está em branco nem é retroativa ao dia atual."""
         for rec in self:
             if not rec.date_planned:
                 raise UserError(
-                    'Processo "%s": o campo Data Programada é obrigatório antes de iniciar.'
+                    'Processo "%s": preencha a Data Programada antes de iniciar.'
                     % rec.operation_label
                 )
-            # Referência: data de início da OS ou hoje
-            ref_date = None
-            if rec.repair_id and rec.repair_id.date_start:
-                ref_date = rec.repair_id.date_start.date()
-            else:
-                ref_date = date.today()
-            if rec.date_planned.date() < ref_date:
+            today = date.today()
+            if rec.date_planned.date() < today:
                 raise UserError(
-                    'Processo "%s": a Data Programada (%s) não pode ser anterior '
-                    'à data de início da OS (%s).'
+                    'Processo "%s": a Data Programada (%s) não pode ser anterior a hoje (%s).'
                     % (
                         rec.operation_label,
                         rec.date_planned.strftime('%d/%m/%Y'),
-                        ref_date.strftime('%d/%m/%Y'),
+                        today.strftime('%d/%m/%Y'),
                     )
                 )
 

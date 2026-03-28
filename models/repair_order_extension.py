@@ -167,7 +167,7 @@ class RepairOrder(models.Model):
                 return {
                     'warning': {
                         'title': 'Nº OS duplicado',
-                        'message': 'Já existe a OS "%s" com este número. Verifique antes de salvar.' % existing.name,
+                        'message': 'Já existe uma OS com o número "%s". Verifique antes de salvar.' % existing.os_number,
                     }
                 }
 

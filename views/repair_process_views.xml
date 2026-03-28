@@ -241,7 +241,6 @@
                         <group string="Identificação">
                             <field name="repair_id" string="OS" readonly="1"/>
                             <field name="component_type_id" string="Componente" readonly="1"/>
-                            <field name="sub_component_id" string="Sub-componente" readonly="1"/>
                             <field name="name" string="Operação" readonly="1"/>
                             <field name="sequence" string="Ordem" readonly="1"/>
                         </group>

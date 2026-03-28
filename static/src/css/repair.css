@@ -399,3 +399,134 @@
 .o_form_view .o_statusbar_status .o_arrow_button {
     font-size: 12px;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   TÍTULO DA OS — Nº OS grande + Tipo colorido
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_form_title {
+    padding: 10px 0 8px;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 12px;
+}
+
+.o_repair_title_row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.o_repair_os_number_big {
+    display: flex;
+    flex-direction: column;
+}
+
+.o_repair_os_label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 2px;
+}
+
+.o_repair_os_input input,
+.o_repair_os_input .o_field_char {
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    color: #1e293b !important;
+    letter-spacing: .5px !important;
+    border: none !important;
+    padding: 0 !important;
+    min-width: 160px;
+}
+
+/* Tipo como radio colorido */
+.o_repair_type_radio .o_radio_input:checked + .o_radio_label[data-value="repair"] {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border-color: #3b82f6;
+}
+
+.o_repair_type_radio .o_radio_input:checked + .o_radio_label[data-value="fabrication"] {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #f59e0b;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BARRA DE PROGRESSO — compacta, embaixo dos campos
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_progress_strip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0 10px;
+    margin-top: 4px;
+}
+
+.o_repair_progress_strip .o_repair_progress_bar_wrap {
+    flex: 1;
+    height: 8px;
+}
+
+.o_repair_progress_pct {
+    font-size: 12px;
+    font-weight: 700;
+    color: #4f46e5;
+    white-space: nowrap;
+    min-width: 38px;
+    text-align: right;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PROCESSOS — agrupamento visual por componente (Opção A temp.)
+══════════════════════════════════════════════════════════════ */
+
+/* Separador de grupo por componente via CSS nth-child trick
+   O JS abaixo injeta data-component nas linhas para o CSS atuar */
+.o_repair_component_separator td {
+    background: #f1f5f9 !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    color: #334155 !important;
+    padding: 4px 8px !important;
+    border-top: 2px solid #cbd5e1 !important;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DESVIO — ícones sem checkbox
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_deviation_none .o_button_icon {
+    color: #d1d5db !important;
+    font-size: 14px;
+}
+
+.o_repair_deviation_alert .o_button_icon {
+    color: #f59e0b !important;
+    font-size: 14px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CHATTER — ocultado no form da OS
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_form .o_chatter_container,
+.o_repair_form .o-mail-ChatterContainer,
+.o_repair_form .o_FormRenderer_chatterContainer {
+    display: none !important;
+}
+
+/* Expande o sheet para ocupar toda a largura quando sem chatter */
+.o_repair_form .o_form_sheet_bg {
+    width: 100% !important;
+}
+
+.o_repair_form .o_form_view {
+    flex-direction: column !important;
+}

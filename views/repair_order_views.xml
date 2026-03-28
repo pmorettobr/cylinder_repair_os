@@ -40,7 +40,6 @@
         <field name="arch" type="xml">
             <form string="Ordem de Serviço" class="o_repair_form">
 
-                <!-- ── Status bar ──────────────────────────────────────── -->
                 <header>
                     <field name="os_state" widget="statusbar"
                            statusbar_visible="draft,confirmed,in_progress,done"/>
@@ -62,62 +61,61 @@
                 </header>
 
                 <sheet>
-                    <!-- Campos nativos do repair.order — invisíveis -->
+                    <!-- Campos nativos invisíveis necessários -->
                     <field name="state" invisible="1"/>
                     <field name="company_id" invisible="1"/>
+                    <field name="is_overdue" invisible="1"/>
+                    <field name="progress_percent" invisible="1"
+                           class="o_repair_progress_value"/>
 
-                    <!-- ── Barra de Progresso compacta no topo ────────── -->
-                    <div class="o_repair_progress_header">
-                        <div class="o_repair_progress_info">
-                            <span class="o_repair_os_num">
-                                <field name="os_number" readonly="1"/>
-                            </span>
-                            <span class="o_repair_sep">·</span>
-                            <field name="order_type" widget="badge"
-                                   decoration-info="order_type == 'repair'"
-                                   decoration-warning="order_type == 'fabrication'"/>
-                            <span class="o_repair_sep"
-                                  attrs="{'invisible': [('is_overdue', '=', False)]}">·</span>
-                            <span class="badge bg-danger"
-                                  attrs="{'invisible': [('is_overdue', '=', False)]}">
-                                ⚠ Atrasada
-                            </span>
+                    <!-- ── Título: Nº OS grande + Tipo colorido ─────── -->
+                    <div class="o_repair_form_title">
+                        <div class="o_repair_title_row">
+                            <div class="o_repair_os_number_big">
+                                <label for="os_number" class="o_repair_os_label">Nº OS</label>
+                                <field name="os_number"
+                                       class="o_repair_os_input"
+                                       placeholder="Nº da OS do cliente..."
+                                       attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"/>
+                            </div>
+                            <div class="o_repair_type_selector">
+                                <field name="order_type"
+                                       widget="radio"
+                                       class="o_repair_type_radio"/>
+                            </div>
+                            <div class="o_repair_overdue_badge"
+                                 attrs="{'invisible': [('is_overdue', '=', False)]}">
+                                <span class="badge bg-danger">⚠ Atrasada</span>
+                            </div>
                         </div>
-                        <!-- Barra de progresso degradê CSS -->
+                    </div>
+
+                    <!-- ── Dados da OS ────────────────────────────────── -->
+                    <group class="o_repair_header_fields">
+                        <group string="Identificação">
+                            <field name="partner_id" string="Cliente" required="1"/>
+                            <field name="product_name" string="Produto / Cilindro"
+                                   placeholder="Ex: Cilindro Hidráulico CH-1..."/>
+                            <field name="responsible_id" string="Responsável"/>
+                        </group>
+                        <group string="Prazo e Progresso">
+                            <field name="deadline_date" string="Prazo (Dead Line)"
+                                   widget="date"/>
+                            <field name="process_count" string="Total"/>
+                            <field name="process_done_count" string="Concluídos"/>
+                            <field name="process_progress_count" string="Em Andamento"/>
+                        </group>
+                    </group>
+
+                    <!-- ── Barra de Progresso ─────────────────────────── -->
+                    <div class="o_repair_progress_strip">
                         <div class="o_repair_progress_bar_wrap">
                             <div class="o_repair_progress_bar_fill o_repair_progress_fill_dynamic"/>
                         </div>
-                        <field name="progress_percent" invisible="1"
-                               class="o_repair_progress_value"/>
-                        <div class="o_repair_progress_label">
-                            <field name="process_done_display" readonly="1"/> /
-                            <field name="process_total_display" readonly="1"/> processos ·
-                            <strong><field name="progress_display" readonly="1"/></strong>
-                        </div>
-                        <field name="is_overdue" invisible="1"/>
-                        <field name="progress_percent" invisible="1"/>
+                        <span class="o_repair_progress_pct">
+                            <field name="progress_display" readonly="1"/>
+                        </span>
                     </div>
-
-                    <!-- ── Dados da OS — compactos ────────────────────── -->
-                    <group class="o_repair_header_fields">
-                        <group>
-                            <field name="os_number" string="Nº OS"
-                                   placeholder="Nº sequencial do cliente..."
-                                   attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"/>
-                            <field name="order_type" string="Tipo de Ordem" required="1"/>
-                            <field name="partner_id" string="Cliente" required="1"/>
-                            <field name="responsible_id" string="Responsável"/>
-                        </group>
-                        <group>
-                            <field name="product_name" string="Produto / Cilindro"
-                                   placeholder="Ex: Cilindro Hidráulico CH-1..."/>
-                            <field name="serial_code" string="Nº de Série / TAG"/>
-                            <field name="deadline_date" string="Prazo (Dead Line)"
-                                   widget="date"/>
-                            <field name="equipment_description" string="Descrição Adicional"
-                                   optional="hide"/>
-                        </group>
-                    </group>
 
                     <!-- ── Processos ──────────────────────────────────── -->
                     <div class="o_repair_processes_header">
@@ -129,9 +127,7 @@
                                 attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
                     </div>
 
-                    <!-- Tree de processos agrupada por componente -->
                     <field name="process_ids"
-                           widget="one2many"
                            context="{'default_repair_id': id}">
                         <tree string="Processos"
                               decoration-success="state == 'done'"
@@ -139,28 +135,27 @@
                               decoration-info="state == 'paused'"
                               decoration-muted="state in ('ready', 'cancel')"
                               create="0"
-                              delete="0"
                               default_order="component_type_id, sequence">
-                            <!-- Campos de controle -->
+
                             <field name="state" invisible="1"/>
+                            <field name="has_deviation" invisible="1"/>
 
-                            <!-- Numeração de sequência -->
-                            <field name="sequence" string="Seq." readonly="1"/>
+                            <!-- Seq -->
+                            <field name="sequence" string="Seq." readonly="1" width="40"/>
 
-                            <!-- Componente — com separador visual por grupo -->
+                            <!-- Componente -->
                             <field name="component_type_id" string="Componente" readonly="1"/>
-                            <field name="sub_component_id" string="Sub-comp." readonly="1"
-                                   optional="hide"/>
 
                             <!-- Operação -->
                             <field name="name" string="Operação" readonly="1"/>
 
-                            <!-- Máquina -->
+                            <!-- Máquina — só nome -->
                             <field name="machine_id" string="Máquina" readonly="1"/>
 
-                            <!-- Data Programada — editável inline -->
+                            <!-- Data Programada com datepicker OCA -->
                             <field name="date_planned" string="Data Prog."
-                                   widget="datetime" optional="show"/>
+                                   widget="datetime"
+                                   optional="show"/>
 
                             <!-- Data Início real -->
                             <field name="date_start_orig" string="Dt. Início"
@@ -179,16 +174,17 @@
                                    decoration-muted="state in ('ready', 'cancel')"
                                    readonly="1"/>
 
-                            <!-- QC flag -->
-                            <field name="quality_result" string="QC" widget="badge"
-                                   decoration-success="quality_result == 'passed'"
-                                   decoration-danger="quality_result in ('failed','flagged')"
-                                   decoration-muted="quality_result == 'pending'"
-                                   readonly="1" optional="show"/>
-
-                            <!-- Desvio flag -->
-                            <field name="has_deviation" string="Desvio"
-                                   widget="boolean" readonly="1" optional="show"/>
+                            <!-- Desvio: ícone de alerta ou neutro -->
+                            <button name="action_open_details_popup" type="object"
+                                    attrs="{'invisible': [('has_deviation', '=', True)]}"
+                                    icon="fa-circle-o"
+                                    class="btn-sm btn-link text-muted o_repair_deviation_none"
+                                    title="Sem desvio — clique para registrar"/>
+                            <button name="action_open_details_popup" type="object"
+                                    attrs="{'invisible': [('has_deviation', '=', False)]}"
+                                    icon="fa-exclamation-triangle"
+                                    class="btn-sm btn-link text-warning o_repair_deviation_alert"
+                                    title="Desvio registrado"/>
 
                             <!-- Botão Iniciar -->
                             <button name="action_start" type="object"
@@ -202,25 +198,26 @@
 
                             <!-- Botão Concluir -->
                             <button name="action_finish" type="object"
-                                    string="Concluir" class="btn-sm btn-success"
+                                    string="Concluir" class="btn-sm btn-primary"
                                     attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
 
-                            <!-- Botão DETALHES -->
+                            <!-- Botão Detalhes -->
                             <button name="action_open_details_popup" type="object"
-                                    icon="fa-cog" string="Detalhes"
+                                    icon="fa-cog"
                                     class="btn-sm btn-outline-secondary"
                                     title="Detalhes / Desvio / Anexo"/>
+
+                            <!-- Botão Excluir (lixeira) -->
+                            <button name="action_cancel" type="object"
+                                    icon="fa-trash"
+                                    class="btn-sm btn-link text-danger"
+                                    title="Excluir processo"
+                                    attrs="{'invisible': [('state', 'in', ('progress',))]}"/>
+
                         </tree>
                     </field>
 
                 </sheet>
-
-                <!-- Chatter -->
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
 
             </form>
         </field>
@@ -236,7 +233,6 @@
                 <field name="os_number" string="Nº OS"/>
                 <field name="partner_id" string="Cliente"/>
                 <field name="product_name" string="Produto / Cilindro"/>
-                <field name="serial_code" string="Nº Série / TAG"/>
                 <field name="responsible_id" string="Responsável"/>
                 <separator/>
                 <filter name="repair" string="Reparo"
