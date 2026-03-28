@@ -28,9 +28,7 @@
                         <div class="o_repair_popup_timer"
                              attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}">
                             <span class="o_repair_timer_label">Tempo: </span>
-                            <span class="o_repair_timer_value o_repair_timer"
-                                  t-att-data-start="date_start"
-                                  t-att-data-acc="duration_acc">
+                            <span class="o_repair_timer_value o_repair_timer">
                                 <field name="duration_display" readonly="1"/>
                             </span>
                         </div>

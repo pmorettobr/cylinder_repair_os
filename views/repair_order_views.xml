@@ -87,9 +87,10 @@
                         </div>
                         <!-- Barra de progresso degradê CSS -->
                         <div class="o_repair_progress_bar_wrap">
-                            <div class="o_repair_progress_bar_fill"
-                                 t-attf-style="width: {progress_percent}%"/>
+                            <div class="o_repair_progress_bar_fill o_repair_progress_fill_dynamic"/>
                         </div>
+                        <field name="progress_percent" invisible="1"
+                               class="o_repair_progress_value"/>
                         <div class="o_repair_progress_label">
                             <field name="process_done_display" readonly="1"/> /
                             <field name="process_total_display" readonly="1"/> processos ·
@@ -170,8 +171,7 @@
                             <!-- Cronômetro -->
                             <field name="duration_display" string="Tempo"
                                    readonly="1"
-                                   class="o_repair_timer"
-                                   attrs="{'class': [['state', '=', 'progress'], 'o_repair_timer_running']}"/>
+                                   class="o_repair_timer"/>
 
                             <!-- Situação -->
                             <field name="state" string="Situação" widget="badge"
