@@ -69,7 +69,7 @@
                     <!-- ── Título: Nº OS + Tipo alinhados ──────────── -->
                     <div class="o_repair_form_title">
                         <div class="o_repair_os_label_row">
-                            <label class="o_repair_os_label">Nº OS</label>
+                            <span class="o_repair_os_label">Nº OS</span>
                         </div>
                         <div class="o_repair_title_row">
                             <field name="os_number"
