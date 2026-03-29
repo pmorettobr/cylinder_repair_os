@@ -446,6 +446,14 @@ class RepairOsProcess(models.Model):
             'context': {'default_repair_id': self.repair_id.id},
         }
 
+    def action_open_loader_from_list(self):
+        """Abre o carregador de processos a partir da lista agrupada."""
+        repair_id = self.env.context.get('active_repair_id') or                     (self and self[0].repair_id.id) or False
+        if not repair_id:
+            return False
+        repair = self.env['repair.order'].browse(repair_id)
+        return repair.action_open_process_loader()
+
     def action_open_deviation_popup(self):
         """Abre popup simples de desvio (ícone na coluna Desvio)."""
         self.ensure_one()

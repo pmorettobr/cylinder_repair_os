@@ -239,18 +239,28 @@ class RepairOrder(models.Model):
 
     # ── Carregador de processos em lote ───────────────────────────────────────
 
+    def action_confirm_and_start(self):
+        """Confirma e inicia a OS em um único clique."""
+        self.ensure_one()
+        if self.os_state == 'draft':
+            self.action_confirm_os()
+        self.action_start_os()
+        return False
+
     def action_open_processes_grouped(self):
         """Abre processos desta OS numa view separada agrupada por componente."""
         self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
-            'name': 'Processos — %s' % (self.os_number or self.name),
+            'name': 'Programação — %s' % (self.os_number or self.name or ''),
             'res_model': 'repair.os.process',
             'view_mode': 'list',
             'views': [(self.env.ref('cylinder_repair_os.view_repair_process_grouped_list').id, 'list')],
+            'search_view_id': (self.env.ref('cylinder_repair_os.view_repair_process_grouped_search').id, 'search'),
             'domain': [('repair_id', '=', self.id)],
             'context': {
                 'default_repair_id': self.id,
+                'active_repair_id': self.id,
                 'group_by': ['component_type_id'],
                 'search_default_group_component': 1,
             },

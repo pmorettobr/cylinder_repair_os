@@ -38,27 +38,19 @@
         <field name="model">repair.order</field>
         <field name="priority">1</field>
         <field name="arch" type="xml">
-            <form string="Ordem de Serviço" class="o_repair_form">
+            <form string="Ordem de Serviço" >
 
                 <header>
                     <field name="os_state" widget="statusbar"
-                           statusbar_visible="draft,confirmed,in_progress,done"/>
-                    <!-- Botões de estado da OS -->
-                    <button name="action_confirm_os" string="Confirmar"
+                           statusbar_visible="draft,in_progress,done"/>
+                    <button name="action_confirm_and_start" string="Confirmar e Iniciar"
                             type="object" class="btn-primary"
                             attrs="{'invisible': [('os_state', '!=', 'draft')]}"/>
-                    <button name="action_start_os" string="Iniciar OS"
-                            type="object" class="btn-primary"
-                            attrs="{'invisible': [('os_state', '!=', 'confirmed')]}"/>
-                    <button name="action_draft_os" string="Reabrir"
-                            type="object" class="btn-secondary"
-                            attrs="{'invisible': [('os_state', '!=', 'confirmed')]}"/>
                     <button name="action_cancel_os" string="Cancelar"
                             type="object" class="btn-danger"
                             attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
-                    <!-- Concluir OS — direita via classe -->
                     <button name="action_done_os" string="Concluir OS"
-                            type="object" class="btn-success o_repair_btn_conclude_right"
+                            type="object" class="btn-success"
                             attrs="{'invisible': [('os_state', '!=', 'in_progress')]}"/>
                 </header>
 
@@ -126,14 +118,14 @@
                                 attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
                     </div>
 
-                    <!-- Botão para abrir processos agrupados por componente -->
+                    <!-- Botão Programação de OS -->
                     <div class="o_repair_open_processes_btn">
                         <button name="action_open_processes_grouped"
                                 type="object"
-                                class="btn btn-primary o_repair_btn_processes"
+                                class="btn btn-primary"
                                 attrs="{'invisible': [('os_state', '=', 'draft')]}">
                             <i class="fa fa-list-ul me-2"/>
-                            Ver Processos por Componente
+                            Programação de OS
                             (<field name="process_count" readonly="1" nolabel="1"/>)
                         </button>
                     </div>
