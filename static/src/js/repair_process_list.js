@@ -1,13 +1,16 @@
 /**
  * cylinder_repair_os — RepairProcessListWidget
- * Usa odoo.define() legacy para máxima compatibilidade com Odoo 16 Community.
+ * Usa odoo.define() com require("@odoo/owl") para garantir
+ * que a classe usa a MESMA instância do OWL que o Odoo usa internamente.
  */
 odoo.define("cylinder_repair_os.RepairProcessList", function (require) {
     "use strict";
 
-    const { Component, useState, onMounted } = owl;
-    const registry  = require("@web/core/registry").registry;
-    const { useService } = require("@web/core/utils/hooks");
+    // CRÍTICO: usar require("@odoo/owl") não o global owl
+    // Garante mesma instância do OWL que o Odoo usa
+    const { Component, useState, onMounted } = require("@odoo/owl");
+    const { registry }    = require("@web/core/registry");
+    const { useService }  = require("@web/core/utils/hooks");
 
     class RepairProcessListWidget extends Component {
 
@@ -49,7 +52,9 @@ odoo.define("cylinder_repair_os.RepairProcessList", function (require) {
 
         toggle(id) {
             this.collapsed[id] = !this.collapsed[id];
-            try { localStorage.setItem(this._lsKey(), JSON.stringify(Object.assign({}, this.collapsed))); } catch (_) {}
+            try {
+                localStorage.setItem(this._lsKey(), JSON.stringify(Object.assign({}, this.collapsed)));
+            } catch (_) {}
         }
 
         _lsKey() { return "cyl_col_" + (this.props.record.resId || "new"); }
@@ -141,13 +146,11 @@ odoo.define("cylinder_repair_os.RepairProcessList", function (require) {
     RepairProcessListWidget.template = "cylinder_repair_os.RepairProcessList";
     RepairProcessListWidget.props    = ["record", "name", "*"];
 
-    // Registra no registry de fields do Odoo 16
-    const fieldsRegistry = require("@web/core/registry").registry.category("fields");
-    fieldsRegistry.add("repair_process_list", {
+    registry.category("fields").add("repair_process_list", {
         component: RepairProcessListWidget,
         supportedTypes: ["one2many"],
     });
 
-    console.log("[cylinder_repair_os] repair_process_list OK — component:", RepairProcessListWidget);
+    console.log("[cylinder_repair_os] repair_process_list READY — using @odoo/owl Component:", Component === RepairProcessListWidget.__proto__.__proto__);
     return RepairProcessListWidget;
 });
