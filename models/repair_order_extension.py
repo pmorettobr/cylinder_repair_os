@@ -250,9 +250,12 @@ class RepairOrder(models.Model):
     def action_open_processes_grouped(self):
         """Abre processos desta OS numa view separada agrupada por componente."""
         self.ensure_one()
+        # Se a OS ainda não foi salva, salva primeiro
+        if not self.id:
+            self = self.create(self._convert_to_write(self._cache))
         return {
             'type': 'ir.actions.act_window',
-            'name': 'Programação — %s' % (self.os_number or self.name or ''),
+            'name': 'Programação — %s' % (self.os_number or self.name or 'Nova OS'),
             'res_model': 'repair.os.process',
             'view_mode': 'list',
             'views': [(self.env.ref('cylinder_repair_os.view_repair_process_grouped_list').id, 'list')],

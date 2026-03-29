@@ -102,78 +102,16 @@
                         </group>
                     </group>
 
-                    <!-- ── Programação de OS (inline no form) ── -->
-                    <div class="o_repair_prog_header">
-                        <span class="o_repair_prog_title">Programação de OS</span>
-                        <button name="action_open_process_loader"
-                                string="⚙ Carregar Processos"
-                                type="object"
-                                class="btn btn-sm btn-outline-secondary ms-3"
-                                attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
+                    <!-- ── Botão Programação de OS — sempre visível ── -->
+                    <div class="o_repair_open_processes_btn">
                         <button name="action_open_processes_grouped"
-                                string="Ver agrupado por componente →"
                                 type="object"
-                                class="btn btn-sm btn-link ms-2"
-                                attrs="{'invisible': [('os_state', '=', 'draft')]}"/>
+                                class="btn btn-primary">
+                            <i class="fa fa-list-ul me-2"/>
+                            Programação de OS
+                            (<field name="process_count" readonly="1" nolabel="1"/>)
+                        </button>
                     </div>
-
-                    <field name="process_ids"
-                           context="{'default_repair_id': id}"
-                           nolabel="1">
-                        <tree string="Processos"
-                              editable="bottom"
-                              create="0"
-                              decoration-success="state == 'done'"
-                              decoration-warning="state == 'progress'"
-                              decoration-info="state == 'paused'"
-                              decoration-muted="state in ('ready', 'cancel')"
-                              default_order="component_type_id, sequence">
-
-                            <field name="state" invisible="1"/>
-                            <field name="has_deviation" invisible="1"/>
-
-                            <field name="sequence" string="Seq." readonly="1" width="40"/>
-                            <field name="component_type_id" string="Componente" readonly="1"/>
-                            <field name="name" string="Operação" readonly="1"/>
-                            <field name="machine_id" string="Máquina" readonly="1"/>
-                            <field name="date_planned" string="Data Prog." widget="date"/>
-                            <field name="date_start_orig" string="Dt. Início" readonly="1"/>
-                            <field name="duration_display" string="Tempo" readonly="1"/>
-                            <field name="state" string="Situação" widget="badge"
-                                   decoration-success="state == 'done'"
-                                   decoration-warning="state == 'progress'"
-                                   decoration-info="state == 'paused'"
-                                   decoration-muted="state in ('ready', 'cancel')"
-                                   readonly="1"/>
-
-                            <!-- Desvio -->
-                            <button name="action_open_deviation_popup" type="object"
-                                    attrs="{'invisible': [('has_deviation', '=', False)]}"
-                                    icon="fa-exclamation-triangle"
-                                    class="btn-sm btn-link o_repair_deviation_alert"
-                                    title="Desvio registrado"/>
-                            <button name="action_open_deviation_popup" type="object"
-                                    attrs="{'invisible': [('has_deviation', '=', True)]}"
-                                    icon="fa-circle-o"
-                                    class="btn-sm btn-link o_repair_deviation_none"
-                                    title="Sem desvio"/>
-
-                            <!-- Ações -->
-                            <button name="action_start" type="object"
-                                    string="Iniciar" class="btn-sm btn-success"
-                                    attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
-                            <button name="action_pause" type="object"
-                                    string="Pausar" class="btn-sm btn-warning"
-                                    attrs="{'invisible': [('state', '!=', 'progress')]}"/>
-                            <button name="action_finish" type="object"
-                                    string="Concluir" class="btn-sm o_repair_btn_concluir"
-                                    attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
-                            <button name="action_cancel" type="object"
-                                    icon="fa-ban" class="btn-sm btn-link text-danger"
-                                    title="Cancelar"
-                                    attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
-                        </tree>
-                    </field>
 
                 </sheet>
 

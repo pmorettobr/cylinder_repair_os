@@ -389,6 +389,13 @@
                   decoration-muted="state in ('ready', 'cancel')"
                   default_order="component_type_id, sequence">
 
+                <header>
+                    <button name="action_open_loader_from_list"
+                            string="⚙ Carregar Processos"
+                            type="object"
+                            class="btn-secondary"/>
+                </header>
+
                 <field name="component_type_id" invisible="1"/>
                 <field name="state" invisible="1"/>
                 <field name="has_deviation" invisible="1"/>
