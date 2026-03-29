@@ -675,3 +675,25 @@ td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
     cursor: help !important;
     position: relative;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   FORM OS — largura total, remove limitações nativas do Odoo
+══════════════════════════════════════════════════════════════ */
+
+/* O Odoo limita .o_form_sheet a ~700px por padrão — remove para nosso form */
+.o_repair_form .o_form_sheet {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 16px 24px !important;
+}
+
+.o_repair_form .o_form_sheet_bg {
+    background: #fff !important;
+    padding: 0 !important;
+}
+
+/* Garante que o conteúdo use toda a área disponível */
+.o_repair_form .o_FormRenderer,
+.o_repair_form .o_form_view > .o_FormRenderer {
+    max-width: 100% !important;
+}
