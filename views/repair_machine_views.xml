@@ -6,10 +6,10 @@
         <field name="name">repair.machine.tree</field>
         <field name="model">repair.machine</field>
         <field name="arch" type="xml">
-            <tree string="Máquinas"
+            <tree string="Centros de Trabalho"
                   decoration-danger="is_busy == True">
                 <field name="code" string="Código"/>
-                <field name="name" string="Máquina"/>
+                <field name="name" string="Centro de Trabalho"/>
                 <field name="operator_name" string="Operador Padrão"/>
                 <field name="is_busy" string="Ocupada?" widget="boolean"/>
                 <field name="current_process_id" string="Processo em Andamento" optional="show"/>
@@ -23,10 +23,10 @@
         <field name="name">repair.machine.form</field>
         <field name="model">repair.machine</field>
         <field name="arch" type="xml">
-            <form string="Máquina">
+            <form string="Centro de Trabalho">
                 <sheet>
                     <div class="oe_title">
-                        <label for="name" string="Máquina"/>
+                        <label for="name" string="Centro de Trabalho"/>
                         <h1>
                             <field name="name" placeholder="Nome da máquina..."/>
                         </h1>
@@ -58,7 +58,7 @@
         <field name="model">repair.machine</field>
         <field name="arch" type="xml">
             <search string="Buscar Máquinas">
-                <field name="name" string="Máquina"/>
+                <field name="name" string="Centro de Trabalho"/>
                 <field name="code" string="Código"/>
                 <field name="operator_name" string="Operador"/>
             </search>
@@ -67,7 +67,7 @@
 
     <!-- ACTION -->
     <record id="action_repair_machines" model="ir.actions.act_window">
-        <field name="name">Máquinas</field>
+        <field name="name">Centros de Trabalho</field>
         <field name="res_model">repair.machine</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_repair_machine_search"/>

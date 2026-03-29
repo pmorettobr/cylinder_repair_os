@@ -58,7 +58,7 @@
               sequence="20"/>
 
     <menuitem id="menu_repair_tracking_machine"
-              name="Por Máquina"
+              name="Por Centro de Trabalho"
               parent="menu_repair_tracking"
               action="action_repair_tracking_by_machine"
               sequence="30"/>
@@ -77,7 +77,7 @@
               groups="cylinder_repair_os.group_repair_supervisor"/>
 
     <menuitem id="menu_repair_report_machine"
-              name="Programação por Máquina"
+              name="Programação por Centro de Trabalho"
               parent="menu_repair_reports"
               action="action_repair_machine_report_wizard"
               sequence="10"/>
@@ -102,7 +102,7 @@
               sequence="20"/>
 
     <menuitem id="menu_repair_machines"
-              name="Máquinas"
+              name="Centros de Trabalho"
               parent="menu_repair_config"
               action="action_repair_machines"
               sequence="30"/>

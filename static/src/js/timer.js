@@ -1,167 +1,149 @@
 /**
- * cylinder_repair_os — Timer em tempo real (HH:MM:SS) + Barra de progresso dinâmica
+ * cylinder_repair_os — timer.js
+ *
+ * 1. Cronômetro em tempo real (atualiza a cada 1 segundo)
+ * 2. Cores alternadas por componente no grid agrupado
+ * 3. Tooltips dinâmicos para desvio
+ * 4. Remove checkboxes da lista agrupada
+ * 5. Garante que grupos abrem expandidos
  */
 (function () {
     'use strict';
 
-    let _timerInterval = null;
+    // ── Paleta de cores suaves por componente (alternando) ──────────────
+    const COMPONENT_COLORS = [
+        'rgba(219, 234, 254, 0.5)',  // azul suave
+        'rgba(220, 252, 231, 0.5)',  // verde suave
+        'rgba(254, 249, 195, 0.5)',  // amarelo suave
+        'rgba(237, 233, 254, 0.5)',  // roxo suave
+        'rgba(255, 237, 213, 0.5)',  // laranja suave
+        'rgba(204, 251, 241, 0.5)',  // teal suave
+        'rgba(252, 231, 243, 0.5)',  // rosa suave
+        'rgba(241, 245, 249, 0.5)',  // cinza suave
+    ];
 
-    function parseServerDatetime(dtStr) {
-        if (!dtStr) return null;
-        const clean = dtStr.replace(' ', 'T') + 'Z';
-        const d = new Date(clean);
-        return isNaN(d.getTime()) ? null : d;
+    // ── Cronômetro em tempo real ─────────────────────────────────────────
+
+    function parseAccSecs(val) {
+        const n = parseFloat(val);
+        return isNaN(n) ? 0 : n;
     }
 
-    function formatHMS(totalSeconds) {
-        const s = Math.max(0, Math.floor(totalSeconds));
-        const h = Math.floor(s / 3600);
-        const m = Math.floor((s % 3600) / 60);
-        const sec = s % 60;
-        return String(h).padStart(2, '0') + ':' +
-               String(m).padStart(2, '0') + ':' +
-               String(sec).padStart(2, '0');
+    function secsToHMS(total) {
+        total = Math.max(0, Math.floor(total));
+        const h = Math.floor(total / 3600);
+        const m = Math.floor((total % 3600) / 60);
+        const s = total % 60;
+        return (
+            String(h).padStart(2, '0') + ':' +
+            String(m).padStart(2, '0') + ':' +
+            String(s).padStart(2, '0')
+        );
     }
 
     function updateTimers() {
-        // ── Cronômetro HH:MM:SS ──────────────────────────────────
-        const timers = document.querySelectorAll('.o_repair_timer_running');
-        const now = new Date();
-        timers.forEach(function (el) {
-            const startStr = el.dataset.start;
-            const accMin = parseFloat(el.dataset.acc || '0');
-            if (!startStr) {
-                el.textContent = formatHMS(accMin * 60);
-                return;
-            }
-            const startDate = parseServerDatetime(startStr);
-            if (!startDate) return;
-            const totalSec = accMin * 60 + (now - startDate) / 1000;
-            el.textContent = formatHMS(totalSec);
-        });
-
-        // ── Barra de progresso dinâmica ──────────────────────────
-        // Lê o campo hidden .o_repair_progress_value e aplica ao fill
-        document.querySelectorAll('.o_repair_progress_fill_dynamic').forEach(function (bar) {
-            const form = bar.closest('.o_form_view');
-            if (!form) return;
-            // O campo progress_percent fica num input hidden com class o_repair_progress_value
-            const input = form.querySelector('.o_repair_progress_value input, .o_repair_progress_value .o_field_widget');
-            let pct = 0;
-            if (input) {
-                pct = parseFloat(input.value || input.textContent || '0') || 0;
-            }
-            bar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+        const now = Date.now() / 1000;
+        document.querySelectorAll('.o_repair_timer.o_repair_timer_running').forEach(function (el) {
+            const startStr = el.dataset.start || '';
+            const acc = parseAccSecs(el.dataset.acc);
+            if (!startStr) return;
+            // Odoo stores datetime as "YYYY-MM-DD HH:MM:SS" UTC
+            const start = new Date(startStr.replace(' ', 'T') + 'Z').getTime() / 1000;
+            if (isNaN(start)) return;
+            const elapsed = now - start + acc;
+            el.textContent = secsToHMS(elapsed);
         });
     }
 
-    function startTimerLoop() {
-        if (_timerInterval) clearInterval(_timerInterval);
-        _timerInterval = setInterval(updateTimers, 1000);
+    // Inicia o intervalo do cronômetro (1 segundo)
+    setInterval(updateTimers, 1000);
+
+    // ── Aplicar cores por componente + remover checkboxes ───────────────
+
+    function applyGroupedStyles() {
+        // Verifica se estamos numa tela de processos agrupados
+        const groupRows = document.querySelectorAll(
+            '.o_list_renderer .o_group_header'
+        );
+        if (!groupRows.length) return;
+
+        // Mapear grupos → cor
+        const colorMap = new Map();
+        let colorIdx = 0;
+
+        groupRows.forEach(function (groupRow) {
+            const key = groupRow.dataset.groupId || colorIdx;
+            if (!colorMap.has(key)) {
+                colorMap.set(key, COMPONENT_COLORS[colorIdx % COMPONENT_COLORS.length]);
+                colorIdx++;
+            }
+        });
+
+        // Aplicar cor nas linhas de cada grupo
+        let currentColor = null;
+        let currentGroup = null;
+        document.querySelectorAll('.o_list_renderer tr').forEach(function (row) {
+            if (row.classList.contains('o_group_header')) {
+                // Nova linha de grupo — próxima cor
+                currentGroup = row;
+                colorIdx = Array.from(groupRows).indexOf(row);
+                currentColor = COMPONENT_COLORS[colorIdx % COMPONENT_COLORS.length];
+                row.style.backgroundColor = 'rgba(0,0,0,0.04)';
+            } else if (row.classList.contains('o_data_row') && currentColor) {
+                row.style.backgroundColor = currentColor;
+            }
+        });
+
+        // Remover checkboxes (coluna de seleção)
+        document.querySelectorAll(
+            '.o_list_renderer .o_list_record_selector, ' +
+            '.o_list_renderer th.o_list_record_selector'
+        ).forEach(function (el) {
+            el.style.display = 'none';
+        });
+
+        // Aplicar tooltips de desvio
+        document.querySelectorAll('.o_repair_deviation_alert').forEach(function (btn) {
+            const row = btn.closest('tr');
+            if (!row) return;
+            // Procura o campo deviation_tooltip na linha (campo invisible)
+            const tooltipCell = row.querySelector('[name="deviation_tooltip"]');
+            if (tooltipCell) {
+                const text = (tooltipCell.textContent || '').trim();
+                if (text) btn.title = text;
+            }
+        });
+
+        // Expandir todos os grupos se ainda não foram expandidos
+        document.querySelectorAll(
+            '.o_group_header .o_group_name'
+        ).forEach(function (nameEl) {
+            const header = nameEl.closest('tr');
+            if (!header) return;
+            // Verifica se o grupo está colapsado (ícone de seta)
+            const toggle = header.querySelector('.o_group_header_cell');
+            if (toggle && header.dataset.groupFolded === '1') {
+                toggle.click();
+            }
+        });
+    }
+
+    // Roda sempre que o DOM muda
+    const observer = new MutationObserver(function () {
+        applyGroupedStyles();
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        observer.observe(document.body, { childList: true, subtree: true });
+        applyGroupedStyles();
+        updateTimers();
+    });
+
+    // Fallback se DOMContentLoaded já disparou
+    if (document.readyState !== 'loading') {
+        observer.observe(document.body, { childList: true, subtree: true });
+        applyGroupedStyles();
         updateTimers();
     }
 
-    function stopTimerLoop() {
-        if (_timerInterval) {
-            clearInterval(_timerInterval);
-            _timerInterval = null;
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        startTimerLoop();
-    });
-
-    // Re-inicia quando Odoo navega entre views (SPA)
-    const observer = new MutationObserver(function () {
-        const hasTimers = document.querySelector('.o_repair_timer_running');
-        const hasBars = document.querySelector('.o_repair_progress_fill_dynamic');
-        if ((hasTimers || hasBars) && !_timerInterval) {
-            startTimerLoop();
-        } else if (!hasTimers && !hasBars && _timerInterval) {
-            stopTimerLoop();
-        }
-    });
-
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-
-    window._repairTimer = { start: startTimerLoop, stop: stopTimerLoop };
-})();
-
-/**
- * Agrupamento visual de processos por componente (Opção A — provisório)
- * Injeta separadores visuais entre grupos de componentes na tree de processos.
- */
-(function () {
-    function injectComponentSeparators() {
-        // Busca todas as trees de processos dentro do form da OS
-        const trees = document.querySelectorAll('.o_field_one2many .o_list_view table tbody');
-        trees.forEach(function (tbody) {
-            const rows = Array.from(tbody.querySelectorAll('tr.o_data_row'));
-            if (!rows.length) return;
-
-            let lastComponent = null;
-            rows.forEach(function (row) {
-                // Pega o texto da célula de componente (primeira coluna visível com dados)
-                const cells = row.querySelectorAll('td.o_data_cell');
-                // Coluna componente é a 2ª (após seq)
-                const compCell = cells[1];
-                if (!compCell) return;
-                const compText = compCell.textContent.trim();
-                if (!compText) return;
-
-                if (compText !== lastComponent) {
-                    // Insere separador visual antes desta linha
-                    if (lastComponent !== null) {
-                        const sep = document.createElement('tr');
-                        sep.className = 'o_repair_component_separator';
-                        sep.innerHTML = '<td colspan="20">' + compText + '</td>';
-                        tbody.insertBefore(sep, row);
-                    }
-                    lastComponent = compText;
-                }
-            });
-        });
-    }
-
-    // Roda após navegação SPA
-    const obs = new MutationObserver(function () {
-        const form = document.querySelector('.o_repair_form');
-        if (form) {
-            setTimeout(injectComponentSeparators, 300);
-        }
-    });
-    obs.observe(document.documentElement, { childList: true, subtree: true });
-})();
-
-/**
- * Tooltip dinâmico para o ícone de desvio
- * Lê o campo deviation_tooltip da linha e atualiza o title do botão
- */
-(function () {
-    function updateDeviationTooltips() {
-        const rows = document.querySelectorAll('.o_repair_form .o_data_row');
-        rows.forEach(function (row) {
-            const alertBtn = row.querySelector('.o_repair_has_tooltip');
-            if (!alertBtn) return;
-
-            // Tenta encontrar o campo deviation_tooltip na linha
-            // O Odoo renderiza campos invisíveis como input hidden ou span
-            const tooltipCell = row.querySelector('[name="deviation_tooltip"]');
-            if (tooltipCell) {
-                const text = tooltipCell.textContent || tooltipCell.value || '';
-                if (text.trim()) {
-                    alertBtn.setAttribute('title', text.trim());
-                }
-            }
-        });
-    }
-
-    // Atualiza quando o DOM muda
-    const observer = new MutationObserver(function () {
-        if (document.querySelector('.o_repair_form .o_repair_has_tooltip')) {
-            setTimeout(updateDeviationTooltips, 200);
-        }
-    });
-    observer.observe(document.documentElement, { childList: true, subtree: true });
 })();

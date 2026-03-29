@@ -808,24 +808,85 @@ td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
     background: #f8f9fa !important;
 }
 
-/* ══ Botão PROGRAMAÇÃO DE OS ══ */
-.o_repair_btn_programacao {
+/* ══ Botão PROGRAMAÇÃO DE OS — verde ══ */
+button.o_repair_btn_programacao,
+.btn.o_repair_btn_programacao {
     background-color: #059669 !important;
     border-color: #059669 !important;
     color: #fff !important;
     font-weight: 600 !important;
 }
-.o_repair_btn_programacao:hover {
+button.o_repair_btn_programacao:hover,
+.btn.o_repair_btn_programacao:hover {
     background-color: #047857 !important;
     border-color: #047857 !important;
+    color: #fff !important;
 }
 
 /* ══ Placeholder desativado de PROGRAMAÇÃO ══ */
+span.o_repair_btn_programacao_disabled,
 .o_repair_btn_programacao_disabled {
+    display: inline-flex !important;
+    align-items: center !important;
     background-color: #f1f5f9 !important;
-    border: 1px solid #cbd5e1 !important;
+    border: 1px solid #e2e8f0 !important;
     color: #94a3b8 !important;
-    cursor: default !important;
+    cursor: not-allowed !important;
     pointer-events: none !important;
     font-weight: 600 !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+}
+
+/* ══ Cancelar — empurrado à direita no header ══ */
+.o_repair_btn_cancel_right {
+    margin-left: auto !important;
+    order: 99 !important;
+}
+
+/* ══ Lista agrupada — esconde checkboxes ══ */
+.o_list_renderer .o_list_record_selector,
+.o_list_renderer th.o_list_record_selector {
+    display: none !important;
+    width: 0 !important;
+    padding: 0 !important;
+}
+
+/* ══ Lista agrupada — cabeçalho de grupo ══ */
+.o_list_renderer .o_group_header td {
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    padding: 6px 8px !important;
+    background: rgba(0,0,0,0.04) !important;
+    border-top: 2px solid #e2e8f0 !important;
+}
+
+/* ══ Desvio — tooltip ativo ══ */
+.o_repair_deviation_alert {
+    color: #f59e0b !important;
+    font-size: 16px !important;
+    cursor: help !important;
+}
+
+.o_repair_deviation_none {
+    color: #cbd5e1 !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+}
+
+/* ══ Timer running — fonte monospace verde ══ */
+.o_repair_timer_running {
+    color: #059669 !important;
+    font-weight: 700 !important;
+    font-family: 'Courier New', monospace !important;
+}
+
+/* ══ Coluna Desvio — largura fixa ══ */
+td[name="has_deviation"],
+th[data-name="has_deviation"] {
+    width: 40px !important;
+    text-align: center !important;
 }

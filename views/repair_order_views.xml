@@ -46,12 +46,12 @@
                     <button name="action_confirm_and_start" string="CONFIRMAR"
                             type="object" class="btn-primary"
                             attrs="{'invisible': [('os_state', '!=', 'draft')]}"/>
-                    <button name="action_cancel_os" string="Cancelar"
-                            type="object" class="o_repair_btn_cancel_soft"
-                            attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
                     <button name="action_done_os" string="CONCLUIR OS"
-                            type="object" class="btn-primary o_repair_btn_conclude_right"
+                            type="object" class="btn-primary"
                             attrs="{'invisible': [('os_state', '!=', 'in_progress')]}"/>
+                    <button name="action_cancel_os" string="Cancelar"
+                            type="object" class="o_repair_btn_cancel_soft o_repair_btn_cancel_right"
+                            attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
                 </header>
 
                 <sheet>
@@ -107,7 +107,7 @@
                         <!-- CARREGAR PROCESSOS — sempre ativo -->
                         <button name="action_open_process_loader"
                                 type="object"
-                                class="btn btn-outline-secondary"
+                                class="btn btn-primary"
                                 attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}">
                             <i class="fa fa-cog me-2"/>
                             CARREGAR PROCESSOS
