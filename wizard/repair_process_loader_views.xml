@@ -67,7 +67,6 @@
                             string="Carregar Processos Selecionados"
                             type="object"
                             class="btn-primary"
-                            close="1"
                             attrs="{'invisible': [('catalog_empty', '=', True)]}"/>
                     <button string="Cancelar"
                             class="btn-secondary"
