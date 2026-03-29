@@ -881,3 +881,14 @@ td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
     height: 24px !important;
     line-height: 1 !important;
 }
+
+/* ══ Botão abrir processos ══ */
+.o_repair_open_processes_btn {
+    padding: 8px 0 4px;
+}
+
+.o_repair_btn_processes {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 8px 20px !important;
+}

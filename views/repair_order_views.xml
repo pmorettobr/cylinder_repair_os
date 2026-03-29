@@ -126,10 +126,17 @@
                                 attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
                     </div>
 
-                    <field name="process_ids"
-                           widget="repair_process_list"
-                           context="{'default_repair_id': id}"
-                           options="{}"/>
+                    <!-- Botão para abrir processos agrupados por componente -->
+                    <div class="o_repair_open_processes_btn">
+                        <button name="action_open_processes_grouped"
+                                type="object"
+                                class="btn btn-primary o_repair_btn_processes"
+                                attrs="{'invisible': [('os_state', '=', 'draft')]}">
+                            <i class="fa fa-list-ul me-2"/>
+                            Ver Processos por Componente
+                            (<field name="process_count" readonly="1" nolabel="1"/>)
+                        </button>
+                    </div>
 
                 </sheet>
 
