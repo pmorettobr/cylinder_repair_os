@@ -807,3 +807,25 @@ td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
     z-index: 2 !important;
     background: #f8f9fa !important;
 }
+
+/* ══ Botão PROGRAMAÇÃO DE OS ══ */
+.o_repair_btn_programacao {
+    background-color: #059669 !important;
+    border-color: #059669 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+}
+.o_repair_btn_programacao:hover {
+    background-color: #047857 !important;
+    border-color: #047857 !important;
+}
+
+/* ══ Placeholder desativado de PROGRAMAÇÃO ══ */
+.o_repair_btn_programacao_disabled {
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #94a3b8 !important;
+    cursor: default !important;
+    pointer-events: none !important;
+    font-weight: 600 !important;
+}

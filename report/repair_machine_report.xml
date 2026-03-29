@@ -1,16 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+<!-- Formato paisagem para relatório de máquinas -->
+<record id="paperformat_machine_report_landscape" model="report.paperformat">
+    <field name="name">Paisagem A4 — Máquinas</field>
+    <field name="default" eval="False"/>
+    <field name="format">A4</field>
+    <field name="orientation">Landscape</field>
+    <field name="margin_top">10</field>
+    <field name="margin_bottom">10</field>
+    <field name="margin_left">7</field>
+    <field name="margin_right">7</field>
+    <field name="header_line" eval="False"/>
+    <field name="header_spacing">3</field>
+</record>
+
 <template id="report_machine_schedule_document">
     <t t-call="web.external_layout">
-        <div class="page">
+        <div class="page" style="font-size:11px">
 
             <!-- Cabeçalho -->
             <div class="row mb-3">
                 <div class="col-12">
                     <h3 style="margin:0;color:#4f46e5">Programação por Máquina</h3>
                     <div style="font-size:12px;color:#666;margin-top:4px">
-                        Data: <strong><t t-esc="report_date.strftime('%d/%m/%Y')"/></strong>
+                        Data: <strong><t t-esc="docs.report_date.strftime('%d/%m/%Y') if docs.report_date else ''"/></strong>
                         <t t-if="docs.machine_id">
                             · Máquina: <strong><t t-esc="docs.machine_id.name"/></strong>
                         </t>
@@ -96,6 +110,7 @@
     <field name="report_type">qweb-pdf</field>
     <field name="report_name">cylinder_repair_os.report_machine_schedule_document</field>
     <field name="report_file">cylinder_repair_os.report_machine_schedule_document</field>
+    <field name="paperformat_id" ref="paperformat_machine_report_landscape"/>
 </record>
 
 </odoo>

@@ -104,23 +104,29 @@
 
                     <!-- ── Botões de navegação ── -->
                     <div class="d-flex gap-2 mt-3 align-items-center">
-                        <!-- CARREGAR PROCESSOS — sempre ativo (exceto done/cancel) -->
+                        <!-- CARREGAR PROCESSOS — sempre ativo -->
                         <button name="action_open_process_loader"
                                 type="object"
-                                class="btn btn-primary"
+                                class="btn btn-outline-secondary"
                                 attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}">
                             <i class="fa fa-cog me-2"/>
                             CARREGAR PROCESSOS
                         </button>
-                        <!-- PROGRAMAÇÃO DE OS — desativado até ter processos -->
+                        <!-- PROGRAMAÇÃO DE OS — invisível sem processos, visível com cor própria quando tem -->
                         <button name="action_open_processes_grouped"
                                 type="object"
-                                class="btn btn-outline-secondary"
-                                attrs="{'readonly': [('process_count', '=', 0)]}">
+                                class="btn o_repair_btn_programacao"
+                                attrs="{'invisible': [('process_count', '=', 0)]}">
                             <i class="fa fa-list-ul me-2"/>
                             PROGRAMAÇÃO DE OS
                             (<field name="process_count" readonly="1" nolabel="1"/>)
                         </button>
+                        <!-- placeholder cinza quando sem processos -->
+                        <span class="btn o_repair_btn_programacao_disabled"
+                              attrs="{'invisible': [('process_count', '!=', 0)]}">
+                            <i class="fa fa-list-ul me-2"/>
+                            PROGRAMAÇÃO DE OS (0)
+                        </span>
                     </div>
 
                 </sheet>
