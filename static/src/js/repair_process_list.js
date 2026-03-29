@@ -1,8 +1,18 @@
 /** @odoo-module **/
+/**
+ * cylinder_repair_os — RepairProcessListWidget
+ *
+ * Usa @odoo-module para ESM (garantindo registry/useService corretos),
+ * mas acessa OWL via global `owl` que em Odoo 16 É a mesma instância.
+ * Evita o problema de import "@odoo/owl" que falha silenciosamente
+ * em algumas builds do Community 16.
+ */
 
-import { Component, useState, onMounted } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
+
+// owl global = mesma instância que @odoo/owl no contexto ESM do Odoo 16
+const { Component, useState, onMounted } = owl;
 
 class RepairProcessListWidget extends Component {
 
@@ -14,6 +24,7 @@ class RepairProcessListWidget extends Component {
         this.loadingId = useState({ val: null });
         this.editDate  = useState({ id: null });
         onMounted(() => this._restoreCollapse());
+        console.log("[RepairProcessListWidget] mounted, Component:", Component.name);
     }
 
     get records() {
@@ -136,8 +147,6 @@ class RepairProcessListWidget extends Component {
 RepairProcessListWidget.template = "cylinder_repair_os.RepairProcessList";
 RepairProcessListWidget.props    = ["record", "name", "*"];
 
-// relatedFields: lista TODOS os campos que o template usa
-// Sem isso o Odoo não os inclui no fetch e ficam undefined
 const FIELDS = [
     { name: "sequence",          type: "integer" },
     { name: "component_type_id", type: "many2one", relation: "repair.component.type" },
@@ -158,3 +167,5 @@ registry.category("fields").add("repair_process_list", {
     supportedTypes: ["one2many"],
     relatedFields: () => FIELDS,
 });
+
+console.log("[cylinder_repair_os] repair_process_list registered — Component same as owl.Component:", Component === owl.Component, "| is constructor:", typeof RepairProcessListWidget === "function");
