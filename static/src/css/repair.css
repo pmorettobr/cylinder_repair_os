@@ -681,3 +681,129 @@ td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
 
 /* ══ Botão abrir processos ══ */
 
+
+/* ══════════════════════════════════════════════════════════════
+   FORM OS — NOVO LAYOUT
+══════════════════════════════════════════════════════════════ */
+
+/* Bloco título: Nº OS grande + badge tipo */
+.o_repair_title_block {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.o_repair_title_row {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 0;
+}
+
+.o_repair_os_number_wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.o_repair_os_label_small {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 2px;
+}
+
+/* Nº OS — campo grande */
+.o_repair_os_big input,
+.o_repair_os_big .o_field_widget input,
+.o_repair_os_big span {
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    color: #1e293b !important;
+    letter-spacing: .3px !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    line-height: 1.1 !important;
+}
+
+/* Badge tipo ao lado do número */
+.o_repair_type_inline {
+    display: flex;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.o_repair_badge_type {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: .3px;
+}
+
+.o_repair_badge_reparo {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.o_repair_badge_fabricacao {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Colorir o select de Tipo de Ordem */
+.o_field_widget[name="order_type"] select {
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+/* Botão Cancelar — pastel suave */
+.o_repair_btn_cancel_soft {
+    background-color: #fca5a5 !important;
+    border-color: #fca5a5 !important;
+    color: #7f1d1d !important;
+}
+
+.o_repair_btn_cancel_soft:hover {
+    background-color: #f87171 !important;
+    border-color: #f87171 !important;
+}
+
+/* Concluir OS — empurrado para direita */
+.o_repair_btn_conclude_right {
+    margin-left: auto !important;
+    order: 99 !important;
+}
+
+/* Header programação OS */
+.o_repair_prog_header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 8px 0 6px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.o_repair_prog_title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+/* Grid de processos — scroll viewport */
+.o_field_one2many[name="process_ids"] .o_list_renderer {
+    max-height: calc(100vh - 520px) !important;
+    min-height: 150px !important;
+    overflow-y: auto !important;
+}
+
+.o_field_one2many[name="process_ids"] .o_list_renderer thead {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 2 !important;
+    background: #f8f9fa !important;
+}
