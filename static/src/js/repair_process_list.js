@@ -1,154 +1,123 @@
 /** @odoo-module **/
 
-import { useState, onMounted } from "@odoo/owl";
+import { Component, useState, onMounted } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { X2ManyField, x2ManyField } from "@web/views/fields/x2many/x2many_field";
 
-/**
- * RepairProcessListWidget
- * Extends the native X2ManyField to add grouped/collapsible rendering
- * for repair.os.process records grouped by component_type_id.
- */
-export class RepairProcessListWidget extends X2ManyField {
-    static template = "cylinder_repair_os.RepairProcessList";
-    static components = {
-        ...X2ManyField.components,
-    };
+class RepairProcessListWidget extends Component {
 
     setup() {
-        super.setup();
-        this.orm = useService("orm");
-        this.actionService = useService("action");
-        this.notificationService = useService("notification");
-
-        this.groupState = useState({ collapsed: {} });
-        this.loadingId = useState({ id: null });
-        this.editingDateId = useState({ id: null });
-
+        this.orm       = useService("orm");
+        this.action    = useService("action");
+        this.notif     = useService("notification");
+        this.collapsed = useState({});
+        this.loadingId = useState({ val: null });
+        this.editDate  = useState({ id: null });
         onMounted(() => this._restoreCollapse());
     }
 
-    // ── Grouped data ──────────────────────────────────────────────────────
-
-    get processRecords() {
-        return this.props.record.data[this.props.name]?.records || [];
+    get records() {
+        try { return this.props.record.data[this.props.name].records || []; }
+        catch (_) { return []; }
     }
 
-    get groupedProcesses() {
-        const groups = new Map();
-        const sorted = [...this.processRecords].sort((a, b) => {
-            const ca = a.data.component_type_id?.[0] ?? 0;
-            const cb = b.data.component_type_id?.[0] ?? 0;
+    get grouped() {
+        const map = new Map();
+        const sorted = [...this.records].sort((a, b) => {
+            const ca = (a.data.component_type_id || [0])[0];
+            const cb = (b.data.component_type_id || [0])[0];
             if (ca !== cb) return ca - cb;
-            return (a.data.sequence ?? 0) - (b.data.sequence ?? 0);
+            return (a.data.sequence || 0) - (b.data.sequence || 0);
         });
-        for (const rec of sorted) {
-            const ctId   = rec.data.component_type_id?.[0] ?? 0;
-            const ctName = rec.data.component_type_id?.[1] ?? "(Sem Componente)";
-            if (!groups.has(ctId)) {
-                groups.set(ctId, { id: ctId, name: ctName, records: [], inProgress: 0, done: 0 });
-            }
-            const g = groups.get(ctId);
-            g.records.push(rec);
-            if (rec.data.state === "progress") g.inProgress++;
-            if (rec.data.state === "done")     g.done++;
+        for (const r of sorted) {
+            const ct   = r.data.component_type_id;
+            const id   = ct ? ct[0] : 0;
+            const name = ct ? ct[1] : "(Sem Componente)";
+            if (!map.has(id)) map.set(id, { id, name, records: [], prog: 0, done: 0 });
+            const g = map.get(id);
+            g.records.push(r);
+            if (r.data.state === "progress") g.prog++;
+            if (r.data.state === "done")     g.done++;
         }
-        return [...groups.values()];
+        return [...map.values()];
     }
 
-    // ── Collapse ──────────────────────────────────────────────────────────
-
-    toggleGroup(id) {
-        this.groupState.collapsed[id] = !this.groupState.collapsed[id];
-        this._saveCollapse();
+    toggle(id) {
+        this.collapsed[id] = !this.collapsed[id];
+        try { localStorage.setItem(this._lsKey(), JSON.stringify({...this.collapsed})); } catch (_) {}
     }
 
-    isCollapsed(id) { return !!this.groupState.collapsed[id]; }
-
-    _key() {
-        const rid = this.props.record.resId || "new";
-        return `cyl_collapse_${rid}`;
-    }
-
-    _saveCollapse() {
-        try { localStorage.setItem(this._key(), JSON.stringify(this.groupState.collapsed)); } catch (_) {}
-    }
+    _lsKey() { return "cyl_col_" + (this.props.record.resId || "new"); }
 
     _restoreCollapse() {
         try {
-            const s = localStorage.getItem(this._key());
-            if (s) Object.assign(this.groupState.collapsed, JSON.parse(s));
+            const s = localStorage.getItem(this._lsKey());
+            if (s) Object.assign(this.collapsed, JSON.parse(s));
         } catch (_) {}
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
-
-    getRowClass(state) {
-        const map = { done: "o_repair_row_done", progress: "o_repair_row_progress",
-                      paused: "o_repair_row_paused", cancel: "o_repair_row_cancel" };
-        return "o_repair_proc_row " + (map[state] || "");
+    fmtDate(v) {
+        if (!v) return "";
+        const p = v.split("-");
+        return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : v;
     }
 
-    getStateBadgeClass(state) {
-        const map = { ready: "o_repair_state_ready", progress: "o_repair_state_progress",
-                      paused: "o_repair_state_paused", done: "o_repair_state_done",
-                      cancel: "o_repair_state_cancel" };
-        return "badge " + (map[state] || "bg-secondary");
-    }
-
-    getStateLabel(state) {
-        const map = { ready: "Pronto", progress: "Em Andamento", paused: "Pausado",
-                      done: "Concluído", cancel: "Cancelado" };
-        return map[state] || state;
-    }
-
-    formatDate(v) {
-        if (!v) return "—";
-        try { const [y,m,d] = v.split("-"); return `${d}/${m}/${y}`; } catch (_) { return v; }
-    }
-
-    formatDatetime(v) {
-        if (!v) return "—";
+    fmtDatetime(v) {
+        if (!v) return "";
         try {
-            const [date, time] = v.split(" ");
-            const [y,m,d] = date.split("-");
-            const [h,mi]  = time.split(":");
+            const parts = v.split(" ");
+            const [y,m,d] = parts[0].split("-");
+            const [h,mi] = parts[1].split(":");
             return `${d}/${m} ${h}:${mi}`;
-        } catch (_) { return "—"; }
+        } catch (_) { return ""; }
     }
 
-    // ── Inline date edit ──────────────────────────────────────────────────
+    stateLabel(s) {
+        const map = { ready:"Pronto", progress:"Em Andamento", paused:"Pausado",
+                      done:"Concluido", cancel:"Cancelado" };
+        return map[s] || s;
+    }
 
-    startEditDate(id)  { this.editingDateId.id = id; }
-    cancelEditDate()   { this.editingDateId.id = null; }
+    stateCls(s) {
+        const map = { ready:"o_repair_state_ready", progress:"o_repair_state_progress",
+                      paused:"o_repair_state_paused", done:"o_repair_state_done",
+                      cancel:"o_repair_state_cancel" };
+        return "badge " + (map[s] || "bg-secondary");
+    }
 
-    async saveDatePlanned(recId, ev) {
+    rowCls(s) {
+        const map = { done:"o_repair_row_done", progress:"o_repair_row_progress",
+                      paused:"o_repair_row_paused", cancel:"o_repair_row_cancel" };
+        return "o_repair_proc_row " + (map[s] || "");
+    }
+
+    startEdit(id)  { this.editDate.id = id; }
+    cancelEdit()   { this.editDate.id = null; }
+
+    async saveDate(id, ev) {
+        this.editDate.id = null;
         const val = ev.target.value || false;
-        this.editingDateId.id = null;
         try {
-            await this.orm.write("repair.os.process", [recId], { date_planned: val });
+            await this.orm.write("repair.os.process", [id], { date_planned: val });
             await this._reload();
         } catch (e) {
-            this.notificationService.add(e.data?.message || "Erro ao salvar data", { type: "danger" });
+            this.notif.add((e.data && e.data.message) || "Erro ao salvar data", { type: "danger" });
         }
     }
 
-    // ── Actions ───────────────────────────────────────────────────────────
-
     async _run(method, id) {
-        this.loadingId.id = id;
+        this.loadingId.val = id;
         try {
-            const result = await this.orm.call("repair.os.process", method, [[id]]);
-            if (result && result.type === "ir.actions.act_window") {
-                await this.actionService.doAction(result, { onClose: () => this._reload() });
+            const res = await this.orm.call("repair.os.process", method, [[id]]);
+            if (res && res.type === "ir.actions.act_window") {
+                await this.action.doAction(res, { onClose: () => this._reload() });
             } else {
                 await this._reload();
             }
         } catch (e) {
-            this.notificationService.add(e.data?.message || e.message || "Erro", { type: "danger" });
+            this.notif.add((e.data && e.data.message) || e.message || "Erro", { type: "danger" });
         } finally {
-            this.loadingId.id = null;
+            this.loadingId.val = null;
         }
     }
 
@@ -157,17 +126,18 @@ export class RepairProcessListWidget extends X2ManyField {
         this.props.record.model.notify();
     }
 
-    onStart(id)         { return this._run("action_start", id); }
-    onPause(id)         { return this._run("action_pause", id); }
-    onFinish(id)        { return this._run("action_finish", id); }
-    onCancel(id)        { return this._run("action_cancel", id); }
-    onDeviation(id)     { return this._run("action_open_deviation_popup", id); }
+    onStart(id)     { return this._run("action_start",  id); }
+    onPause(id)     { return this._run("action_pause",  id); }
+    onFinish(id)    { return this._run("action_finish", id); }
+    onCancel(id)    { return this._run("action_cancel", id); }
+    onDeviation(id) { return this._run("action_open_deviation_popup", id); }
 }
 
-// Register extending x2ManyField descriptor
-export const repairProcessListWidget = {
-    ...x2ManyField,
-    component: RepairProcessListWidget,
-};
+RepairProcessListWidget.template = "cylinder_repair_os.RepairProcessList";
+RepairProcessListWidget.props    = { "*": true };
 
-registry.category("fields").add("repair_process_list", repairProcessListWidget);
+registry.category("fields").add("repair_process_list", {
+    component: RepairProcessListWidget,
+    supportedTypes: ["one2many"],
+    relatedFields: () => [],
+});
