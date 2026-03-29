@@ -522,31 +522,7 @@
     display: none !important;
 }
 
-/* Expande o sheet para ocupar toda a largura sem chatter */
-.o_repair_form .o_form_sheet_bg {
-    width: 100% !important;
-    max-width: 100% !important;
-    flex: 1 1 100% !important;
-}
 
-/* Remove chatter da participação no flex layout */
-.o_repair_form .o_chatter_container,
-.o_repair_form .o-mail-ChatterContainer,
-.o_repair_form .o_FormRenderer_chatterContainer,
-.o_repair_form .o-mail-Thread,
-.o_repair_form .o_Thread {
-    display: none !important;
-    width: 0 !important;
-    min-width: 0 !important;
-    flex: 0 0 0 !important;
-    overflow: hidden !important;
-}
-
-.o_repair_form .o_form_view,
-.o_repair_form .o_FormRenderer,
-.o_repair_form > .o_content {
-    flex-direction: row !important;
-}
 
 /* ══════════════════════════════════════════════════════════════
    COLUNA DESVIO — ícone em vez de checkbox
@@ -692,4 +668,10 @@ td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
 .o_dialog .o_form_view .o_field_text textarea {
     min-height: 120px !important;
     resize: vertical !important;
+}
+
+/* ══ Tooltip nativo do browser no ícone de desvio ══ */
+.o_repair_has_tooltip {
+    cursor: help !important;
+    position: relative;
 }

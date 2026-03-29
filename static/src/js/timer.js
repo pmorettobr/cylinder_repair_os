@@ -133,3 +133,35 @@
     });
     obs.observe(document.documentElement, { childList: true, subtree: true });
 })();
+
+/**
+ * Tooltip dinâmico para o ícone de desvio
+ * Lê o campo deviation_tooltip da linha e atualiza o title do botão
+ */
+(function () {
+    function updateDeviationTooltips() {
+        const rows = document.querySelectorAll('.o_repair_form .o_data_row');
+        rows.forEach(function (row) {
+            const alertBtn = row.querySelector('.o_repair_has_tooltip');
+            if (!alertBtn) return;
+
+            // Tenta encontrar o campo deviation_tooltip na linha
+            // O Odoo renderiza campos invisíveis como input hidden ou span
+            const tooltipCell = row.querySelector('[name="deviation_tooltip"]');
+            if (tooltipCell) {
+                const text = tooltipCell.textContent || tooltipCell.value || '';
+                if (text.trim()) {
+                    alertBtn.setAttribute('title', text.trim());
+                }
+            }
+        });
+    }
+
+    // Atualiza quando o DOM muda
+    const observer = new MutationObserver(function () {
+        if (document.querySelector('.o_repair_form .o_repair_has_tooltip')) {
+            setTimeout(updateDeviationTooltips, 200);
+        }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+})();

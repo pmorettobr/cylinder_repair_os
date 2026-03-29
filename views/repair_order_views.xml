@@ -114,16 +114,6 @@
                         </group>
                     </group>
 
-                    <!-- ── Barra de Progresso ─────────────────────────── -->
-                    <div class="o_repair_progress_strip">
-                        <div class="o_repair_progress_bar_wrap o_repair_progress_native">
-                            <field name="progress_percent"
-                                   widget="progressbar"
-                                   options="{'editable': false, 'max_value': 100}"
-                                   nolabel="1"/>
-                        </div>
-                    </div>
-
                     <!-- ── Processos ──────────────────────────────────── -->
                     <div class="o_repair_processes_header">
                         <h4 class="o_repair_section_title">Processos</h4>
@@ -182,12 +172,13 @@
                                    decoration-muted="state in ('ready', 'cancel')"
                                    readonly="1"/>
 
-                            <!-- Coluna Desvio — botão ícone abre popup de desvio -->
+                            <!-- Coluna Desvio — ícone com tooltip dinâmico -->
+                            <field name="deviation_tooltip" invisible="1"/>
                             <button name="action_open_deviation_popup" type="object"
                                     attrs="{'invisible': [('has_deviation', '=', False)]}"
                                     icon="fa-exclamation-triangle"
-                                    class="btn-sm btn-link o_repair_deviation_alert"
-                                    title="Desvio registrado — clique para editar"/>
+                                    class="btn-sm btn-link o_repair_deviation_alert o_repair_has_tooltip"
+                                    title="Clique para editar o desvio"/>
                             <button name="action_open_deviation_popup" type="object"
                                     attrs="{'invisible': [('has_deviation', '=', True)]}"
                                     icon="fa-circle-o"

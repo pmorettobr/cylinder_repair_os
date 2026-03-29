@@ -118,11 +118,22 @@ class RepairOsProcess(models.Model):
         compute='_compute_deviation_icon',
         store=False,
     )
+    deviation_tooltip = fields.Char(
+        string='Tooltip Desvio',
+        compute='_compute_deviation_icon',
+        store=False,
+    )
 
-    @api.depends('has_deviation')
+    @api.depends('has_deviation', 'deviation_notes')
     def _compute_deviation_icon(self):
         for rec in self:
             rec.deviation_icon = '⚠' if rec.has_deviation else '○'
+            if rec.has_deviation and rec.deviation_notes:
+                rec.deviation_tooltip = rec.deviation_notes[:120]
+            elif rec.has_deviation:
+                rec.deviation_tooltip = 'Desvio registrado (sem descrição)'
+            else:
+                rec.deviation_tooltip = 'Sem desvio'
 
     deviation_notes = fields.Text(string='Descrição do Desvio')
     attachment_ids = fields.Many2many(
