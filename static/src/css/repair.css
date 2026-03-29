@@ -682,18 +682,20 @@ td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
 
 /* O Odoo limita .o_form_sheet a ~700px por padrão — remove para nosso form */
 .o_repair_form .o_form_sheet {
-    max-width: 100% !important;
-    width: 100% !important;
+    max-width: calc(100% - 32px) !important;
+    width: calc(100% - 32px) !important;
     padding: 16px 24px !important;
+    margin: 0 16px !important;
 }
 
 .o_repair_form .o_form_sheet_bg {
     background: #fff !important;
     padding: 0 !important;
+    overflow-x: hidden !important;
 }
 
-/* Garante que o conteúdo use toda a área disponível */
 .o_repair_form .o_FormRenderer,
 .o_repair_form .o_form_view > .o_FormRenderer {
     max-width: 100% !important;
+    overflow-x: hidden !important;
 }
