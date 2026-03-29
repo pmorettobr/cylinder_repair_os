@@ -699,3 +699,48 @@ td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
     max-width: 100% !important;
     overflow-x: hidden !important;
 }
+
+/* ══ Grid de processos — altura ajustada à viewport com scroll ══ */
+.o_repair_form .o_field_one2many .o_list_renderer {
+    /* Viewport - header do Odoo (~46px) - statusbar (~46px) - cabeçalho OS (~280px) */
+    max-height: calc(100vh - 450px) !important;
+    min-height: 200px !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    display: block !important;
+}
+
+/* Cabeçalho da tabela fixo ao rolar */
+.o_repair_form .o_field_one2many .o_list_renderer thead {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 2 !important;
+    background: #f8f9fa !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
+}
+
+/* ══ Header da OS — padding e Concluir à direita ══ */
+
+/* Padding no header */
+.o_repair_form .o_form_statusbar {
+    padding: 0 16px !important;
+}
+
+/* Concluir OS empurrado para a direita */
+.o_repair_form .o_statusbar_buttons {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 6px 8px !important;
+    flex-wrap: nowrap !important;
+}
+
+.o_repair_btn_conclude_right {
+    margin-left: auto !important;
+    order: 99 !important;
+}
+
+/* Padding geral no topo da sheet */
+.o_repair_form .o_form_sheet {
+    padding-top: 20px !important;
+}

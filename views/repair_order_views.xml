@@ -43,21 +43,23 @@
                 <header>
                     <field name="os_state" widget="statusbar"
                            statusbar_visible="draft,confirmed,in_progress,done"/>
+                    <!-- Botões de estado da OS -->
                     <button name="action_confirm_os" string="Confirmar"
                             type="object" class="btn-primary"
                             attrs="{'invisible': [('os_state', '!=', 'draft')]}"/>
                     <button name="action_start_os" string="Iniciar OS"
                             type="object" class="btn-primary"
                             attrs="{'invisible': [('os_state', '!=', 'confirmed')]}"/>
-                    <button name="action_done_os" string="Concluir OS"
-                            type="object" class="btn-success"
-                            attrs="{'invisible': [('os_state', '!=', 'in_progress')]}"/>
                     <button name="action_draft_os" string="Reabrir"
                             type="object" class="btn-secondary"
                             attrs="{'invisible': [('os_state', '!=', 'confirmed')]}"/>
                     <button name="action_cancel_os" string="Cancelar"
                             type="object" class="btn-danger"
                             attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
+                    <!-- Concluir OS — direita via classe -->
+                    <button name="action_done_os" string="Concluir OS"
+                            type="object" class="btn-success o_repair_btn_conclude_right"
+                            attrs="{'invisible': [('os_state', '!=', 'in_progress')]}"/>
                 </header>
 
                 <sheet>
