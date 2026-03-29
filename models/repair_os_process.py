@@ -447,10 +447,15 @@ class RepairOsProcess(models.Model):
         }
 
     def action_open_loader_from_list(self):
-        """Abre o carregador de processos a partir da lista agrupada."""
-        repair_id = self.env.context.get('active_repair_id') or                     (self and self[0].repair_id.id) or False
+        """Abre o carregador de processos a partir da lista agrupada.
+        Funciona mesmo sem registros selecionados, usando active_repair_id do contexto."""
+        repair_id = (
+            self.env.context.get('active_repair_id') or
+            self.env.context.get('default_repair_id') or
+            (self and self[0].repair_id.id if self else False)
+        )
         if not repair_id:
-            return False
+            return {'type': 'ir.actions.act_window_close'}
         repair = self.env['repair.order'].browse(repair_id)
         return repair.action_open_process_loader()
 

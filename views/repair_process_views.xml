@@ -383,7 +383,7 @@
         <field name="arch" type="xml">
             <tree string="Processos por Componente"
                   editable="bottom"
-                  create="1"
+                  create="0"
                   decoration-success="state == 'done'"
                   decoration-warning="state == 'progress'"
                   decoration-info="state == 'paused'"
@@ -391,7 +391,6 @@
                   default_order="component_type_id, sequence">
 
                 <field name="component_type_id" invisible="1"/>
-                <field name="repair_id" invisible="1"/>
                 <field name="state" invisible="1"/>
                 <field name="has_deviation" invisible="1"/>
 
@@ -473,9 +472,9 @@
     </record>
 
 
-    <!-- Server action Carregar Processos — aparece no menu Ação da lista -->
+    <!-- Server action "Adicionar Processos" — aparece no menu Ação da lista agrupada -->
     <record id="action_load_processes_from_list" model="ir.actions.server">
-        <field name="name">Carregar Processos</field>
+        <field name="name">⚙ Adicionar Processos</field>
         <field name="model_id" ref="model_repair_os_process"/>
         <field name="binding_model_id" ref="model_repair_os_process"/>
         <field name="binding_view_types">list</field>

@@ -104,14 +104,18 @@
 
                     <!-- ── Botões de navegação ── -->
                     <div class="d-flex gap-2 mt-3 align-items-center">
+                        <!-- CARREGAR PROCESSOS — sempre ativo (exceto done/cancel) -->
                         <button name="action_open_process_loader"
-                                string="CARREGAR PROCESSOS"
-                                type="object"
-                                class="btn btn-outline-secondary"
-                                attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
-                        <button name="action_open_processes_grouped"
                                 type="object"
                                 class="btn btn-primary"
+                                attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}">
+                            <i class="fa fa-cog me-2"/>
+                            CARREGAR PROCESSOS
+                        </button>
+                        <!-- PROGRAMAÇÃO DE OS — desativado até ter processos -->
+                        <button name="action_open_processes_grouped"
+                                type="object"
+                                class="btn btn-outline-secondary"
                                 attrs="{'readonly': [('process_count', '=', 0)]}">
                             <i class="fa fa-list-ul me-2"/>
                             PROGRAMAÇÃO DE OS

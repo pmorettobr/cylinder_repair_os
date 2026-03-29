@@ -247,6 +247,12 @@ class RepairOrder(models.Model):
         self.action_start_os()
         return False
 
+    def action_open_process_loader_add_more(self):
+        """Abre o carregador para adicionar mais processos (já carregados aparecem desmarcados)."""
+        self.ensure_one()
+        # Same as normal loader but context signals "add more" mode
+        return self.action_open_process_loader()
+
     def action_open_processes_grouped(self):
         """Abre processos desta OS numa view separada agrupada por componente."""
         self.ensure_one()
