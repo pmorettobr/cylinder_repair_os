@@ -2,16 +2,7 @@
 
 import { Component, useState, onMounted } from "@odoo/owl";
 import { registry } from "@web/core/registry";
-
-// Safer import — useService is definitely in core/utils/hooks in Odoo 16
-// but we guard against it just in case
-let useService;
-try {
-    useService = require("@web/core/utils/hooks").useService;
-} catch(_) {
-    // fallback for older builds
-    useService = require("@web/core/service_hook").useService;
-}
+import { useService } from "@web/core/utils/hooks";
 
 class RepairProcessListWidget extends Component {
 
@@ -20,7 +11,7 @@ class RepairProcessListWidget extends Component {
         this.action    = useService("action");
         this.notif     = useService("notification");
         this.collapsed = useState({});
-        this.loading   = useState({ id: null });
+        this.loadingId = useState({ val: null });
         this.editDate  = useState({ id: null });
         onMounted(() => this._restoreCollapse());
     }
@@ -40,10 +31,10 @@ class RepairProcessListWidget extends Component {
         });
         for (const r of sorted) {
             const ct   = r.data.component_type_id;
-            const cid  = ct ? ct[0] : 0;
+            const id   = ct ? ct[0] : 0;
             const name = ct ? ct[1] : "(Sem Componente)";
-            if (!map.has(cid)) map.set(cid, { id: cid, name, records: [], prog: 0, done: 0 });
-            const g = map.get(cid);
+            if (!map.has(id)) map.set(id, { id, name, records: [], prog: 0, done: 0 });
+            const g = map.get(id);
             g.records.push(r);
             if (r.data.state === "progress") g.prog++;
             if (r.data.state === "done")     g.done++;
@@ -53,48 +44,51 @@ class RepairProcessListWidget extends Component {
 
     toggle(id) {
         this.collapsed[id] = !this.collapsed[id];
-        try { localStorage.setItem("cyl_col_" + (this.props.record.resId || 0), JSON.stringify({...this.collapsed})); } catch(_) {}
+        try { localStorage.setItem(this._lsKey(), JSON.stringify(Object.assign({}, this.collapsed))); } catch (_) {}
     }
+
+    _lsKey() { return "cyl_col_" + (this.props.record.resId || "new"); }
 
     _restoreCollapse() {
         try {
-            const s = localStorage.getItem("cyl_col_" + (this.props.record.resId || 0));
+            const s = localStorage.getItem(this._lsKey());
             if (s) Object.assign(this.collapsed, JSON.parse(s));
-        } catch(_) {}
+        } catch (_) {}
     }
 
     fmtDate(v) {
         if (!v) return "";
         const p = v.split("-");
-        return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : v;
+        return p.length === 3 ? (p[2] + "/" + p[1] + "/" + p[0]) : v;
     }
 
     fmtDatetime(v) {
         if (!v) return "";
         try {
-            const [d, t] = v.split(" ");
-            const [,m,dd] = d.split("-");
-            const [h,mi] = t.split(":");
-            return `${dd}/${m} ${h}:${mi}`;
-        } catch(_) { return ""; }
+            const parts = v.split(" ");
+            const dp = parts[0].split("-");
+            const tp = parts[1].split(":");
+            return dp[2] + "/" + dp[1] + " " + tp[0] + ":" + tp[1];
+        } catch (_) { return ""; }
     }
 
     stateLabel(s) {
-        return {ready:"Pronto",progress:"Em Andamento",paused:"Pausado",
-                done:"Concluido",cancel:"Cancelado"}[s] || s;
+        const m = { ready:"Pronto", progress:"Em Andamento", paused:"Pausado",
+                    done:"Concluido", cancel:"Cancelado" };
+        return m[s] || s;
     }
 
     stateCls(s) {
-        const m = {ready:"o_repair_state_ready",progress:"o_repair_state_progress",
-                   paused:"o_repair_state_paused",done:"o_repair_state_done",
-                   cancel:"o_repair_state_cancel"};
-        return `badge ${m[s] || "bg-secondary"}`;
+        const m = { ready:"o_repair_state_ready", progress:"o_repair_state_progress",
+                    paused:"o_repair_state_paused", done:"o_repair_state_done",
+                    cancel:"o_repair_state_cancel" };
+        return "badge " + (m[s] || "bg-secondary");
     }
 
     rowCls(s) {
-        const m = {done:"o_repair_row_done",progress:"o_repair_row_progress",
-                   paused:"o_repair_row_paused",cancel:"o_repair_row_cancel"};
-        return `o_repair_proc_row ${m[s] || ""}`;
+        const m = { done:"o_repair_row_done", progress:"o_repair_row_progress",
+                    paused:"o_repair_row_paused", cancel:"o_repair_row_cancel" };
+        return "o_repair_proc_row " + (m[s] || "");
     }
 
     startEdit(id)  { this.editDate.id = id; }
@@ -102,16 +96,17 @@ class RepairProcessListWidget extends Component {
 
     async saveDate(id, ev) {
         this.editDate.id = null;
+        const val = ev.target.value || false;
         try {
-            await this.orm.write("repair.os.process", [id], { date_planned: ev.target.value || false });
+            await this.orm.write("repair.os.process", [id], { date_planned: val });
             await this._reload();
-        } catch(e) {
-            this.notif.add((e.data && e.data.message) || "Erro", { type: "danger" });
+        } catch (e) {
+            this.notif.add((e.data && e.data.message) || "Erro ao salvar data", { type: "danger" });
         }
     }
 
     async _run(method, id) {
-        this.loading.id = id;
+        this.loadingId.val = id;
         try {
             const res = await this.orm.call("repair.os.process", method, [[id]]);
             if (res && res.type === "ir.actions.act_window") {
@@ -119,10 +114,10 @@ class RepairProcessListWidget extends Component {
             } else {
                 await this._reload();
             }
-        } catch(e) {
+        } catch (e) {
             this.notif.add((e.data && e.data.message) || e.message || "Erro", { type: "danger" });
         } finally {
-            this.loading.id = null;
+            this.loadingId.val = null;
         }
     }
 
@@ -139,9 +134,27 @@ class RepairProcessListWidget extends Component {
 }
 
 RepairProcessListWidget.template = "cylinder_repair_os.RepairProcessList";
-RepairProcessListWidget.props    = { record: Object, name: String, readonly: { type: Boolean, optional: true } };
+RepairProcessListWidget.props    = ["record", "name", "*"];
+
+// relatedFields: lista TODOS os campos que o template usa
+// Sem isso o Odoo não os inclui no fetch e ficam undefined
+const FIELDS = [
+    { name: "sequence",          type: "integer" },
+    { name: "component_type_id", type: "many2one", relation: "repair.component.type" },
+    { name: "name",              type: "char" },
+    { name: "machine_id",        type: "many2one", relation: "repair.machine" },
+    { name: "date_planned",      type: "date" },
+    { name: "date_start_orig",   type: "datetime" },
+    { name: "date_start",        type: "datetime" },
+    { name: "duration_acc",      type: "float" },
+    { name: "duration_display",  type: "char" },
+    { name: "state",             type: "selection" },
+    { name: "has_deviation",     type: "boolean" },
+    { name: "deviation_tooltip", type: "char" },
+];
 
 registry.category("fields").add("repair_process_list", {
     component: RepairProcessListWidget,
     supportedTypes: ["one2many"],
+    relatedFields: () => FIELDS,
 });
