@@ -38,189 +38,98 @@
         <field name="model">repair.order</field>
         <field name="priority">1</field>
         <field name="arch" type="xml">
-            <form string="Ordem de Serviço" class="o_repair_form">
+            <form string="Ordem de Serviço">
 
-                <!-- ── Status bar ──────────────────────────────────────── -->
                 <header>
                     <field name="os_state" widget="statusbar"
-                           statusbar_visible="draft,confirmed,in_progress,done"/>
-                    <button name="action_confirm_os" string="Confirmar"
+                           statusbar_visible="draft,in_progress,done"/>
+                    <button name="action_confirm_and_start" string="CONFIRMAR"
                             type="object" class="btn-primary"
                             attrs="{'invisible': [('os_state', '!=', 'draft')]}"/>
-                    <button name="action_start_os" string="Iniciar OS"
-                            type="object" class="btn-primary"
-                            attrs="{'invisible': [('os_state', '!=', 'confirmed')]}"/>
-                    <button name="action_done_os" string="Concluir OS"
-                            type="object" class="btn-success"
-                            attrs="{'invisible': [('os_state', '!=', 'in_progress')]}"/>
-                    <button name="action_draft_os" string="Reabrir"
-                            type="object" class="btn-secondary"
-                            attrs="{'invisible': [('os_state', '!=', 'confirmed')]}"/>
                     <button name="action_cancel_os" string="Cancelar"
-                            type="object" class="btn-danger"
+                            type="object" class="o_repair_btn_cancel_soft"
                             attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
+                    <button name="action_done_os" string="CONCLUIR OS"
+                            type="object" class="btn-primary o_repair_btn_conclude_right"
+                            attrs="{'invisible': [('os_state', '!=', 'in_progress')]}"/>
                 </header>
 
                 <sheet>
-                    <!-- Campos nativos do repair.order — invisíveis -->
                     <field name="state" invisible="1"/>
                     <field name="company_id" invisible="1"/>
+                    <field name="is_overdue" invisible="1"/>
 
-                    <!-- ── Barra de Progresso compacta no topo ────────── -->
-                    <div class="o_repair_progress_header">
-                        <div class="o_repair_progress_info">
-                            <span class="o_repair_os_num">
-                                <field name="os_number" readonly="1"/>
-                            </span>
-                            <span class="o_repair_sep">·</span>
-                            <field name="order_type" widget="badge"
-                                   decoration-info="order_type == 'repair'"
-                                   decoration-warning="order_type == 'fabrication'"/>
-                            <span class="o_repair_sep"
-                                  attrs="{'invisible': [('is_overdue', '=', False)]}">·</span>
-                            <span class="badge bg-danger"
-                                  attrs="{'invisible': [('is_overdue', '=', False)]}">
-                                ⚠ Atrasada
-                            </span>
+                    <!-- ── Nº OS grande + badge Tipo alinhados ── -->
+                    <div class="o_repair_title_block">
+                        <div class="o_repair_title_row">
+                            <div class="o_repair_os_number_wrap">
+                                <div class="o_repair_os_label_small">Nº OS</div>
+                                <field name="os_number"
+                                       class="o_repair_os_big"
+                                       placeholder="Nº da OS..."
+                                       attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"/>
+                            </div>
+                            <!-- Badge tipo ao lado do número (sempre visível após ter valor) -->
+                            <div class="o_repair_type_inline ms-3">
+                                <span attrs="{'invisible': [('order_type', '!=', 'repair')]}"
+                                      class="o_repair_badge_type o_repair_badge_reparo">Reparo</span>
+                                <span attrs="{'invisible': [('order_type', '!=', 'fabrication')]}"
+                                      class="o_repair_badge_type o_repair_badge_fabricacao">Fabricação</span>
+                            </div>
+                            <div class="ms-3" attrs="{'invisible': [('is_overdue', '=', False)]}">
+                                <span class="badge bg-danger">⚠ Atrasada</span>
+                            </div>
                         </div>
-                        <!-- Barra de progresso degradê CSS -->
-                        <div class="o_repair_progress_bar_wrap">
-                            <div class="o_repair_progress_bar_fill o_repair_progress_fill_dynamic"/>
-                        </div>
-                        <field name="progress_percent" invisible="1"
-                               class="o_repair_progress_value"/>
-                        <div class="o_repair_progress_label">
-                            <field name="process_done_display" readonly="1"/> /
-                            <field name="process_total_display" readonly="1"/> processos ·
-                            <strong><field name="progress_display" readonly="1"/></strong>
-                        </div>
-                        <field name="is_overdue" invisible="1"/>
-                        <field name="progress_percent" invisible="1"/>
                     </div>
 
-                    <!-- ── Dados da OS — compactos ────────────────────── -->
-                    <group class="o_repair_header_fields">
-                        <group>
-                            <field name="os_number" string="Nº OS"
-                                   placeholder="Nº sequencial do cliente..."
-                                   attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"/>
-                            <field name="order_type" string="Tipo de Ordem" required="1"/>
+                    <!-- ── Dados da OS ── -->
+                    <group>
+                        <group string="Identificação">
                             <field name="partner_id" string="Cliente" required="1"/>
-                            <field name="responsible_id" string="Responsável"/>
-                        </group>
-                        <group>
+                            <field name="order_type" string="Tipo de Ordem"
+                                   widget="selection"
+                                   attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"/>
                             <field name="product_name" string="Produto / Cilindro"
                                    placeholder="Ex: Cilindro Hidráulico CH-1..."/>
-                            <field name="serial_code" string="Nº de Série / TAG"/>
+                            <field name="responsible_id" string="Responsável"/>
+                        </group>
+                        <group string="Prazo e Progresso">
                             <field name="deadline_date" string="Prazo (Dead Line)"
                                    widget="date"/>
-                            <field name="equipment_description" string="Descrição Adicional"
-                                   optional="hide"/>
+                            <field name="process_count" string="Total"/>
+                            <field name="process_done_count" string="Concluídos"/>
+                            <field name="process_progress_count" string="Em Andamento"/>
                         </group>
                     </group>
 
-                    <!-- ── Processos ──────────────────────────────────── -->
-                    <div class="o_repair_processes_header">
-                        <h4 class="o_repair_section_title">Processos</h4>
+                    <!-- ── Botões de navegação ── -->
+                    <div class="d-flex gap-2 mt-3 align-items-center">
+                        <!-- CARREGAR PROCESSOS — sempre ativo -->
                         <button name="action_open_process_loader"
-                                string="⚙ Carregar Processos"
                                 type="object"
-                                class="btn-sm btn-outline-primary o_repair_load_btn"
-                                attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
+                                class="btn btn-outline-secondary"
+                                attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}">
+                            <i class="fa fa-cog me-2"/>
+                            CARREGAR PROCESSOS
+                        </button>
+                        <!-- PROGRAMAÇÃO DE OS — invisível sem processos, visível com cor própria quando tem -->
+                        <button name="action_open_processes_grouped"
+                                type="object"
+                                class="btn o_repair_btn_programacao"
+                                attrs="{'invisible': [('process_count', '=', 0)]}">
+                            <i class="fa fa-list-ul me-2"/>
+                            PROGRAMAÇÃO DE OS
+                            (<field name="process_count" readonly="1" nolabel="1"/>)
+                        </button>
+                        <!-- placeholder cinza quando sem processos -->
+                        <span class="btn o_repair_btn_programacao_disabled"
+                              attrs="{'invisible': [('process_count', '!=', 0)]}">
+                            <i class="fa fa-list-ul me-2"/>
+                            PROGRAMAÇÃO DE OS (0)
+                        </span>
                     </div>
 
-                    <!-- Tree de processos agrupada por componente -->
-                    <field name="process_ids"
-                           widget="one2many"
-                           context="{'default_repair_id': id}">
-                        <tree string="Processos"
-                              decoration-success="state == 'done'"
-                              decoration-warning="state == 'progress'"
-                              decoration-info="state == 'paused'"
-                              decoration-muted="state in ('ready', 'cancel')"
-                              create="0"
-                              delete="0"
-                              default_order="component_type_id, sequence">
-                            <!-- Campos de controle -->
-                            <field name="state" invisible="1"/>
-
-                            <!-- Numeração de sequência -->
-                            <field name="sequence" string="Seq." readonly="1"/>
-
-                            <!-- Componente — com separador visual por grupo -->
-                            <field name="component_type_id" string="Componente" readonly="1"/>
-                            <field name="sub_component_id" string="Sub-comp." readonly="1"
-                                   optional="hide"/>
-
-                            <!-- Operação -->
-                            <field name="name" string="Operação" readonly="1"/>
-
-                            <!-- Máquina -->
-                            <field name="machine_id" string="Máquina" readonly="1"/>
-
-                            <!-- Data Programada — editável inline -->
-                            <field name="date_planned" string="Data Prog."
-                                   widget="datetime" optional="show"/>
-
-                            <!-- Data Início real -->
-                            <field name="date_start_orig" string="Dt. Início"
-                                   readonly="1" optional="show"/>
-
-                            <!-- Cronômetro -->
-                            <field name="duration_display" string="Tempo"
-                                   readonly="1"
-                                   class="o_repair_timer"/>
-
-                            <!-- Situação -->
-                            <field name="state" string="Situação" widget="badge"
-                                   decoration-success="state == 'done'"
-                                   decoration-warning="state == 'progress'"
-                                   decoration-info="state == 'paused'"
-                                   decoration-muted="state in ('ready', 'cancel')"
-                                   readonly="1"/>
-
-                            <!-- QC flag -->
-                            <field name="quality_result" string="QC" widget="badge"
-                                   decoration-success="quality_result == 'passed'"
-                                   decoration-danger="quality_result in ('failed','flagged')"
-                                   decoration-muted="quality_result == 'pending'"
-                                   readonly="1" optional="show"/>
-
-                            <!-- Desvio flag -->
-                            <field name="has_deviation" string="Desvio"
-                                   widget="boolean" readonly="1" optional="show"/>
-
-                            <!-- Botão Iniciar -->
-                            <button name="action_start" type="object"
-                                    string="Iniciar" class="btn-sm btn-success"
-                                    attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
-
-                            <!-- Botão Pausar -->
-                            <button name="action_pause" type="object"
-                                    string="Pausar" class="btn-sm btn-warning"
-                                    attrs="{'invisible': [('state', '!=', 'progress')]}"/>
-
-                            <!-- Botão Concluir -->
-                            <button name="action_finish" type="object"
-                                    string="Concluir" class="btn-sm btn-success"
-                                    attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
-
-                            <!-- Botão DETALHES -->
-                            <button name="action_open_details_popup" type="object"
-                                    icon="fa-cog" string="Detalhes"
-                                    class="btn-sm btn-outline-secondary"
-                                    title="Detalhes / Desvio / Anexo"/>
-                        </tree>
-                    </field>
-
                 </sheet>
-
-                <!-- Chatter -->
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
 
             </form>
         </field>
@@ -236,7 +145,6 @@
                 <field name="os_number" string="Nº OS"/>
                 <field name="partner_id" string="Cliente"/>
                 <field name="product_name" string="Produto / Cilindro"/>
-                <field name="serial_code" string="Nº Série / TAG"/>
                 <field name="responsible_id" string="Responsável"/>
                 <separator/>
                 <filter name="repair" string="Reparo"

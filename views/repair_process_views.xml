@@ -55,7 +55,7 @@
                     <!-- Data Programada -->
                     <group string="Programação"
                            attrs="{'invisible': [('state', 'in', ('done', 'cancel'))]}">
-                        <field name="date_planned" string="Data Programada" widget="datetime"/>
+                        <field name="date_planned" string="Data Programada" widget="date"/>
                     </group>
 
                 </sheet>
@@ -89,7 +89,7 @@
 
                     <!-- Data Programada -->
                     <group string="Programação">
-                        <field name="date_planned" string="Data Programada" widget="datetime"/>
+                        <field name="date_planned" string="Data Programada" widget="date"/>
                         <field name="service_description" string="Descrição Detalhada"/>
                     </group>
 
@@ -194,6 +194,7 @@
                 <field name="date_start_orig" string="Dt. Início" optional="show"/>
                 <field name="date_finished" string="Dt. Conclusão" optional="show"/>
                 <field name="duration_display" string="Tempo" readonly="1"/>
+                <field name="duration_acc" invisible="1" sum="Total Horas"/>
                 <field name="state" string="Situação" widget="badge"
                        decoration-success="state == 'done'"
                        decoration-warning="state == 'progress'"
@@ -241,13 +242,12 @@
                         <group string="Identificação">
                             <field name="repair_id" string="OS" readonly="1"/>
                             <field name="component_type_id" string="Componente" readonly="1"/>
-                            <field name="sub_component_id" string="Sub-componente" readonly="1"/>
                             <field name="name" string="Operação" readonly="1"/>
                             <field name="sequence" string="Ordem" readonly="1"/>
                         </group>
                         <group string="Execução">
                             <field name="machine_id" string="Máquina" readonly="1"/>
-                            <field name="date_planned" string="Data Programada" widget="datetime"/>
+                            <field name="date_planned" string="Data Programada" widget="date"/>
                             <field name="date_start_orig" string="Data Início" readonly="1"/>
                             <field name="date_finished" string="Data Conclusão" readonly="1"/>
                             <field name="duration_display" string="Tempo Total" readonly="1"
@@ -332,6 +332,162 @@
                 </group>
             </search>
         </field>
+    </record>
+
+
+    <!-- ══ Popup de Desvio (coluna Desvio) ══════════════════════════════ -->
+    <record id="view_repair_process_deviation_popup" model="ir.ui.view">
+        <field name="name">repair.os.process.deviation.popup</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <form string="Desvio">
+                <sheet>
+                    <!-- Cabeçalho com nome da operação -->
+                    <div class="o_repair_popup_header">
+                        <div class="o_repair_popup_title">
+                            <field name="operation_label" readonly="1"/>
+                        </div>
+                        <div class="o_repair_popup_meta">
+                            OS: <field name="repair_id" readonly="1" class="d-inline"/>
+                        </div>
+                    </div>
+
+                    <group>
+                        <field name="has_deviation"
+                               string="Registrar Desvio?"
+                               widget="boolean_toggle"/>
+                    </group>
+                    <div attrs="{'invisible': [('has_deviation', '=', False)]}"
+                         style="padding: 0 16px 12px;">
+                        <field name="deviation_notes"
+                               nolabel="1"
+                               placeholder="Descreva o desvio encontrado..."
+                               style="width:100%; min-height:120px; resize:vertical;"/>
+                    </div>
+                </sheet>
+                <footer>
+                    <button string="Salvar" class="btn-primary"
+                            special="save" close="1"/>
+                    <button string="Fechar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- ══ Tree agrupada por componente (Plano B) ════════════════════════ -->
+    <record id="view_repair_process_grouped_list" model="ir.ui.view">
+        <field name="name">repair.os.process.grouped.list</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <tree string="Processos por Componente"
+                  editable="bottom"
+                  create="0"
+                  decoration-success="state == 'done'"
+                  decoration-warning="state == 'progress'"
+                  decoration-info="state == 'paused'"
+                  decoration-muted="state in ('ready', 'cancel')"
+                  default_order="component_type_id, sequence">
+
+                <control>
+                    <button name="action_open_loader_from_list"
+                            string="⚙ Adicionar Processos"
+                            type="object"
+                            class="btn btn-secondary"/>
+                </control>
+
+                <field name="component_type_id" invisible="1"/>
+                <field name="state" invisible="1"/>
+                <field name="has_deviation" invisible="1"/>
+
+                <field name="sequence" string="Seq." readonly="1" width="50"/>
+                <field name="name" string="Operação" readonly="1"/>
+                <field name="machine_id" string="Máquina" readonly="1"/>
+                <field name="date_planned" string="Data Prog." widget="date"/>
+                <field name="date_start_orig" string="Dt. Início" readonly="1"/>
+                <field name="duration_display" string="Tempo" readonly="1"
+                       class="o_repair_timer"/>
+                <field name="duration_acc" string="Tempo Total (seg)"
+                       invisible="1" sum="Tempo Total"/>
+                <field name="state" string="Situação" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-warning="state == 'progress'"
+                       decoration-info="state == 'paused'"
+                       decoration-muted="state in ('ready', 'cancel')"
+                       readonly="1"/>
+
+                <!-- Desvio -->
+                <button name="action_open_deviation_popup" type="object"
+                        attrs="{'invisible': [('has_deviation', '=', False)]}"
+                        icon="fa-exclamation-triangle"
+                        class="btn-sm btn-link o_repair_deviation_alert"
+                        title="Desvio registrado"/>
+                <button name="action_open_deviation_popup" type="object"
+                        attrs="{'invisible': [('has_deviation', '=', True)]}"
+                        icon="fa-circle-o"
+                        class="btn-sm btn-link o_repair_deviation_none"
+                        title="Sem desvio"/>
+
+                <!-- Ações -->
+                <button name="action_start" type="object"
+                        string="Iniciar" class="btn-sm btn-success"
+                        attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
+                <button name="action_pause" type="object"
+                        string="Pausar" class="btn-sm btn-warning"
+                        attrs="{'invisible': [('state', '!=', 'progress')]}"/>
+                <button name="action_finish" type="object"
+                        string="Concluir" class="btn-sm o_repair_btn_concluir"
+                        attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
+                <button name="action_cancel" type="object"
+                        icon="fa-ban" class="btn-sm btn-link text-danger"
+                        title="Cancelar"
+                        attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Search view para processos agrupados -->
+    <record id="view_repair_process_grouped_search" model="ir.ui.view">
+        <field name="name">repair.os.process.grouped.search</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <search string="Processos">
+                <field name="name" string="Operação"/>
+                <field name="machine_id" string="Máquina"/>
+                <filter name="group_component" string="Por Componente"
+                        context="{'group_by': 'component_type_id'}"/>
+                <filter name="progress" string="Em Andamento"
+                        domain="[('state', '=', 'progress')]"/>
+                <filter name="done" string="Concluídos"
+                        domain="[('state', '=', 'done')]"/>
+                <group expand="1" string="Agrupar por">
+                    <filter name="by_component" string="Componente"
+                            context="{'group_by': 'component_type_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action para abrir processos agrupados com botão Carregar -->
+    <record id="action_repair_process_grouped" model="ir.actions.act_window">
+        <field name="name">Programação de OS</field>
+        <field name="res_model">repair.os.process</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_repair_process_grouped_list"/>
+        <field name="search_view_id" ref="view_repair_process_grouped_search"/>
+        <field name="context">{'search_default_group_component': 1, 'group_by': ['component_type_id']}</field>
+    </record>
+
+
+    <!-- Server action "Adicionar Processos" — aparece no menu Ação da lista agrupada -->
+    <record id="action_load_processes_from_list" model="ir.actions.server">
+        <field name="name">⚙ Adicionar Processos</field>
+        <field name="model_id" ref="model_repair_os_process"/>
+        <field name="binding_model_id" ref="model_repair_os_process"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_open_loader_from_list()</field>
     </record>
 
 </odoo>

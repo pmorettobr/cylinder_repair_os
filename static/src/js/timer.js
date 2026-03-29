@@ -87,3 +87,81 @@
 
     window._repairTimer = { start: startTimerLoop, stop: stopTimerLoop };
 })();
+
+/**
+ * Agrupamento visual de processos por componente (Opção A — provisório)
+ * Injeta separadores visuais entre grupos de componentes na tree de processos.
+ */
+(function () {
+    function injectComponentSeparators() {
+        // Busca todas as trees de processos dentro do form da OS
+        const trees = document.querySelectorAll('.o_field_one2many .o_list_view table tbody');
+        trees.forEach(function (tbody) {
+            const rows = Array.from(tbody.querySelectorAll('tr.o_data_row'));
+            if (!rows.length) return;
+
+            let lastComponent = null;
+            rows.forEach(function (row) {
+                // Pega o texto da célula de componente (primeira coluna visível com dados)
+                const cells = row.querySelectorAll('td.o_data_cell');
+                // Coluna componente é a 2ª (após seq)
+                const compCell = cells[1];
+                if (!compCell) return;
+                const compText = compCell.textContent.trim();
+                if (!compText) return;
+
+                if (compText !== lastComponent) {
+                    // Insere separador visual antes desta linha
+                    if (lastComponent !== null) {
+                        const sep = document.createElement('tr');
+                        sep.className = 'o_repair_component_separator';
+                        sep.innerHTML = '<td colspan="20">' + compText + '</td>';
+                        tbody.insertBefore(sep, row);
+                    }
+                    lastComponent = compText;
+                }
+            });
+        });
+    }
+
+    // Roda após navegação SPA
+    const obs = new MutationObserver(function () {
+        const form = document.querySelector('.o_repair_form');
+        if (form) {
+            setTimeout(injectComponentSeparators, 300);
+        }
+    });
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+})();
+
+/**
+ * Tooltip dinâmico para o ícone de desvio
+ * Lê o campo deviation_tooltip da linha e atualiza o title do botão
+ */
+(function () {
+    function updateDeviationTooltips() {
+        const rows = document.querySelectorAll('.o_repair_form .o_data_row');
+        rows.forEach(function (row) {
+            const alertBtn = row.querySelector('.o_repair_has_tooltip');
+            if (!alertBtn) return;
+
+            // Tenta encontrar o campo deviation_tooltip na linha
+            // O Odoo renderiza campos invisíveis como input hidden ou span
+            const tooltipCell = row.querySelector('[name="deviation_tooltip"]');
+            if (tooltipCell) {
+                const text = tooltipCell.textContent || tooltipCell.value || '';
+                if (text.trim()) {
+                    alertBtn.setAttribute('title', text.trim());
+                }
+            }
+        });
+    }
+
+    // Atualiza quando o DOM muda
+    const observer = new MutationObserver(function () {
+        if (document.querySelector('.o_repair_form .o_repair_has_tooltip')) {
+            setTimeout(updateDeviationTooltips, 200);
+        }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+})();

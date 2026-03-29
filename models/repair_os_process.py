@@ -43,11 +43,6 @@ class RepairOsProcess(models.Model):
         string='Componente',
         index=True,
     )
-    sub_component_id = fields.Many2one(
-        comodel_name='repair.sub.component',
-        string='Sub-componente',
-        domain="[('component_type_id', 'in', [component_type_id, False])]",
-    )
     name = fields.Char(
         string='Operação',
         required=True,
@@ -62,7 +57,7 @@ class RepairOsProcess(models.Model):
     )
 
     # ── Datas ─────────────────────────────────────────────────────────────────
-    date_planned = fields.Datetime(
+    date_planned = fields.Date(
         string='Data Programada',
         help='Data prevista para início deste processo.',
     )
@@ -118,6 +113,28 @@ class RepairOsProcess(models.Model):
         default=False,
         tracking=True,
     )
+    deviation_icon = fields.Char(
+        string='Desvio',
+        compute='_compute_deviation_icon',
+        store=False,
+    )
+    deviation_tooltip = fields.Char(
+        string='Tooltip Desvio',
+        compute='_compute_deviation_icon',
+        store=False,
+    )
+
+    @api.depends('has_deviation', 'deviation_notes')
+    def _compute_deviation_icon(self):
+        for rec in self:
+            rec.deviation_icon = '⚠' if rec.has_deviation else '○'
+            if rec.has_deviation and rec.deviation_notes:
+                rec.deviation_tooltip = rec.deviation_notes[:120]
+            elif rec.has_deviation:
+                rec.deviation_tooltip = 'Desvio registrado (sem descrição)'
+            else:
+                rec.deviation_tooltip = 'Sem desvio'
+
     deviation_notes = fields.Text(string='Descrição do Desvio')
     attachment_ids = fields.Many2many(
         comodel_name='ir.attachment',
@@ -164,14 +181,12 @@ class RepairOsProcess(models.Model):
 
     # ── Computes ──────────────────────────────────────────────────────────────
 
-    @api.depends('component_type_id.name', 'sub_component_id.name', 'name')
+    @api.depends('component_type_id.name', 'name')
     def _compute_operation_label(self):
         for rec in self:
             parts = []
             if rec.component_type_id:
                 parts.append(rec.component_type_id.name)
-            if rec.sub_component_id:
-                parts.append(rec.sub_component_id.name)
             if rec.name:
                 parts.append(rec.name)
             rec.operation_label = ' — '.join(filter(None, parts))
@@ -197,27 +212,21 @@ class RepairOsProcess(models.Model):
     # ── Validações ────────────────────────────────────────────────────────────
 
     def _validate_date_planned(self):
-        """Valida que date_planned não está em branco nem é retroativa."""
+        """Valida que date_planned não está em branco nem é retroativa ao dia atual."""
         for rec in self:
             if not rec.date_planned:
                 raise UserError(
-                    'Processo "%s": o campo Data Programada é obrigatório antes de iniciar.'
+                    'Processo "%s": preencha a Data Programada antes de iniciar.'
                     % rec.operation_label
                 )
-            # Referência: data de início da OS ou hoje
-            ref_date = None
-            if rec.repair_id and rec.repair_id.date_start:
-                ref_date = rec.repair_id.date_start.date()
-            else:
-                ref_date = date.today()
-            if rec.date_planned.date() < ref_date:
+            today = date.today()
+            if rec.date_planned < today:
                 raise UserError(
-                    'Processo "%s": a Data Programada (%s) não pode ser anterior '
-                    'à data de início da OS (%s).'
+                    'Processo "%s": a Data Programada (%s) não pode ser anterior a hoje (%s).'
                     % (
                         rec.operation_label,
                         rec.date_planned.strftime('%d/%m/%Y'),
-                        ref_date.strftime('%d/%m/%Y'),
+                        today.strftime('%d/%m/%Y'),
                     )
                 )
 
@@ -232,21 +241,31 @@ class RepairOsProcess(models.Model):
                 )
 
     def _validate_sequence(self):
-        """Valida que o processo anterior do mesmo componente está concluído."""
+        """
+        Valida sequência de processos dentro do componente.
+
+        Regra:
+        - Processos com a MESMA sequência rodam em paralelo (sem bloqueio).
+        - Um processo só pode iniciar se TODOS os processos com sequência
+          ESTRITAMENTE MENOR estiverem concluídos (done) ou cancelados.
+        """
         for rec in self:
             if not rec.component_type_id:
                 continue
-            # Busca processo anterior (menor sequência) no mesmo componente
+            # Busca processos com sequência ESTRITAMENTE menor que a atual
+            # que ainda não estejam concluídos ou cancelados
             prev = self.search([
                 ('repair_id', '=', rec.repair_id.id),
                 ('component_type_id', '=', rec.component_type_id.id),
                 ('sequence', '<', rec.sequence),
+                ('id', '!=', rec.id),
                 ('state', 'not in', ('done', 'cancel')),
             ], limit=1, order='sequence desc')
             if prev:
                 raise UserError(
                     'Processo "%s" (seq. %d): o processo anterior "%s" '
-                    '(seq. %d) ainda não foi concluído.'
+                    '(seq. %d) ainda não foi concluído. '
+                    'Processos com a mesma sequência podem ser iniciados em paralelo.'
                     % (
                         rec.operation_label,
                         rec.sequence,
@@ -425,6 +444,32 @@ class RepairOsProcess(models.Model):
             'view_id': self.env.ref('cylinder_repair_os.view_repair_process_details_popup').id,
             'target': 'new',
             'context': {'default_repair_id': self.repair_id.id},
+        }
+
+    def action_open_loader_from_list(self):
+        """Abre o carregador de processos a partir da lista agrupada.
+        Funciona mesmo sem registros selecionados, usando active_repair_id do contexto."""
+        repair_id = (
+            self.env.context.get('active_repair_id') or
+            self.env.context.get('default_repair_id') or
+            (self and self[0].repair_id.id if self else False)
+        )
+        if not repair_id:
+            return {'type': 'ir.actions.act_window_close'}
+        repair = self.env['repair.order'].browse(repair_id)
+        return repair.action_open_process_loader()
+
+    def action_open_deviation_popup(self):
+        """Abre popup simples de desvio (ícone na coluna Desvio)."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': self.operation_label or self.name or 'Desvio',
+            'res_model': 'repair.os.process',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'view_id': self.env.ref('cylinder_repair_os.view_repair_process_deviation_popup').id,
+            'target': 'new',
         }
 
     # ── Popup de Qualidade ────────────────────────────────────────────────────

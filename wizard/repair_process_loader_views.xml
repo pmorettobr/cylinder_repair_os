@@ -8,6 +8,7 @@
             <form string="Carregar Processos em Lote">
                 <sheet>
                     <field name="catalog_empty" invisible="1"/>
+
                     <div class="o_repair_wizard_header">
                         <h4>Carregar Processos do Catálogo</h4>
                         <p class="text-muted">
@@ -20,20 +21,21 @@
                     <div class="alert alert-warning"
                          attrs="{'invisible': [('catalog_empty', '=', False)]}">
                         <i class="fa fa-exclamation-triangle me-2"/>
-                        O catálogo está vazio. Acesse
+                        Catálogo vazio. Acesse
                         <strong>Configuração → Catálogo de Processos</strong>
                         para cadastrar processos padrão.
                     </div>
 
                     <!-- Filtro por componente -->
-                    <group>
+                    <group attrs="{'invisible': [('catalog_empty', '=', True)]}">
                         <field name="filter_component_id"
                                string="Filtrar por Componente"
                                placeholder="Todos os componentes"/>
                     </group>
 
                     <!-- Botões Selecionar / Desselecionar -->
-                    <div class="o_repair_loader_actions mb-2">
+                    <div class="o_repair_loader_actions mb-2"
+                         attrs="{'invisible': [('catalog_empty', '=', True)]}">
                         <button name="action_select_all" type="object"
                                 string="✓ Selecionar Todos"
                                 class="btn-sm btn-outline-primary me-2"/>
@@ -42,7 +44,7 @@
                                 class="btn-sm btn-outline-secondary"/>
                     </div>
 
-                    <!-- Lista de processos -->
+                    <!-- Lista de processos — sem sub_component -->
                     <field name="line_ids"
                            attrs="{'invisible': [('catalog_empty', '=', True)]}">
                         <tree editable="bottom"
@@ -50,9 +52,6 @@
                             <field name="selected" string="✓" widget="boolean_toggle"/>
                             <field name="component_type_id" string="Componente"
                                    options="{'no_create': True}"/>
-                            <field name="sub_component_id" string="Sub-comp."
-                                   domain="[('component_type_id', 'in', [component_type_id, False])]"
-                                   options="{'no_create': True}" optional="hide"/>
                             <field name="name" string="Operação"/>
                             <field name="machine_id" string="Máquina"
                                    options="{'no_create': True}"/>
@@ -68,7 +67,6 @@
                             string="Carregar Processos Selecionados"
                             type="object"
                             class="btn-primary"
-                            close="1"
                             attrs="{'invisible': [('catalog_empty', '=', True)]}"/>
                     <button string="Cancelar"
                             class="btn-secondary"

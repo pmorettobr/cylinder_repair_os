@@ -8,44 +8,13 @@
    (inspirado em web_widget_progressbar_gradient OCA)
 ══════════════════════════════════════════════════════════════ */
 
-.o_repair_progress_bar_wrap {
-    width: 100%;
-    height: 10px;
-    background: #e5e7eb;
-    border-radius: 999px;
-    overflow: hidden;
-    margin: 4px 0;
-}
 
-.o_repair_progress_bar_fill {
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, #6366f1 0%, #4f46e5 40%, #22d3ee 100%);
-    transition: width 0.6s ease;
-    min-width: 2px;
-}
 
 /* ══════════════════════════════════════════════════════════════
    CABEÇALHO COMPACTO DA OS (form)
 ══════════════════════════════════════════════════════════════ */
 
-.o_repair_progress_header {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
 
-.o_repair_progress_info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
 
 .o_repair_os_num {
     font-size: 16px;
@@ -58,11 +27,6 @@
     color: #94a3b8;
 }
 
-.o_repair_progress_label {
-    font-size: 11px;
-    color: #64748b;
-    text-align: right;
-}
 
 .o_repair_header_fields .o_wrap_field {
     margin-bottom: 4px !important;
@@ -185,12 +149,6 @@
     margin-bottom: 8px;
 }
 
-.o_repair_progress_stats {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 2px;
-}
 
 .o_repair_pct {
     font-size: 12px;
@@ -398,4 +356,485 @@
 
 .o_form_view .o_statusbar_status .o_arrow_button {
     font-size: 12px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TÍTULO DA OS — Nº OS grande + Tipo colorido
+══════════════════════════════════════════════════════════════ */
+
+
+
+.o_repair_os_number_big {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.o_repair_os_input input,
+
+/* Tipo como radio colorido */
+
+
+/* ══════════════════════════════════════════════════════════════
+   BARRA DE PROGRESSO — compacta, embaixo dos campos
+══════════════════════════════════════════════════════════════ */
+
+
+
+
+/* ══════════════════════════════════════════════════════════════
+   PROCESSOS — agrupamento visual por componente (Opção A temp.)
+══════════════════════════════════════════════════════════════ */
+
+/* Separador de grupo por componente via CSS nth-child trick
+   O JS abaixo injeta data-component nas linhas para o CSS atuar */
+.o_repair_component_separator td {
+    background: #f1f5f9 !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    color: #334155 !important;
+    padding: 4px 8px !important;
+    border-top: 2px solid #cbd5e1 !important;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DESVIO — ícones sem checkbox
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_deviation_none .o_button_icon {
+    color: #d1d5db !important;
+    font-size: 14px;
+}
+
+.o_repair_deviation_alert .o_button_icon {
+    color: #f59e0b !important;
+    font-size: 14px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CHATTER — ocultado no form da OS
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_form .o_chatter_container,
+.o_repair_form .o-mail-ChatterContainer,
+
+
+
+/* ══════════════════════════════════════════════════════════════
+   COLUNA DESVIO — ícone em vez de checkbox
+══════════════════════════════════════════════════════════════ */
+
+/* Esconde o checkbox padrão do boolean */
+.o_repair_deviation_field .o_checkbox,
+.o_repair_deviation_field input[type="checkbox"] {
+    display: none !important;
+}
+
+/* Mostra ícone baseado no valor */
+.o_repair_deviation_field .o_field_boolean::before {
+    font-family: FontAwesome;
+    font-size: 14px;
+}
+
+/* Sem desvio: círculo vazio cinza */
+td .o_repair_deviation_field .o_field_boolean:not(.o_field_boolean_true)::before {
+    content: "\f10c";  /* fa-circle-o */
+    color: #d1d5db;
+}
+
+/* Com desvio: triângulo laranja */
+td .o_repair_deviation_field .o_field_boolean.o_field_boolean_true::before,
+td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
+    content: "\f071";  /* fa-exclamation-triangle */
+    color: #f59e0b;
+}
+
+/* Desvio icon column */
+.o_repair_deviation_icon {
+    font-size: 15px;
+    text-align: center;
+}
+
+/* ══ Tipo badge grande (após confirmar) ══ */
+
+
+/* ══ Botão Concluir — indigo/roxo ══ */
+.o_repair_btn_concluir {
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+    color: #fff !important;
+    font-size: 12px !important;
+}
+
+.o_repair_btn_concluir:hover {
+    background-color: #4338ca !important;
+    border-color: #4338ca !important;
+}
+
+/* ══ Ícones de desvio na coluna ══ */
+.o_repair_deviation_alert {
+    color: #f59e0b !important;
+    font-size: 15px !important;
+    padding: 0 4px !important;
+}
+
+.o_repair_deviation_none {
+    color: #d1d5db !important;
+    font-size: 15px !important;
+    padding: 0 4px !important;
+}
+
+/* ══ Nº OS — mantém tamanho grande em readonly/span também ══ */
+.o_repair_os_input span,
+.o_repair_os_input .o_field_widget span,
+.o_repair_os_input .o_form_uri,
+
+/* Remove o fundo cinza do readonly no campo Nº OS */
+.o_repair_os_input.o_readonly .o_field_char,
+
+/* ══ Handle de arrastar — coluna estreita ══ */
+
+/* ══ Título OS — label acima, número+badge na mesma linha ══ */
+
+
+
+/* ══ Barra de progresso nativa — estica para ocupar toda a largura ══ */
+
+
+
+/* ══ Popup desvio — dialog maior ══ */
+.o_dialog .o_form_view .o_field_text textarea {
+    min-height: 120px !important;
+    resize: vertical !important;
+}
+
+/* ══ Tooltip nativo do browser no ícone de desvio ══ */
+.o_repair_has_tooltip {
+    cursor: help !important;
+    position: relative;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FORM OS — largura total, remove limitações nativas do Odoo
+══════════════════════════════════════════════════════════════ */
+
+/* O Odoo limita .o_form_sheet a ~700px por padrão — remove para nosso form */
+
+
+.o_repair_form .o_FormRenderer,
+.o_repair_form .o_form_view > .o_FormRenderer {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+/* ══ Grid de processos — altura ajustada à viewport com scroll ══ */
+
+/* Cabeçalho da tabela fixo ao rolar */
+
+/* ══ Header da OS — padding e Concluir à direita ══ */
+
+/* Padding no header */
+
+/* Concluir OS empurrado para a direita */
+
+
+/* Padding geral no topo da sheet */
+
+/* ══════════════════════════════════════════════════════════════
+   WIDGET OWL — RepairProcessListWidget
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_process_widget {
+    max-height: calc(100vh - 450px);
+    min-height: 180px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+}
+
+/* ── Tabela ── */
+.o_repair_proc_table {
+    width: 100%;
+    font-size: 12px;
+    border-collapse: collapse;
+    margin: 0 !important;
+}
+
+.o_repair_proc_thead th {
+    position: sticky;
+    top: 0;
+    background: #f1f5f9 !important;
+    border-bottom: 2px solid #cbd5e1;
+    font-weight: 600;
+    font-size: 11px;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    padding: 7px 8px !important;
+    z-index: 3;
+    white-space: nowrap;
+}
+
+/* ── Cabeçalho do Grupo (Componente) ── */
+.o_repair_group_header {
+    background: #f8fafc !important;
+    cursor: pointer;
+    user-select: none;
+    border-top: 2px solid #e2e8f0 !important;
+}
+
+.o_repair_group_header td {
+    padding: 7px 12px !important;
+    font-size: 12px;
+    color: #334155;
+}
+
+.o_repair_group_header:hover {
+    background: #f1f5f9 !important;
+}
+
+.o_repair_group_arrow {
+    display: inline-block;
+    width: 16px;
+    font-size: 10px;
+    color: #64748b;
+    margin-right: 6px;
+    transition: transform 0.15s;
+}
+
+.o_repair_group_name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.o_repair_badge_progress {
+    background: #fed7aa !important;
+    color: #92400e !important;
+    font-size: 10px !important;
+}
+
+/* ── Linhas de processo ── */
+.o_repair_proc_row td {
+    padding: 6px 8px !important;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.o_repair_proc_row:hover td {
+    background: rgba(79, 70, 229, 0.03) !important;
+}
+
+.o_repair_row_done td    { background: #f0fdf4 !important; }
+.o_repair_row_progress td { background: #fffbeb !important; }
+.o_repair_row_paused td  { background: #eff6ff !important; }
+.o_repair_row_cancel td  { background: #f9fafb !important; opacity: 0.7; }
+
+/* ── Colunas ── */
+.o_repair_proc_seq   { color: #94a3b8; font-weight: 600; text-align: center; }
+.o_repair_proc_op    { font-weight: 500; color: #1e293b; }
+.o_repair_proc_machine { color: #475569; font-size: 11px; }
+.o_repair_proc_date  { font-size: 11px; }
+.o_repair_proc_date_start { color: #64748b; font-size: 11px; }
+.o_repair_proc_time  { font-family: 'Courier New', monospace; font-weight: 600; }
+.o_repair_proc_actions { white-space: nowrap; }
+
+/* ── Data editável ── */
+.o_repair_date_display {
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.o_repair_date_display:hover {
+    background: #e0e7ff;
+    color: #4f46e5;
+}
+
+.o_repair_date_input {
+    font-size: 11px !important;
+    height: 26px !important;
+    padding: 2px 4px !important;
+}
+
+/* ── Badges de estado ── */
+.o_repair_state_ready    { background: #dbeafe; color: #1d4ed8; }
+.o_repair_state_progress { background: #fed7aa; color: #92400e; }
+.o_repair_state_paused   { background: #e0e7ff; color: #3730a3; }
+.o_repair_state_done     { background: #dcfce7; color: #166534; }
+.o_repair_state_cancel   { background: #f1f5f9; color: #64748b; }
+
+/* ── Botões de ação ── */
+.o_repair_action_btn {
+    font-size: 11px !important;
+    padding: 2px 8px !important;
+    margin-right: 2px !important;
+    height: 24px !important;
+    line-height: 1 !important;
+}
+
+/* ══ Botão abrir processos ══ */
+
+
+/* ══════════════════════════════════════════════════════════════
+   FORM OS — NOVO LAYOUT
+══════════════════════════════════════════════════════════════ */
+
+/* Bloco título: Nº OS grande + badge tipo */
+.o_repair_title_block {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.o_repair_title_row {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 0;
+}
+
+.o_repair_os_number_wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.o_repair_os_label_small {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 2px;
+}
+
+/* Nº OS — campo grande */
+.o_repair_os_big input,
+.o_repair_os_big .o_field_widget input,
+.o_repair_os_big span {
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    color: #1e293b !important;
+    letter-spacing: .3px !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    line-height: 1.1 !important;
+}
+
+/* Badge tipo ao lado do número */
+.o_repair_type_inline {
+    display: flex;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.o_repair_badge_type {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: .3px;
+}
+
+.o_repair_badge_reparo {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.o_repair_badge_fabricacao {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Colorir o select de Tipo de Ordem */
+.o_field_widget[name="order_type"] select {
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+/* Botão Cancelar — pastel suave */
+.o_repair_btn_cancel_soft {
+    background-color: #fca5a5 !important;
+    border-color: #fca5a5 !important;
+    color: #7f1d1d !important;
+}
+
+.o_repair_btn_cancel_soft:hover {
+    background-color: #f87171 !important;
+    border-color: #f87171 !important;
+}
+
+/* Concluir OS — empurrado para direita */
+.o_repair_btn_conclude_right {
+    margin-left: auto !important;
+    order: 99 !important;
+}
+
+/* Header programação OS */
+.o_repair_prog_header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 8px 0 6px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.o_repair_prog_title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+/* Grid de processos — scroll viewport */
+.o_field_one2many[name="process_ids"] .o_list_renderer {
+    max-height: calc(100vh - 520px) !important;
+    min-height: 150px !important;
+    overflow-y: auto !important;
+}
+
+.o_field_one2many[name="process_ids"] .o_list_renderer thead {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 2 !important;
+    background: #f8f9fa !important;
+}
+
+/* ══ Botão PROGRAMAÇÃO DE OS — verde ══ */
+button.o_repair_btn_programacao,
+.btn.o_repair_btn_programacao {
+    background-color: #059669 !important;
+    border-color: #059669 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+}
+button.o_repair_btn_programacao:hover,
+.btn.o_repair_btn_programacao:hover {
+    background-color: #047857 !important;
+    border-color: #047857 !important;
+    color: #fff !important;
+}
+
+/* ══ Placeholder desativado de PROGRAMAÇÃO ══ */
+span.o_repair_btn_programacao_disabled,
+.o_repair_btn_programacao_disabled {
+    display: inline-flex !important;
+    align-items: center !important;
+    background-color: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    font-weight: 600 !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
 }

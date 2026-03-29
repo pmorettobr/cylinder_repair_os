@@ -167,7 +167,7 @@ class RepairOrder(models.Model):
                 return {
                     'warning': {
                         'title': 'Nº OS duplicado',
-                        'message': 'Já existe a OS "%s" com este número. Verifique antes de salvar.' % existing.name,
+                        'message': 'Já existe uma OS com o número "%s". Verifique antes de salvar.' % existing.os_number,
                     }
                 }
 
@@ -238,6 +238,43 @@ class RepairOrder(models.Model):
         }
 
     # ── Carregador de processos em lote ───────────────────────────────────────
+
+    def action_confirm_and_start(self):
+        """Confirma e inicia a OS em um único clique."""
+        self.ensure_one()
+        if self.os_state == 'draft':
+            self.action_confirm_os()
+        self.action_start_os()
+        return False
+
+    def action_open_process_loader_add_more(self):
+        """Abre o carregador para adicionar mais processos (já carregados aparecem desmarcados)."""
+        self.ensure_one()
+        # Same as normal loader but context signals "add more" mode
+        return self.action_open_process_loader()
+
+    def action_open_processes_grouped(self):
+        """Abre processos desta OS numa view separada agrupada por componente."""
+        self.ensure_one()
+        # Se a OS ainda não foi salva, salva primeiro
+        if not self.id:
+            self = self.create(self._convert_to_write(self._cache))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Programação — %s' % (self.os_number or self.name or 'Nova OS'),
+            'res_model': 'repair.os.process',
+            'view_mode': 'list',
+            'views': [(self.env.ref('cylinder_repair_os.view_repair_process_grouped_list').id, 'list')],
+            'search_view_id': (self.env.ref('cylinder_repair_os.view_repair_process_grouped_search').id, 'search'),
+            'domain': [('repair_id', '=', self.id)],
+            'context': {
+                'default_repair_id': self.id,
+                'active_repair_id': self.id,
+                'group_by': ['component_type_id'],
+                'search_default_group_component': 1,
+            },
+            'target': 'current',
+        }
 
     def action_open_process_loader(self):
         self.ensure_one()
