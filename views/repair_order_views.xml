@@ -127,90 +127,9 @@
                     </div>
 
                     <field name="process_ids"
-                           context="{'default_repair_id': id}">
-                        <tree string="Processos"
-                              decoration-success="state == 'done'"
-                              decoration-warning="state == 'progress'"
-                              decoration-info="state == 'paused'"
-                              decoration-muted="state in ('ready', 'cancel')"
-                              editable="bottom"
-                              create="0"
-                              default_order="component_type_id, sequence">
-
-                            <field name="state" invisible="1"/>
-                            <field name="has_deviation" invisible="1"/>
-
-                            <!-- Seq numérica -->
-                            <field name="sequence" string="Seq." readonly="1" width="40"/>
-
-                            <!-- Componente -->
-                            <field name="component_type_id" string="Componente" readonly="1"/>
-
-                            <!-- Operação -->
-                            <field name="name" string="Operação" readonly="1"/>
-
-                            <!-- Máquina — só nome -->
-                            <field name="machine_id" string="Máquina" readonly="1"/>
-
-                            <!-- Data Programada com datepicker OCA -->
-                            <field name="date_planned" string="Data Prog."
-                                   widget="date"
-                                   optional="show"/>
-
-                            <!-- Data Início real -->
-                            <field name="date_start_orig" string="Dt. Início"
-                                   readonly="1" optional="show"/>
-
-                            <!-- Cronômetro -->
-                            <field name="duration_display" string="Tempo"
-                                   readonly="1"
-                                   class="o_repair_timer"/>
-
-                            <!-- Situação -->
-                            <field name="state" string="Situação" widget="badge"
-                                   decoration-success="state == 'done'"
-                                   decoration-warning="state == 'progress'"
-                                   decoration-info="state == 'paused'"
-                                   decoration-muted="state in ('ready', 'cancel')"
-                                   readonly="1"/>
-
-                            <!-- Coluna Desvio — ícone com tooltip dinâmico -->
-                            <field name="deviation_tooltip" invisible="1"/>
-                            <button name="action_open_deviation_popup" type="object"
-                                    attrs="{'invisible': [('has_deviation', '=', False)]}"
-                                    icon="fa-exclamation-triangle"
-                                    class="btn-sm btn-link o_repair_deviation_alert o_repair_has_tooltip"
-                                    title="Clique para editar o desvio"/>
-                            <button name="action_open_deviation_popup" type="object"
-                                    attrs="{'invisible': [('has_deviation', '=', True)]}"
-                                    icon="fa-circle-o"
-                                    class="btn-sm btn-link o_repair_deviation_none"
-                                    title="Sem desvio — clique para registrar"/>
-
-                            <!-- Botão Iniciar -->
-                            <button name="action_start" type="object"
-                                    string="Iniciar" class="btn-sm btn-success"
-                                    attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
-
-                            <!-- Botão Pausar -->
-                            <button name="action_pause" type="object"
-                                    string="Pausar" class="btn-sm btn-warning"
-                                    attrs="{'invisible': [('state', '!=', 'progress')]}"/>
-
-                            <!-- Botão Concluir -->
-                            <button name="action_finish" type="object"
-                                    string="Concluir" class="btn-sm o_repair_btn_concluir"
-                                    attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
-
-                            <!-- Botão Cancelar processo -->
-                            <button name="action_cancel" type="object"
-                                    icon="fa-ban"
-                                    class="btn-sm btn-link text-danger"
-                                    title="Cancelar processo"
-                                    attrs="{'invisible': [('state', 'not in', ('ready', 'paused'))]}"/>
-
-                        </tree>
-                    </field>
+                           widget="repair_process_list"
+                           context="{'default_repair_id': id}"
+                           options="{}"/>
 
                 </sheet>
 

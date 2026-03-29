@@ -744,3 +744,140 @@ td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
 .o_repair_form .o_form_sheet {
     padding-top: 20px !important;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   WIDGET OWL — RepairProcessListWidget
+══════════════════════════════════════════════════════════════ */
+
+.o_repair_process_widget {
+    max-height: calc(100vh - 450px);
+    min-height: 180px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+}
+
+/* ── Tabela ── */
+.o_repair_proc_table {
+    width: 100%;
+    font-size: 12px;
+    border-collapse: collapse;
+    margin: 0 !important;
+}
+
+.o_repair_proc_thead th {
+    position: sticky;
+    top: 0;
+    background: #f1f5f9 !important;
+    border-bottom: 2px solid #cbd5e1;
+    font-weight: 600;
+    font-size: 11px;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    padding: 7px 8px !important;
+    z-index: 3;
+    white-space: nowrap;
+}
+
+/* ── Cabeçalho do Grupo (Componente) ── */
+.o_repair_group_header {
+    background: #f8fafc !important;
+    cursor: pointer;
+    user-select: none;
+    border-top: 2px solid #e2e8f0 !important;
+}
+
+.o_repair_group_header td {
+    padding: 7px 12px !important;
+    font-size: 12px;
+    color: #334155;
+}
+
+.o_repair_group_header:hover {
+    background: #f1f5f9 !important;
+}
+
+.o_repair_group_arrow {
+    display: inline-block;
+    width: 16px;
+    font-size: 10px;
+    color: #64748b;
+    margin-right: 6px;
+    transition: transform 0.15s;
+}
+
+.o_repair_group_name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.o_repair_badge_progress {
+    background: #fed7aa !important;
+    color: #92400e !important;
+    font-size: 10px !important;
+}
+
+/* ── Linhas de processo ── */
+.o_repair_proc_row td {
+    padding: 6px 8px !important;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.o_repair_proc_row:hover td {
+    background: rgba(79, 70, 229, 0.03) !important;
+}
+
+.o_repair_row_done td    { background: #f0fdf4 !important; }
+.o_repair_row_progress td { background: #fffbeb !important; }
+.o_repair_row_paused td  { background: #eff6ff !important; }
+.o_repair_row_cancel td  { background: #f9fafb !important; opacity: 0.7; }
+
+/* ── Colunas ── */
+.o_repair_proc_seq   { color: #94a3b8; font-weight: 600; text-align: center; }
+.o_repair_proc_op    { font-weight: 500; color: #1e293b; }
+.o_repair_proc_machine { color: #475569; font-size: 11px; }
+.o_repair_proc_date  { font-size: 11px; }
+.o_repair_proc_date_start { color: #64748b; font-size: 11px; }
+.o_repair_proc_time  { font-family: 'Courier New', monospace; font-weight: 600; }
+.o_repair_proc_actions { white-space: nowrap; }
+
+/* ── Data editável ── */
+.o_repair_date_display {
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.o_repair_date_display:hover {
+    background: #e0e7ff;
+    color: #4f46e5;
+}
+
+.o_repair_date_input {
+    font-size: 11px !important;
+    height: 26px !important;
+    padding: 2px 4px !important;
+}
+
+/* ── Badges de estado ── */
+.o_repair_state_ready    { background: #dbeafe; color: #1d4ed8; }
+.o_repair_state_progress { background: #fed7aa; color: #92400e; }
+.o_repair_state_paused   { background: #e0e7ff; color: #3730a3; }
+.o_repair_state_done     { background: #dcfce7; color: #166534; }
+.o_repair_state_cancel   { background: #f1f5f9; color: #64748b; }
+
+/* ── Botões de ação ── */
+.o_repair_action_btn {
+    font-size: 11px !important;
+    padding: 2px 8px !important;
+    margin-right: 2px !important;
+    height: 24px !important;
+    line-height: 1 !important;
+}

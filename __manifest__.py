@@ -44,6 +44,9 @@ Funcionalidades:
         'web.assets_backend': [
             'cylinder_repair_os/static/src/css/repair.css',
             'cylinder_repair_os/static/src/js/timer.js',
+            # OWL widget — template must load before JS
+            'cylinder_repair_os/static/src/xml/repair_process_list.xml',
+            'cylinder_repair_os/static/src/js/repair_process_list.js',
         ],
     },
     'installable': True,

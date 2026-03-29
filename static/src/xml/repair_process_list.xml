@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="cylinder_repair_os.RepairProcessList" owl="1">
+    <div class="o_repair_process_widget">
+
+        <!-- Tabela de processos agrupada por componente -->
+        <table class="o_repair_proc_table table table-sm mb-0">
+            <thead class="o_repair_proc_thead">
+                <tr>
+                    <th style="width:50px">Seq.</th>
+                    <th>Operação</th>
+                    <th style="width:140px">Máquina</th>
+                    <th style="width:110px">Data Prog.</th>
+                    <th style="width:140px">Dt. Início</th>
+                    <th style="width:90px">Tempo</th>
+                    <th style="width:110px">Situação</th>
+                    <th style="width:40px" title="Desvio">⚠</th>
+                    <th style="width:200px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-if="groupedProcesses.length === 0">
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-3">
+                            Nenhum processo cadastrado. Use "Carregar Processos" para adicionar.
+                        </td>
+                    </tr>
+                </t>
+
+                <t t-foreach="groupedProcesses" t-as="group" t-key="group.id">
+
+                    <!-- ── Cabeçalho do Grupo (Componente) ────────────────── -->
+                    <tr class="o_repair_group_header"
+                        t-on-click="() => this.toggleGroup(group.id)">
+                        <td colspan="9">
+                            <span class="o_repair_group_arrow">
+                                <t t-if="isCollapsed(group.id)">▶</t>
+                                <t t-else="">▼</t>
+                            </span>
+                            <strong class="o_repair_group_name" t-esc="group.name"/>
+                            <span class="badge bg-secondary ms-2"
+                                  t-esc="group.records.length + ' processo(s)'"/>
+                            <!-- Indicadores de estado no grupo -->
+                            <t t-if="group.inProgress > 0">
+                                <span class="badge o_repair_badge_progress ms-1">
+                                    <t t-esc="group.inProgress"/> em andamento
+                                </span>
+                            </t>
+                            <t t-if="group.done === group.records.length and group.records.length > 0">
+                                <span class="badge bg-success ms-1">✓ Concluído</span>
+                            </t>
+                        </td>
+                    </tr>
+
+                    <!-- ── Linhas de Processo (visíveis quando expandido) ──── -->
+                    <t t-if="!isCollapsed(group.id)">
+                        <t t-foreach="group.records" t-as="rec" t-key="rec.id">
+                            <tr t-att-class="getRowClass(rec.data.state)">
+
+                                <!-- Seq -->
+                                <td class="text-center o_repair_proc_seq">
+                                    <span t-esc="rec.data.sequence"/>
+                                </td>
+
+                                <!-- Operação -->
+                                <td class="o_repair_proc_op">
+                                    <span t-esc="rec.data.name"/>
+                                </td>
+
+                                <!-- Máquina -->
+                                <td class="o_repair_proc_machine">
+                                    <span t-esc="rec.data.machine_id ? rec.data.machine_id[1] : '—'"/>
+                                </td>
+
+                                <!-- Data Programada — editável -->
+                                <td class="o_repair_proc_date">
+                                    <t t-if="editingDate === rec.id">
+                                        <input type="date"
+                                               class="form-control form-control-sm o_repair_date_input"
+                                               t-att-value="rec.data.date_planned or ''"
+                                               t-on-change="(ev) => this.saveDatePlanned(rec, ev)"
+                                               t-on-blur="() => this.cancelEditDate()"
+                                               t-ref="dateInput"
+                                               style="min-width:120px"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="o_repair_date_display"
+                                              t-att-class="!rec.data.date_planned ? 'text-muted' : ''"
+                                              t-on-click="() => this.startEditDate(rec.id)"
+                                              title="Clique para editar">
+                                            <t t-if="rec.data.date_planned">
+                                                <t t-esc="formatDate(rec.data.date_planned)"/>
+                                            </t>
+                                            <t t-else="">
+                                                <i class="fa fa-calendar-o me-1"/>
+                                                <span style="font-size:11px">definir</span>
+                                            </t>
+                                        </span>
+                                    </t>
+                                </td>
+
+                                <!-- Data Início -->
+                                <td class="o_repair_proc_date_start">
+                                    <span t-esc="formatDatetime(rec.data.date_start_orig)"/>
+                                </td>
+
+                                <!-- Tempo / Cronômetro -->
+                                <td class="o_repair_proc_time">
+                                    <span class="o_repair_timer"
+                                          t-att-class="rec.data.state === 'progress' ? 'o_repair_timer_running' : ''"
+                                          t-att-data-start="rec.data.date_start or ''"
+                                          t-att-data-acc="rec.data.duration_acc or 0"
+                                          t-esc="rec.data.duration_display or '00:00:00'"/>
+                                </td>
+
+                                <!-- Situação -->
+                                <td>
+                                    <span t-att-class="getStateBadgeClass(rec.data.state)"
+                                          t-esc="getStateLabel(rec.data.state)"/>
+                                </td>
+
+                                <!-- Desvio -->
+                                <td class="text-center">
+                                    <t t-if="rec.data.has_deviation">
+                                        <span class="o_repair_deviation_alert"
+                                              t-att-title="rec.data.deviation_tooltip or 'Desvio registrado'"
+                                              t-on-click="() => this.openDeviationPopup(rec.id)"
+                                              style="cursor:pointer;font-size:15px">⚠</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="o_repair_deviation_none"
+                                              t-on-click="() => this.openDeviationPopup(rec.id)"
+                                              title="Sem desvio — clique para registrar"
+                                              style="cursor:pointer;font-size:15px;color:#d1d5db">○</span>
+                                    </t>
+                                </td>
+
+                                <!-- Botões de ação -->
+                                <td class="o_repair_proc_actions">
+                                    <!-- Iniciar -->
+                                    <t t-if="rec.data.state === 'ready' or rec.data.state === 'paused'">
+                                        <button class="btn btn-sm btn-success o_repair_action_btn"
+                                                t-on-click="() => this.onStart(rec.id)"
+                                                t-att-disabled="loading === rec.id">
+                                            <t t-if="loading === rec.id">
+                                                <i class="fa fa-spinner fa-spin"/>
+                                            </t>
+                                            <t t-else="">Iniciar</t>
+                                        </button>
+                                    </t>
+                                    <!-- Pausar -->
+                                    <t t-if="rec.data.state === 'progress'">
+                                        <button class="btn btn-sm btn-warning o_repair_action_btn"
+                                                t-on-click="() => this.onPause(rec.id)"
+                                                t-att-disabled="loading === rec.id">
+                                            Pausar
+                                        </button>
+                                    </t>
+                                    <!-- Concluir -->
+                                    <t t-if="rec.data.state === 'progress' or rec.data.state === 'paused'">
+                                        <button class="btn btn-sm o_repair_btn_concluir o_repair_action_btn"
+                                                t-on-click="() => this.onFinish(rec.id)"
+                                                t-att-disabled="loading === rec.id">
+                                            Concluir
+                                        </button>
+                                    </t>
+                                    <!-- Cancelar (ban) -->
+                                    <t t-if="rec.data.state === 'ready' or rec.data.state === 'paused'">
+                                        <button class="btn btn-sm btn-link text-danger o_repair_action_btn"
+                                                t-on-click="() => this.onCancel(rec.id)"
+                                                title="Cancelar processo">
+                                            <i class="fa fa-ban"/>
+                                        </button>
+                                    </t>
+                                </td>
+
+                            </tr>
+                        </t>
+                    </t>
+
+                </t>
+            </tbody>
+        </table>
+    </div>
+</t>
+
+</templates>
