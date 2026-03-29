@@ -355,13 +355,14 @@
                         <field name="has_deviation"
                                string="Registrar Desvio?"
                                widget="boolean_toggle"/>
-                        <field name="deviation_notes"
-                               string="Descrição do Desvio"
-                               attrs="{'invisible': [('has_deviation', '=', False)]}"
-                               placeholder="Descreva o desvio encontrado..."
-                               nolabel="1"
-                               options="{'rows': 6}"/>
                     </group>
+                    <div attrs="{'invisible': [('has_deviation', '=', False)]}"
+                         style="padding: 0 16px 12px;">
+                        <field name="deviation_notes"
+                               nolabel="1"
+                               placeholder="Descreva o desvio encontrado..."
+                               style="width:100%; min-height:120px; resize:vertical;"/>
+                    </div>
                 </sheet>
                 <footer>
                     <button string="Salvar" class="btn-primary"

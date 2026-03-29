@@ -522,13 +522,30 @@
     display: none !important;
 }
 
-/* Expande o sheet para ocupar toda a largura quando sem chatter */
+/* Expande o sheet para ocupar toda a largura sem chatter */
 .o_repair_form .o_form_sheet_bg {
     width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
 }
 
-.o_repair_form .o_form_view {
-    flex-direction: column !important;
+/* Remove chatter da participação no flex layout */
+.o_repair_form .o_chatter_container,
+.o_repair_form .o-mail-ChatterContainer,
+.o_repair_form .o_FormRenderer_chatterContainer,
+.o_repair_form .o-mail-Thread,
+.o_repair_form .o_Thread {
+    display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    flex: 0 0 0 !important;
+    overflow: hidden !important;
+}
+
+.o_repair_form .o_form_view,
+.o_repair_form .o_FormRenderer,
+.o_repair_form > .o_content {
+    flex-direction: row !important;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -636,4 +653,43 @@ td .o_repair_deviation_field[decoration-warning] .o_field_boolean::before {
 .o_handle_cell {
     width: 20px !important;
     min-width: 20px !important;
+}
+
+/* ══ Título OS — label acima, número+badge na mesma linha ══ */
+.o_repair_os_label_row {
+    margin-bottom: 2px;
+}
+
+.o_repair_title_row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
+}
+
+.o_repair_type_badge {
+    display: flex;
+    align-items: center;
+    margin-top: 2px;
+}
+
+/* ══ Barra de progresso nativa — estica para ocupar toda a largura ══ */
+.o_repair_progress_native {
+    width: 100% !important;
+}
+
+.o_repair_progress_native .o_progressbar {
+    height: 10px !important;
+    border-radius: 999px !important;
+}
+
+.o_repair_progress_native .o_progressbar_complete {
+    background: linear-gradient(90deg, #6366f1 0%, #4f46e5 40%, #22d3ee 100%) !important;
+    border-radius: 999px !important;
+}
+
+/* ══ Popup desvio — dialog maior ══ */
+.o_dialog .o_form_view .o_field_text textarea {
+    min-height: 120px !important;
+    resize: vertical !important;
 }

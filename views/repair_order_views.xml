@@ -65,19 +65,17 @@
                     <field name="state" invisible="1"/>
                     <field name="company_id" invisible="1"/>
                     <field name="is_overdue" invisible="1"/>
-                    <field name="progress_percent" invisible="1"
-                           class="o_repair_progress_value"/>
 
-                    <!-- ── Título: Nº OS grande + Tipo ─────────────── -->
+                    <!-- ── Título: Nº OS + Tipo alinhados ──────────── -->
                     <div class="o_repair_form_title">
+                        <div class="o_repair_os_label_row">
+                            <label class="o_repair_os_label">Nº OS</label>
+                        </div>
                         <div class="o_repair_title_row">
-                            <div class="o_repair_os_number_big">
-                                <label for="os_number" class="o_repair_os_label">Nº OS</label>
-                                <field name="os_number"
-                                       class="o_repair_os_input"
-                                       placeholder="Nº da OS do cliente..."
-                                       attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"/>
-                            </div>
+                            <field name="os_number"
+                                   class="o_repair_os_input"
+                                   placeholder="Nº da OS do cliente..."
+                                   attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"/>
                             <!-- Radio editável só no rascunho -->
                             <div class="o_repair_type_selector"
                                  attrs="{'invisible': [('os_state', '!=', 'draft')]}">
@@ -93,9 +91,8 @@
                                 <span attrs="{'invisible': [('order_type', '!=', 'fabrication')]}"
                                       class="badge o_repair_badge_fabricacao_lg">Fabricação</span>
                             </div>
-                            <div class="o_repair_overdue_badge"
-                                 attrs="{'invisible': [('is_overdue', '=', False)]}">
-                                <span class="badge bg-danger">⚠ Atrasada</span>
+                            <div attrs="{'invisible': [('is_overdue', '=', False)]}">
+                                <span class="badge bg-danger ms-2">⚠ Atrasada</span>
                             </div>
                         </div>
                     </div>
@@ -119,12 +116,12 @@
 
                     <!-- ── Barra de Progresso ─────────────────────────── -->
                     <div class="o_repair_progress_strip">
-                        <div class="o_repair_progress_bar_wrap">
-                            <div class="o_repair_progress_bar_fill o_repair_progress_fill_dynamic"/>
+                        <div class="o_repair_progress_bar_wrap o_repair_progress_native">
+                            <field name="progress_percent"
+                                   widget="progressbar"
+                                   options="{'editable': false, 'max_value': 100}"
+                                   nolabel="1"/>
                         </div>
-                        <span class="o_repair_progress_pct">
-                            <field name="progress_display" readonly="1"/>
-                        </span>
                     </div>
 
                     <!-- ── Processos ──────────────────────────────────── -->
@@ -150,9 +147,6 @@
 
                             <field name="state" invisible="1"/>
                             <field name="has_deviation" invisible="1"/>
-
-                            <!-- Handle drag para reordenar -->
-                            <field name="sequence" widget="handle"/>
 
                             <!-- Seq numérica -->
                             <field name="sequence" string="Seq." readonly="1" width="40"/>
