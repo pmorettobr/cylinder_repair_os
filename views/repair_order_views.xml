@@ -102,13 +102,19 @@
                         </group>
                     </group>
 
-                    <!-- ── Botão Programação de OS — sempre visível ── -->
-                    <div class="o_repair_open_processes_btn">
+                    <!-- ── Botões de navegação ── -->
+                    <div class="d-flex gap-2 mt-3 align-items-center">
+                        <button name="action_open_process_loader"
+                                string="CARREGAR PROCESSOS"
+                                type="object"
+                                class="btn btn-outline-secondary"
+                                attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
                         <button name="action_open_processes_grouped"
                                 type="object"
-                                class="btn btn-primary">
+                                class="btn btn-primary"
+                                attrs="{'readonly': [('process_count', '=', 0)]}">
                             <i class="fa fa-list-ul me-2"/>
-                            Programação de OS
+                            PROGRAMAÇÃO DE OS
                             (<field name="process_count" readonly="1" nolabel="1"/>)
                         </button>
                     </div>

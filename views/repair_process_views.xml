@@ -194,6 +194,7 @@
                 <field name="date_start_orig" string="Dt. Início" optional="show"/>
                 <field name="date_finished" string="Dt. Conclusão" optional="show"/>
                 <field name="duration_display" string="Tempo" readonly="1"/>
+                <field name="duration_acc" invisible="1" sum="Total Horas"/>
                 <field name="state" string="Situação" widget="badge"
                        decoration-success="state == 'done'"
                        decoration-warning="state == 'progress'"
@@ -382,25 +383,20 @@
         <field name="arch" type="xml">
             <tree string="Processos por Componente"
                   editable="bottom"
-                  create="0"
+                  create="1"
                   decoration-success="state == 'done'"
                   decoration-warning="state == 'progress'"
                   decoration-info="state == 'paused'"
                   decoration-muted="state in ('ready', 'cancel')"
                   default_order="component_type_id, sequence">
 
-                <header>
-                    <button name="action_open_loader_from_list"
-                            string="⚙ Carregar Processos"
-                            type="object"
-                            class="btn-secondary"/>
-                </header>
-
                 <field name="component_type_id" invisible="1"/>
+                <field name="repair_id" invisible="1"/>
                 <field name="state" invisible="1"/>
                 <field name="has_deviation" invisible="1"/>
 
-                <field name="sequence" string="Seq." readonly="1" width="50"/>
+                <field name="sequence" string="Seq." readonly="1" width="50"
+                       sum="Total"/>
                 <field name="name" string="Operação" readonly="1"/>
                 <field name="machine_id" string="Máquina" readonly="1"/>
                 <field name="date_planned" string="Data Prog." widget="date"/>
