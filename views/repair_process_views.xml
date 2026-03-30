@@ -522,17 +522,6 @@
                     <!-- Smart buttons no topo -->
                     <div class="oe_button_box" name="button_box">
 
-                        <!-- Voltar à OS -->
-                        <button name="%(cylinder_repair_os.action_repair_order_os)d"
-                                type="action"
-                                class="oe_stat_button"
-                                icon="fa-arrow-left">
-                            <div class="o_stat_info">
-                                <span class="o_stat_text">Voltar</span>
-                                <span class="o_stat_text">à OS</span>
-                            </div>
-                        </button>
-
                         <!-- Adicionar Processos -->
                         <button name="action_open_process_loader"
                                 type="object"
