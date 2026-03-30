@@ -567,7 +567,9 @@
                               decoration-muted="state in ('ready', 'cancel')"
                               default_order="component_type_id, sequence">
 
-                            <field name="component_type_id" invisible="1"/>
+                            <!-- Componente — visível e usado pelo JS para agrupamento -->
+                            <field name="component_name" string="Componente"
+                                   readonly="1" optional="show"/>
                             <field name="state" invisible="1"/>
                             <field name="has_deviation" invisible="1"/>
                             <field name="deviation_tooltip" invisible="1"/>

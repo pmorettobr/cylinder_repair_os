@@ -119,6 +119,17 @@ class RepairOsProcess(models.Model):
         default=0.0,
         help='Tempo previsto para execução do processo em minutos.',
     )
+    component_name = fields.Char(
+        string='Componente',
+        compute='_compute_component_name',
+        store=False,
+    )
+
+    @api.depends('component_type_id')
+    def _compute_component_name(self):
+        for rec in self:
+            rec.component_name = rec.component_type_id.name or ''
+
     # ── Desvio ────────────────────────────────────────────────────────────────
     has_deviation = fields.Boolean(
         string='Desvio?',

@@ -40,19 +40,18 @@
 
     // ── Lê o nome do componente de uma linha ─────────────────────────────
     function getComponentName(row) {
-        // Odoo renderiza campo Many2one invisible como elemento com name=
-        // O texto interno é o display name do registro
-        var cell = row.querySelector('[name="component_type_id"]');
-        if (!cell) return null;
-
-        // Tenta via link interno (Many2one com o_form_uri)
-        var link = cell.querySelector('.o_form_uri, a, span');
-        if (link && link.textContent.trim()) return link.textContent.trim();
-
-        // Tenta via texto direto da célula
-        var text = cell.textContent.trim();
-        if (text) return text;
-
+        // Lê o campo Char component_name (sempre renderiza texto puro no DOM)
+        var cell = row.querySelector('[name="component_name"]');
+        if (cell) {
+            var text = cell.textContent.trim();
+            if (text && text !== '_c') return text;
+        }
+        // Fallback: Many2one component_type_id
+        var cell2 = row.querySelector('[name="component_type_id"]');
+        if (cell2) {
+            var t2 = cell2.textContent.trim();
+            if (t2) return t2;
+        }
         return null;
     }
 
