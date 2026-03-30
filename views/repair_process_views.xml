@@ -430,8 +430,8 @@
                 <field name="date_start_orig" string="Dt. Início"
                        readonly="1" optional="show"/>
 
-                <!-- Tempo Previsto -->
-                <field name="duration_planned_display" string="Prev."
+                <!-- Tempo Previsto (minutos) -->
+                <field name="duration_planned" string="Prev. (min)"
                        readonly="1" optional="show"/>
 
                 <!-- Tempo real -->

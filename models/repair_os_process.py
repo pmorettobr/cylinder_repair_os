@@ -119,34 +119,6 @@ class RepairOsProcess(models.Model):
         default=0.0,
         help='Tempo previsto para execução do processo em minutos.',
     )
-    duration_planned_display = fields.Char(
-        string='Tempo Previsto',
-        compute='_compute_duration_planned_display',
-        inverse='_inverse_duration_planned_display',
-        help='Tempo previsto no formato HH:MM',
-    )
-
-    @api.depends('duration_planned')
-    def _compute_duration_planned_display(self):
-        for rec in self:
-            if rec.duration_planned:
-                h = int(rec.duration_planned // 60)
-                m = int(rec.duration_planned % 60)
-                rec.duration_planned_display = '%02d:%02d' % (h, m)
-            else:
-                rec.duration_planned_display = '00:00'
-
-    def _inverse_duration_planned_display(self):
-        for rec in self:
-            val = rec.duration_planned_display or '00:00'
-            try:
-                parts = val.split(':')
-                h = int(parts[0]) if len(parts) > 0 else 0
-                m = int(parts[1]) if len(parts) > 1 else 0
-                rec.duration_planned = h * 60 + m
-            except Exception:
-                rec.duration_planned = 0.0
-
     # ── Desvio ────────────────────────────────────────────────────────────────
     has_deviation = fields.Boolean(
         string='Desvio?',
