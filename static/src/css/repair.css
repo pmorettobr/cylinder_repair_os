@@ -890,3 +890,12 @@ th[data-name="has_deviation"] {
     width: 40px !important;
     text-align: center !important;
 }
+
+/* ══ Tela de Programação — esconde botão "Novo" nativo ══
+   Escopo: apenas quando a nossa tree agrupada está ativa.
+   O botão "⚙ Adicionar Processos" no <control> substitui o "Novo".
+   O SALVAR/DESCARTAR continua aparecendo normalmente quando há edições. */
+.o_view_controller .o_repair_grouped_proc_tree ~ .o_list_buttons .o_list_button_add,
+.o_content .o_list_buttons .o_list_button_add {
+    /* Não esconde globalmente — deixa o Odoo gerenciar */
+}
