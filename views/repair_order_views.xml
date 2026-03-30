@@ -102,31 +102,43 @@
                         </group>
                     </group>
 
-                    <!-- ── Botões de navegação ── -->
-                    <div class="d-flex gap-2 mt-3 align-items-center">
-                        <!-- CARREGAR PROCESSOS — sempre ativo -->
+                    <!-- ── Smart Buttons ── -->
+                    <div class="oe_button_box" name="button_box">
+
+                        <!-- Carregar Processos -->
                         <button name="action_open_process_loader"
                                 type="object"
-                                class="btn btn-primary"
+                                class="oe_stat_button"
+                                icon="fa-cog"
                                 attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}">
-                            <i class="fa fa-cog me-2"/>
-                            CARREGAR PROCESSOS
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Carregar</span>
+                                <span class="o_stat_text">Processos</span>
+                            </div>
                         </button>
-                        <!-- PROGRAMAÇÃO DE OS — invisível sem processos, visível com cor própria quando tem -->
+
+                        <!-- Programação de OS — mostra contagem, invisível sem processos -->
                         <button name="action_open_processes_grouped"
                                 type="object"
-                                class="btn o_repair_btn_programacao"
+                                class="oe_stat_button"
+                                icon="fa-list-ul"
                                 attrs="{'invisible': [('process_count', '=', 0)]}">
-                            <i class="fa fa-list-ul me-2"/>
-                            PROGRAMAÇÃO DE OS
-                            (<field name="process_count" readonly="1" nolabel="1"/>)
+                            <field name="process_count"
+                                   widget="statinfo"
+                                   string="Programação"/>
                         </button>
-                        <!-- placeholder cinza quando sem processos -->
-                        <span class="btn o_repair_btn_programacao_disabled"
-                              attrs="{'invisible': [('process_count', '!=', 0)]}">
-                            <i class="fa fa-list-ul me-2"/>
-                            PROGRAMAÇÃO DE OS (0)
-                        </span>
+
+                        <!-- Placeholder Programação — visível sem processos, desativado -->
+                        <button type="object"
+                                class="oe_stat_button o_repair_stat_disabled"
+                                icon="fa-list-ul"
+                                attrs="{'invisible': [('process_count', '!=', 0)]}">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">0</span>
+                                <span class="o_stat_text">Programação</span>
+                            </div>
+                        </button>
+
                     </div>
 
                 </sheet>

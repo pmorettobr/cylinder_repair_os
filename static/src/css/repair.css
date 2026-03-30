@@ -904,3 +904,21 @@ th[data-name="has_deviation"] {
 .o_repair_hide_new .o_list_button_add {
     display: none !important;
 }
+
+/* ══ Smart button desabilitado ══ */
+.o_repair_stat_disabled {
+    opacity: 0.5 !important;
+    cursor: default !important;
+    pointer-events: none !important;
+}
+
+/* ══ Info bar da OS na tela de programação ══ */
+.o_repair_prog_os_info {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 16px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #475569;
+}

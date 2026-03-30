@@ -512,6 +512,122 @@
         <field name="context">{'search_default_group_component': 1, 'group_by': ['component_type_id']}</field>
     </record>
 
+    <!-- ══ Form wrapper para tela de processos com smart button ══ -->
+    <record id="view_repair_order_process_wrapper" model="ir.ui.view">
+        <field name="name">repair.order.process.wrapper</field>
+        <field name="model">repair.order</field>
+        <field name="arch" type="xml">
+            <form string="Programação de OS" create="0" edit="0" delete="0">
+                <sheet>
+                    <!-- Smart buttons no topo -->
+                    <div class="oe_button_box" name="button_box">
+
+                        <!-- Voltar à OS -->
+                        <button name="%(cylinder_repair_os.action_repair_order_os)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-arrow-left">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Voltar</span>
+                                <span class="o_stat_text">à OS</span>
+                            </div>
+                        </button>
+
+                        <!-- Adicionar Processos -->
+                        <button name="action_open_process_loader"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-plus">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Adicionar</span>
+                                <span class="o_stat_text">Processos</span>
+                            </div>
+                        </button>
+
+                        <!-- Contagem de processos -->
+                        <button class="oe_stat_button" icon="fa-list-ul" type="object">
+                            <field name="process_count" widget="statinfo" string="Processos"/>
+                        </button>
+
+                    </div>
+
+                    <!-- Info básica da OS -->
+                    <div class="o_repair_prog_os_info">
+                        <span class="fw-bold">OS:</span>
+                        <field name="os_number" readonly="1" class="ms-1"/>
+                        <span class="ms-3 fw-bold">Cliente:</span>
+                        <field name="partner_id" readonly="1" class="ms-1"/>
+                        <span class="ms-3 fw-bold">Produto:</span>
+                        <field name="product_name" readonly="1" class="ms-1"/>
+                    </div>
+
+                    <!-- Lista de processos agrupados -->
+                    <field name="process_ids"
+                           context="{'default_repair_id': id, 'group_by': ['component_type_id'], 'search_default_group_component': 1}"
+                           nolabel="1">
+                        <tree string="Processos por Componente"
+                              editable="bottom"
+                              create="0"
+                              decoration-success="state == 'done'"
+                              decoration-warning="state == 'progress'"
+                              decoration-info="state == 'paused'"
+                              decoration-muted="state in ('ready', 'cancel')"
+                              default_order="component_type_id, sequence">
+
+                            <field name="component_type_id" invisible="1"/>
+                            <field name="state" invisible="1"/>
+                            <field name="has_deviation" invisible="1"/>
+                            <field name="deviation_tooltip" invisible="1"/>
+                            <field name="duration_acc" invisible="1" sum="Tempo Total (s)"/>
+
+                            <field name="sequence" string="Seq." readonly="1" optional="show"/>
+                            <field name="name" string="Operação" readonly="1" optional="show"/>
+                            <field name="machine_id" string="Centro de Trabalho" readonly="1" optional="show"/>
+                            <field name="operator_id" string="Operador" optional="show"/>
+                            <field name="date_planned" string="Data Prog." widget="date" optional="show"/>
+                            <field name="date_start_orig" string="Dt. Início" readonly="1" optional="show"/>
+                            <field name="duration_planned" string="Prev. (min)" readonly="1" optional="show"/>
+                            <field name="duration_display" string="Tempo" readonly="1" optional="show"
+                                   class="o_repair_timer"/>
+                            <field name="state" string="Situação" widget="badge"
+                                   decoration-success="state == 'done'"
+                                   decoration-warning="state == 'progress'"
+                                   decoration-info="state == 'paused'"
+                                   decoration-muted="state in ('ready', 'cancel')"
+                                   readonly="1" optional="show"/>
+
+                            <button name="action_open_deviation_popup" type="object"
+                                    attrs="{'invisible': [('has_deviation', '=', False)]}"
+                                    icon="fa-exclamation-triangle"
+                                    class="btn-sm btn-link o_repair_deviation_alert"
+                                    title="Desvio registrado"/>
+                            <button name="action_open_deviation_popup" type="object"
+                                    attrs="{'invisible': [('has_deviation', '=', True)]}"
+                                    icon="fa-circle-o"
+                                    class="btn-sm btn-link o_repair_deviation_none"
+                                    title="Sem desvio"/>
+
+                            <button name="action_start" type="object"
+                                    string="Iniciar" class="btn-sm btn-success"
+                                    attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
+                            <button name="action_pause" type="object"
+                                    string="Pausar" class="btn-sm btn-warning"
+                                    attrs="{'invisible': [('state', '!=', 'progress')]}"/>
+                            <button name="action_finish" type="object"
+                                    string="Concluir" class="btn-sm o_repair_btn_concluir"
+                                    attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
+                            <button name="action_cancel" type="object"
+                                    icon="fa-ban" class="btn-sm btn-link text-danger"
+                                    title="Cancelar"
+                                    attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
+                        </tree>
+                    </field>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
 
     <!-- Server action "Adicionar Processos" — aparece no menu Ação da lista agrupada -->
     <record id="action_load_processes_from_list" model="ir.actions.server">
