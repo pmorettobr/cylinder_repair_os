@@ -385,7 +385,6 @@
                   editable="bottom"
                   create="1"
                   multi_edit="0"
-                  class="o_repair_grouped_proc_tree"
                   decoration-success="state == 'done'"
                   decoration-warning="state == 'progress'"
                   decoration-info="state == 'paused'"
