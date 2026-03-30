@@ -533,8 +533,11 @@
                             </div>
                         </button>
 
-                        <!-- Contagem de processos -->
-                        <button class="oe_stat_button" icon="fa-list-ul" type="object">
+                        <!-- Contagem de processos — não clicável, só informativo -->
+                        <button name="action_open_processes_grouped"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-list-ul">
                             <field name="process_count" widget="statinfo" string="Processos"/>
                         </button>
 
