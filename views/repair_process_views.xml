@@ -555,7 +555,7 @@
 
                     <!-- Lista de processos agrupados -->
                     <field name="process_ids"
-                           context="{'default_repair_id': id, 'group_by': ['component_type_id'], 'search_default_group_component': 1}"
+                           context="{'default_repair_id': id, 'search_default_group_component': 1}"
                            nolabel="1">
                         <tree string="Processos por Componente"
                               editable="bottom"
