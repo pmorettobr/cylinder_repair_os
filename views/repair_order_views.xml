@@ -129,7 +129,8 @@
                         </button>
 
                         <!-- Placeholder Programação — visível sem processos, desativado -->
-                        <button type="object"
+                        <button name="action_open_processes_grouped"
+                                type="object"
                                 class="oe_stat_button o_repair_stat_disabled"
                                 icon="fa-list-ul"
                                 attrs="{'invisible': [('process_count', '!=', 0)]}">
