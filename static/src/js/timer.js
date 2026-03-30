@@ -1,24 +1,23 @@
 /**
  * cylinder_repair_os — timer.js
  * 1. Cronômetro em tempo real (1s)
- * 2. Agrupamento visual por componente na grid de processos (One2many)
+ * 2. Agrupamento visual por componente na grid de processos
  */
 (function () {
     'use strict';
 
-    // ── Paleta de cores suaves por componente ────────────────────────────
     var COLORS = [
-        'rgba(219,234,254,0.5)',   // azul
-        'rgba(220,252,231,0.5)',   // verde
-        'rgba(254,249,195,0.5)',   // amarelo
-        'rgba(237,233,254,0.5)',   // roxo
-        'rgba(255,237,213,0.5)',   // laranja
-        'rgba(204,251,241,0.5)',   // teal
-        'rgba(252,231,243,0.5)',   // rosa
-        'rgba(241,245,249,0.5)',   // cinza
+        'rgba(219,234,254,0.5)',
+        'rgba(220,252,231,0.5)',
+        'rgba(254,249,195,0.5)',
+        'rgba(237,233,254,0.5)',
+        'rgba(255,237,213,0.5)',
+        'rgba(204,251,241,0.5)',
+        'rgba(252,231,243,0.5)',
+        'rgba(241,245,249,0.5)',
     ];
 
-    // ── Cronômetro 1 segundo ─────────────────────────────────────────────
+    // ── Cronômetro ───────────────────────────────────────────────────────
     function hms(s) {
         s = Math.max(0, Math.floor(s));
         return [Math.floor(s/3600), Math.floor((s%3600)/60), s%60]
@@ -39,46 +38,51 @@
     }
     setInterval(tick, 1000);
 
-    // ── Agrupamento visual por componente ────────────────────────────────
-
-    // Detecta se estamos na tela de programação (form wrapper)
-    function isProcessWrapper() {
-        return !!document.querySelector('.o_form_view [name="process_ids"] .o_list_renderer');
-    }
-
-    // Extrai o nome do componente de uma linha da grid
+    // ── Lê o nome do componente de uma linha ─────────────────────────────
     function getComponentName(row) {
-        // Busca o campo component_type_id (invisible) na linha
+        // Odoo renderiza campo Many2one invisible como elemento com name=
+        // O texto interno é o display name do registro
         var cell = row.querySelector('[name="component_type_id"]');
-        if (cell) return cell.textContent.trim();
+        if (!cell) return null;
+
+        // Tenta via link interno (Many2one com o_form_uri)
+        var link = cell.querySelector('.o_form_uri, a, span');
+        if (link && link.textContent.trim()) return link.textContent.trim();
+
+        // Tenta via texto direto da célula
+        var text = cell.textContent.trim();
+        if (text) return text;
+
         return null;
     }
 
-    // Cria linha de cabeçalho de grupo
-    function makeGroupHeader(name, count, colorIdx, colspan) {
+    // ── Cria linha de cabeçalho de grupo ─────────────────────────────────
+    function makeGroupHeader(name, count, colspan) {
         var tr = document.createElement('tr');
         tr.className = 'o_repair_group_header';
         tr.dataset.groupName = name;
         tr.dataset.collapsed = '0';
-        tr.style.cssText = 'background:#f1f5f9;border-top:2px solid #e2e8f0;cursor:pointer;';
+        tr.style.cssText = 'background:#e8edf2;border-top:2px solid #cbd5e1;cursor:pointer;user-select:none;';
 
         var td = document.createElement('td');
         td.colSpan = colspan || 20;
-        td.style.cssText = 'padding:6px 12px;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#475569;';
-        td.innerHTML = '<span class="o_repair_toggle" style="margin-right:8px;display:inline-block;transition:transform .2s;">▼</span>' +
-            '<span style="color:#1e293b;">' + name + '</span>' +
-            '<span style="margin-left:8px;background:#64748b;color:#fff;border-radius:10px;padding:1px 8px;font-size:11px;">' + count + '</span>';
+        td.style.cssText = 'padding:5px 12px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#334155;';
+        td.innerHTML =
+            '<span class="o_repair_arrow" style="display:inline-block;margin-right:8px;transition:transform .15s;">▼</span>' +
+            '<span>' + name + '</span>' +
+            '<span style="margin-left:10px;background:#475569;color:#fff;border-radius:10px;padding:1px 9px;font-size:11px;font-weight:600;">' + count + '</span>';
 
         tr.appendChild(td);
 
-        // Toggle collapse ao clicar
-        tr.addEventListener('click', function() {
+        tr.addEventListener('click', function(e) {
+            // Não colapsa se clicar em botão dentro da linha
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+
             var collapsed = tr.dataset.collapsed === '1';
             tr.dataset.collapsed = collapsed ? '0' : '1';
-            var arrow = tr.querySelector('.o_repair_toggle');
+            var arrow = tr.querySelector('.o_repair_arrow');
             if (arrow) arrow.style.transform = collapsed ? '' : 'rotate(-90deg)';
 
-            // Mostra/esconde linhas do grupo
             var next = tr.nextElementSibling;
             while (next && !next.classList.contains('o_repair_group_header')) {
                 next.style.display = collapsed ? '' : 'none';
@@ -89,54 +93,51 @@
         return tr;
     }
 
-    var _lastGroupHash = '';
+    // ── Aplica agrupamento visual ─────────────────────────────────────────
+    var _lastHash = '';
 
     function applyGrouping() {
-        if (!isProcessWrapper()) return;
+        var wrapper = document.querySelector('.o_form_view [name="process_ids"] .o_list_renderer');
+        if (!wrapper) return;
 
-        var tbody = document.querySelector('.o_form_view [name="process_ids"] .o_list_renderer tbody');
+        var tbody = wrapper.querySelector('tbody');
         if (!tbody) return;
 
         var rows = Array.from(tbody.querySelectorAll('tr.o_data_row'));
         if (!rows.length) return;
 
-        // Calcula hash dos componentes para evitar reprocessar sem mudança
+        // Hash para evitar reprocessar sem mudança
         var hash = rows.map(function(r) {
-            return getComponentName(r) || '';
+            return getComponentName(r) || '_';
         }).join('|');
 
-        if (hash === _lastGroupHash) return;
-        _lastGroupHash = hash;
+        if (hash === _lastHash) return;
+        _lastHash = hash;
 
         // Remove cabeçalhos anteriores
-        Array.from(tbody.querySelectorAll('.o_repair_group_header')).forEach(function(h) {
-            h.remove();
-        });
+        tbody.querySelectorAll('.o_repair_group_header').forEach(function(h) { h.remove(); });
 
-        // Agrupa linhas por componente
+        // Constrói grupos
         var groups = [];
-        var currentGroup = null;
-
+        var cur = null;
         rows.forEach(function(row) {
             var comp = getComponentName(row) || '(Sem Componente)';
-            if (!currentGroup || currentGroup.name !== comp) {
-                currentGroup = { name: comp, rows: [] };
-                groups.push(currentGroup);
+            if (!cur || cur.name !== comp) {
+                cur = { name: comp, rows: [] };
+                groups.push(cur);
             }
-            currentGroup.rows.push(row);
+            cur.rows.push(row);
         });
 
-        // Injeta cabeçalhos e aplica cores
+        // Injeta cabeçalhos e cores
         groups.forEach(function(group, idx) {
             var color = COLORS[idx % COLORS.length];
             var firstRow = group.rows[0];
-            var colspan = firstRow.querySelectorAll('td').length;
+            var colspan = firstRow.querySelectorAll('td').length || 20;
 
-            // Insere cabeçalho antes da primeira linha do grupo
-            var header = makeGroupHeader(group.name, group.rows.length, idx, colspan);
+            var header = makeGroupHeader(group.name, group.rows.length, colspan);
             tbody.insertBefore(header, firstRow);
 
-            // Aplica cor de fundo nas linhas do grupo
             group.rows.forEach(function(row) {
                 row.style.backgroundColor = color;
             });
@@ -152,7 +153,7 @@
     function init() {
         obs.observe(document.body, { childList: true, subtree: true });
         tick();
-        applyGrouping();
+        setTimeout(applyGrouping, 500); // aguarda Odoo renderizar
     }
 
     if (document.readyState === 'loading') {
@@ -160,5 +161,4 @@
     } else {
         init();
     }
-
 })();

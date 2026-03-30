@@ -517,7 +517,7 @@
         <field name="name">repair.order.process.wrapper</field>
         <field name="model">repair.order</field>
         <field name="arch" type="xml">
-            <form string="Programação de OS" create="0" edit="0" delete="0">
+            <form string="Programação de OS" create="0" delete="0">
                 <sheet>
                     <!-- Smart buttons no topo -->
                     <div class="oe_button_box" name="button_box">
