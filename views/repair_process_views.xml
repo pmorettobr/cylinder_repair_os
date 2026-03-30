@@ -565,7 +565,7 @@
                               decoration-warning="state == 'progress'"
                               decoration-info="state == 'paused'"
                               decoration-muted="state in ('ready', 'cancel')"
-                              default_order="component_type_id, sequence">
+                              default_order="sequence">
 
                             <!-- Componente — visível e usado pelo JS para agrupamento -->
                             <field name="component_name" string="Componente"
