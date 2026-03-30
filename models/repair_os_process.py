@@ -489,11 +489,21 @@ class RepairOsProcess(models.Model):
     def action_open_loader_from_list(self):
         """Abre o carregador de processos a partir da lista agrupada.
         Funciona mesmo sem registros selecionados, usando active_repair_id do contexto."""
+        ctx = self.env.context
         repair_id = (
-            self.env.context.get('active_repair_id') or
-            self.env.context.get('default_repair_id') or
-            (self and self[0].repair_id.id if self else False)
+            ctx.get('active_repair_id') or
+            ctx.get('default_repair_id') or
+            ctx.get('repair_id') or
+            (self[0].repair_id.id if self else False)
         )
+        if not repair_id:
+            # Tenta extrair do domínio ativo
+            domain = ctx.get('active_domain') or []
+            for clause in domain:
+                if isinstance(clause, (list, tuple)) and len(clause) == 3:
+                    if clause[0] == 'repair_id' and clause[1] == '=':
+                        repair_id = clause[2]
+                        break
         if not repair_id:
             return {'type': 'ir.actions.act_window_close'}
         repair = self.env['repair.order'].browse(repair_id)

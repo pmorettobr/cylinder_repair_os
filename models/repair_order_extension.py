@@ -270,6 +270,7 @@ class RepairOrder(models.Model):
             'context': {
                 'default_repair_id': self.id,
                 'active_repair_id': self.id,
+                'repair_id': self.id,
                 'group_by': ['component_type_id'],
                 'search_default_group_component': 1,
             },

@@ -383,7 +383,7 @@
         <field name="arch" type="xml">
             <tree string="Processos por Componente"
                   editable="bottom"
-                  create="0"
+                  create="1"
                   multi_edit="0"
                   decoration-success="state == 'done'"
                   decoration-warning="state == 'progress'"
@@ -391,12 +391,11 @@
                   decoration-muted="state in ('ready', 'cancel')"
                   default_order="component_type_id, sequence">
 
-                <!-- Botão fixo no rodapé da lista para adicionar processos -->
+                <!-- Botão no rodapé — substitui o "Novo" padrão -->
                 <control>
                     <button name="action_open_loader_from_list"
-                            string="+ Adicionar Processos"
-                            type="object"
-                            class="btn-primary"/>
+                            string="⚙ Adicionar Processos"
+                            type="object"/>
                 </control>
 
                 <!-- Campos invisíveis necessários para lógica -->
