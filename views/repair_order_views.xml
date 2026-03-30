@@ -59,6 +59,46 @@
                     <field name="company_id" invisible="1"/>
                     <field name="is_overdue" invisible="1"/>
 
+                    <!-- ── Smart Buttons ── -->
+                    <div class="oe_button_box" name="button_box">
+
+                        <!-- Carregar Processos -->
+                        <button name="action_open_process_loader"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-cog"
+                                attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Carregar</span>
+                                <span class="o_stat_text">Processos</span>
+                            </div>
+                        </button>
+
+                        <!-- Programação de OS — mostra contagem -->
+                        <button name="action_open_processes_grouped"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-list-ul"
+                                attrs="{'invisible': [('process_count', '=', 0)]}">
+                            <field name="process_count"
+                                   widget="statinfo"
+                                   string="Programação"/>
+                        </button>
+
+                        <!-- Placeholder Programação — desativado sem processos -->
+                        <button name="action_open_processes_grouped"
+                                type="object"
+                                class="oe_stat_button o_repair_stat_disabled"
+                                icon="fa-list-ul"
+                                attrs="{'invisible': [('process_count', '!=', 0)]}">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">0</span>
+                                <span class="o_stat_text">Programação</span>
+                            </div>
+                        </button>
+
+                    </div>
+
                     <!-- ── Nº OS grande + badge Tipo alinhados ── -->
                     <div class="o_repair_title_block">
                         <div class="o_repair_title_row">

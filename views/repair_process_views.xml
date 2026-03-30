@@ -555,11 +555,12 @@
 
                     <!-- Lista de processos agrupados -->
                     <field name="process_ids"
-                           context="{'default_repair_id': id, 'search_default_group_component': 1}"
+                           context="{'default_repair_id': id, 'group_by': 'component_type_id'}"
                            nolabel="1">
                         <tree string="Processos por Componente"
                               editable="bottom"
                               create="0"
+                              no_open="1"
                               decoration-success="state == 'done'"
                               decoration-warning="state == 'progress'"
                               decoration-info="state == 'paused'"
