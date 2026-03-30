@@ -418,21 +418,21 @@
                 <field name="machine_id" string="Centro de Trabalho"
                        readonly="1" optional="show"/>
 
-                <!-- Operador — editável -->
+                <!-- Operador — readonly para evitar SALVAR -->
                 <field name="operator_id" string="Operador"
-                       optional="show"/>
+                       readonly="1" optional="show"/>
 
-                <!-- Data Programada -->
+                <!-- Data Programada — readonly -->
                 <field name="date_planned" string="Data Prog."
-                       widget="date" optional="show"/>
+                       widget="date" readonly="1" optional="show"/>
 
                 <!-- Data Início -->
                 <field name="date_start_orig" string="Dt. Início"
                        readonly="1" optional="show"/>
 
-                <!-- Tempo Previsto HH:MM — editável -->
+                <!-- Tempo Previsto -->
                 <field name="duration_planned_display" string="Prev."
-                       optional="show"/>
+                       readonly="1" optional="show"/>
 
                 <!-- Tempo real -->
                 <field name="duration_display" string="Tempo"

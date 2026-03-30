@@ -899,3 +899,15 @@ th[data-name="has_deviation"] {
 .o_content .o_list_buttons .o_list_button_add {
     /* Não esconde globalmente — deixa o Odoo gerenciar */
 }
+
+/* ══ Tela Programação — esconde botão "Novo" nativo ══
+   Funciona porque quando .o_repair_grouped_proc_tree está no DOM
+   significa que estamos nessa view específica.               */
+.o_action:has(.o_repair_grouped_proc_tree) .o_list_button_add {
+    display: none !important;
+}
+
+/* Fallback para browsers sem :has() */
+.o_repair_hide_new .o_list_button_add {
+    display: none !important;
+}

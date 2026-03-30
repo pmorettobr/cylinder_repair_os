@@ -89,3 +89,17 @@
         init();
     }
 })();
+
+// Esconde botão "Novo" nativo quando na tela de programação
+(function hideNewBtn() {
+    function check() {
+        var hasTree = !!document.querySelector('.o_repair_grouped_proc_tree');
+        var action = document.querySelector('.o_action');
+        if (action) {
+            action.classList.toggle('o_repair_hide_new', hasTree);
+        }
+    }
+    var obs2 = new MutationObserver(check);
+    obs2.observe(document.body, {childList: true, subtree: true});
+    check();
+})();
