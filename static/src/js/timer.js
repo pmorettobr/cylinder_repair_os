@@ -1,7 +1,7 @@
 /**
  * cylinder_repair_os — timer.js
  * 1. Cronômetro em tempo real (1s)
- * 2. Agrupamento visual por componente na grid de processos
+ * 2. Agrupamento visual por componente — reorganiza DOM + injeta headers
  */
 (function () {
     'use strict';
@@ -40,19 +40,10 @@
 
     // ── Lê o nome do componente de uma linha ─────────────────────────────
     function getComponentName(row) {
-        // Lê o campo Char component_name (sempre renderiza texto puro no DOM)
         var cell = row.querySelector('[name="component_name"]');
-        if (cell) {
-            var text = cell.textContent.trim();
-            if (text && text !== '_c') return text;
-        }
-        // Fallback: Many2one component_type_id
-        var cell2 = row.querySelector('[name="component_type_id"]');
-        if (cell2) {
-            var t2 = cell2.textContent.trim();
-            if (t2) return t2;
-        }
-        return null;
+        if (!cell) return '(Sem Componente)';
+        var text = cell.textContent.trim();
+        return text || '(Sem Componente)';
     }
 
     // ── Cria linha de cabeçalho de grupo ─────────────────────────────────
@@ -74,14 +65,11 @@
         tr.appendChild(td);
 
         tr.addEventListener('click', function(e) {
-            // Não colapsa se clicar em botão dentro da linha
             if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
-
             var collapsed = tr.dataset.collapsed === '1';
             tr.dataset.collapsed = collapsed ? '0' : '1';
             var arrow = tr.querySelector('.o_repair_arrow');
             if (arrow) arrow.style.transform = collapsed ? '' : 'rotate(-90deg)';
-
             var next = tr.nextElementSibling;
             while (next && !next.classList.contains('o_repair_group_header')) {
                 next.style.display = collapsed ? '' : 'none';
@@ -94,8 +82,10 @@
 
     // ── Aplica agrupamento visual ─────────────────────────────────────────
     var _lastHash = '';
+    var _grouping = false;
 
     function applyGrouping() {
+        if (_grouping) return;
         var wrapper = document.querySelector('.o_form_view [name="process_ids"] .o_list_renderer');
         if (!wrapper) return;
 
@@ -107,52 +97,70 @@
 
         // Hash para evitar reprocessar sem mudança
         var hash = rows.map(function(r) {
-            return getComponentName(r) || '_';
+            return r.dataset.id + ':' + getComponentName(r);
         }).join('|');
 
         if (hash === _lastHash) return;
         _lastHash = hash;
 
+        _grouping = true;
+
         // Remove cabeçalhos anteriores
         tbody.querySelectorAll('.o_repair_group_header').forEach(function(h) { h.remove(); });
 
-        // Constrói grupos
-        var groups = [];
-        var cur = null;
+        // Coleta todos os componentes em ordem de aparição (preserva ordem original)
+        var compOrder = [];
+        var compMap = {};
         rows.forEach(function(row) {
-            var comp = getComponentName(row) || '(Sem Componente)';
-            if (!cur || cur.name !== comp) {
-                cur = { name: comp, rows: [] };
-                groups.push(cur);
+            var comp = getComponentName(row);
+            if (!compMap[comp]) {
+                compMap[comp] = [];
+                compOrder.push(comp);
             }
-            cur.rows.push(row);
+            compMap[comp].push(row);
         });
 
-        // Injeta cabeçalhos e cores
-        groups.forEach(function(group, idx) {
+        // Reorganiza o DOM: agrupa todas as linhas do mesmo componente
+        compOrder.forEach(function(comp, idx) {
             var color = COLORS[idx % COLORS.length];
-            var firstRow = group.rows[0];
-            var colspan = firstRow.querySelectorAll('td').length || 20;
+            var groupRows = compMap[comp];
+            var colspan = groupRows[0].querySelectorAll('td').length || 20;
 
-            var header = makeGroupHeader(group.name, group.rows.length, colspan);
-            tbody.insertBefore(header, firstRow);
+            // Injeta cabeçalho antes do primeiro grupo
+            var header = makeGroupHeader(comp, groupRows.length, colspan);
+            tbody.appendChild(header);
 
-            group.rows.forEach(function(row) {
+            // Move todas as linhas do componente para depois do cabeçalho
+            groupRows.forEach(function(row) {
                 row.style.backgroundColor = color;
+                tbody.appendChild(row);
             });
         });
+
+        _grouping = false;
     }
 
     // ── Observer ─────────────────────────────────────────────────────────
-    var obs = new MutationObserver(function() {
+    var _timer = null;
+
+    var obs = new MutationObserver(function(mutations) {
+        // Ignora mutações causadas pelo próprio JS de agrupamento
+        var relevant = mutations.some(function(m) {
+            return !Array.from(m.addedNodes).every(function(n) {
+                return n.classList && n.classList.contains('o_repair_group_header');
+            });
+        });
         tick();
-        applyGrouping();
+        if (relevant) {
+            clearTimeout(_timer);
+            _timer = setTimeout(applyGrouping, 200);
+        }
     });
 
     function init() {
         obs.observe(document.body, { childList: true, subtree: true });
         tick();
-        setTimeout(applyGrouping, 500); // aguarda Odoo renderizar
+        setTimeout(applyGrouping, 600);
     }
 
     if (document.readyState === 'loading') {
