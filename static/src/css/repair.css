@@ -923,20 +923,18 @@ th[data-name="has_deviation"] {
     color: #475569;
 }
 
-/* ══ Tela de Programação — largura máxima ══ */
-/* Remove margens laterais do sheet na tela de processos */
-.o_form_view .o_form_sheet_bg {
-    padding: 0 8px !important;
+/* ══ Tela de Programação — mais espaço, scoped via classe JS ══ */
+.o_repair_process_page .o_form_sheet_bg {
+    padding: 8px 24px !important;
 }
 
-.o_form_view .o_form_sheet {
+.o_repair_process_page .o_form_sheet {
     max-width: 100% !important;
-    margin: 0 auto !important;
-    padding: 12px 16px !important;
+    padding: 12px 20px !important;
 }
 
-/* Aumenta a área da One2many na tela de processos */
-.o_form_view [name="process_ids"] .o_list_renderer {
-    max-height: calc(100vh - 280px) !important;
+/* Scroll vertical na grid de processos */
+.o_repair_process_page [name="process_ids"] .o_list_renderer {
+    max-height: calc(100vh - 300px) !important;
     overflow-y: auto !important;
 }

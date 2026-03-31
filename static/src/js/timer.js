@@ -144,23 +144,32 @@
     var _timer = null;
 
     var obs = new MutationObserver(function(mutations) {
-        // Ignora mutações causadas pelo próprio JS de agrupamento
         var relevant = mutations.some(function(m) {
             return !Array.from(m.addedNodes).every(function(n) {
                 return n.classList && n.classList.contains('o_repair_group_header');
             });
         });
         tick();
+        applyPageClass();
         if (relevant) {
             clearTimeout(_timer);
             _timer = setTimeout(applyGrouping, 200);
         }
     });
 
+    function applyPageClass() {
+        var hasProcessIds = !!document.querySelector('.o_form_view [name="process_ids"]');
+        var action = document.querySelector('.o_action');
+        if (action) {
+            action.classList.toggle('o_repair_process_page', hasProcessIds);
+        }
+    }
+
     function init() {
         obs.observe(document.body, { childList: true, subtree: true });
         tick();
         setTimeout(applyGrouping, 600);
+        setTimeout(applyPageClass, 300);
     }
 
     if (document.readyState === 'loading') {
