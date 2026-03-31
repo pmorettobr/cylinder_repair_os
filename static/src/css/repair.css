@@ -939,16 +939,4 @@ th[data-name="has_deviation"] {
     overflow-y: auto !important;
 }
 
-/* ══ Fix: Smart buttons na tela de programação — posição direita ══ */
-.o_repair_process_page .oe_button_box {
-    position: absolute !important;
-    top: 0 !important;
-    right: 0 !important;
-    width: auto !important;
-    max-width: 50% !important;
-}
 
-.o_repair_process_page .o_form_sheet {
-    position: relative !important;
-    min-height: 60px !important;
-}
