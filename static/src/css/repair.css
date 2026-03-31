@@ -939,22 +939,16 @@ th[data-name="has_deviation"] {
     overflow-y: auto !important;
 }
 
-/* ══ Fix: Smart buttons na tela de programação ══ */
-/* Garante que o oe_button_box fica dentro do sheet sem vazar */
+/* ══ Fix: Smart buttons na tela de programação — posição direita ══ */
 .o_repair_process_page .oe_button_box {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-items: center !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    margin-bottom: 8px !important;
-    padding-bottom: 4px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: auto !important;
+    max-width: 50% !important;
 }
 
-/* Linha de fechamento do sheet — garante borda visível */
 .o_repair_process_page .o_form_sheet {
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 4px !important;
+    position: relative !important;
+    min-height: 60px !important;
 }
