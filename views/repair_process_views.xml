@@ -567,19 +567,23 @@
                               decoration-muted="state in ('ready', 'cancel')"
                               default_order="sequence">
 
-                            <!-- Componente — visível e usado pelo JS para agrupamento -->
-                            <field name="component_name" string="Componente"
-                                   readonly="1" optional="show"/>
+                            <!-- Campos invisíveis -->
                             <field name="state" invisible="1"/>
                             <field name="has_deviation" invisible="1"/>
                             <field name="deviation_tooltip" invisible="1"/>
                             <field name="duration_acc" invisible="1" sum="Tempo Total (s)"/>
 
+                            <!-- Seq primeiro -->
                             <field name="sequence" string="Seq." readonly="1" optional="show"/>
+
+                            <!-- Componente — visível e usado pelo JS para agrupamento -->
+                            <field name="component_name" string="Componente"
+                                   readonly="1" optional="show"/>
                             <field name="name" string="Operação" readonly="1" optional="show"/>
                             <field name="machine_id" string="Centro de Trabalho" readonly="1" optional="show"/>
                             <field name="operator_id" string="Operador" optional="show"/>
-                            <field name="date_planned" string="Data Prog." widget="date" optional="show"/>
+                            <field name="date_planned" string="Data Prog."
+                                   widget="date" optional="show"/>
                             <field name="date_start_orig" string="Dt. Início" readonly="1" optional="show"/>
                             <field name="duration_planned" string="Prev. (min)" readonly="1" optional="show"/>
                             <field name="duration_display" string="Tempo" readonly="1" optional="show"
