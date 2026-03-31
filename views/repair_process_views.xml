@@ -533,10 +533,10 @@
                             </div>
                         </button>
 
-                        <!-- Contagem de processos — não clicável, só informativo -->
+                        <!-- Contagem de processos — informativo sem clique -->
                         <button name="action_open_processes_grouped"
                                 type="object"
-                                class="oe_stat_button"
+                                class="oe_stat_button o_repair_stat_disabled"
                                 icon="fa-list-ul">
                             <field name="process_count" widget="statinfo" string="Processos"/>
                         </button>
