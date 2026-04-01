@@ -165,11 +165,77 @@
         }
     }
 
+    // ── Bus listener — sincronização desktop/mobile ──────────────────────
+    function getRepairIdFromPage() {
+        // Extrai repair_id do URL ou do DOM
+        var hash = window.location.hash || '';
+        var m = hash.match(/[?&]id=(\d+)/) || hash.match(/#.*?id=(\d+)/);
+        if (m) return parseInt(m[1]);
+        // Tenta pelo breadcrumb (ex: "2312 — ds")
+        var bc = document.querySelector('.o_breadcrumb .o_last_breadcrumb_item');
+        if (bc) {
+            var m2 = bc.textContent.match(/(\d+)/);
+            if (m2) return parseInt(m2[1]);
+        }
+        return null;
+    }
+
+    function startBusListener() {
+        try {
+            // Odoo 16 expõe o bus via window.owl ou via require
+            var bus = null;
+            if (window.__owl__ && window.odoo) {
+                // Tenta via env de componente ativo
+                var webClient = document.querySelector('.o_web_client');
+                if (webClient && webClient.__owl__) {
+                    var env = webClient.__owl__.component && webClient.__owl__.component.env;
+                    if (env && env.services && env.services['bus_service']) {
+                        bus = env.services['bus_service'];
+                    }
+                }
+            }
+            if (!bus) return;
+
+            var repairId = getRepairIdFromPage();
+            if (!repairId) return;
+
+            var channel = 'repair_os_' + repairId;
+            bus.subscribe(channel, function(payload) {
+                if (payload && payload.type === 'process_update') {
+                    // Recarrega o One2many de processos
+                    setTimeout(function() {
+                        var refreshBtn = document.querySelector(
+                            '.o_form_view [name="process_ids"] .o_list_renderer'
+                        );
+                        if (refreshBtn) {
+                            _lastHash = ''; // força reprocessamento do agrupamento
+                            applyGrouping();
+                        }
+                        // Dispara reload do form via Action service se disponível
+                        try {
+                            var env2 = document.querySelector('.o_web_client').__owl__.component.env;
+                            if (env2 && env2.services && env2.services.action) {
+                                // Só recarrega se estamos na tela de programação
+                                if (document.querySelector('.o_form_view [name="process_ids"]')) {
+                                    env2.services.action.restore();
+                                }
+                            }
+                        } catch(e) {}
+                    }, 300);
+                }
+            });
+            bus.addChannel(channel);
+        } catch(e) {
+            // Bus não disponível — sem problema, funciona sem sync
+        }
+    }
+
     function init() {
         obs.observe(document.body, { childList: true, subtree: true });
         tick();
         setTimeout(applyGrouping, 600);
         setTimeout(applyPageClass, 300);
+        setTimeout(startBusListener, 1500);
     }
 
     if (document.readyState === 'loading') {

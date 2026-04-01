@@ -343,6 +343,13 @@ class RepairOsProcess(models.Model):
             if rec.machine_id:
                 machines |= rec.machine_id
         machines._update_busy_status()
+        # Notifica clientes desktop sobre atualização
+        for rec in self:
+            self.env['bus.bus']._sendone(
+                'repair_os_%d' % rec.repair_id.id,
+                'process_update',
+                {'process_id': rec.id, 'state': 'progress'},
+            )
 
     def action_pause(self):
         """Pausar processo — acumula tempo decorrido."""
@@ -361,6 +368,13 @@ class RepairOsProcess(models.Model):
             if rec.machine_id:
                 machines |= rec.machine_id
         machines._update_busy_status()
+        # Notifica clientes desktop sobre atualização
+        for rec in self:
+            self.env['bus.bus']._sendone(
+                'repair_os_%d' % rec.repair_id.id,
+                'process_update',
+                {'process_id': rec.id, 'state': 'paused'},
+            )
 
     def action_finish(self):
         """
@@ -416,6 +430,12 @@ class RepairOsProcess(models.Model):
             })
             if rec.machine_id:
                 rec.machine_id._update_busy_status()
+            # Notifica clientes desktop sobre atualização
+            self.env['bus.bus']._sendone(
+                'repair_os_%d' % rec.repair_id.id,
+                'process_update',
+                {'process_id': rec.id, 'state': 'done'},
+            )
 
     def action_cancel(self):
         """Cancelar processo."""
