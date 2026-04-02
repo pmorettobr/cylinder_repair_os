@@ -42,9 +42,6 @@
                                    attrs="{'invisible': [('is_busy', '=', False)]}"/>
                         </group>
                     </group>
-                    <group string="Observações">
-                        <field name="notes" nolabel="1"/>
-                    </group>
                 </sheet>
             </form>
         </field>
