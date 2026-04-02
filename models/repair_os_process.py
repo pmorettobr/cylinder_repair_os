@@ -113,6 +113,7 @@ class RepairOsProcess(models.Model):
         'repair.machine.operator',
         string='Operador',
         domain="[('machine_id', '=', machine_id)]",
+        ondelete='set null',
         help='Operador responsável por este processo.',
     )
     duration_planned = fields.Float(
