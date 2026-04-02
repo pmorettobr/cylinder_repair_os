@@ -24,6 +24,17 @@
         <field name="arch" type="xml">
             <form string="Centro de Trabalho">
                 <sheet>
+                    <!-- Smart buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_operators"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-users"
+                                attrs="{'invisible': [('id', '=', False)]}">
+                            <field name="operator_count" widget="statinfo" string="Operadores"/>
+                        </button>
+                    </div>
+
                     <div class="oe_title">
                         <label for="name" string="Centro de Trabalho"/>
                         <h1>
@@ -31,15 +42,21 @@
                         </h1>
                     </div>
                     <group>
-                        <group>
+                        <group string="Identificação">
                             <field name="code" string="Código"/>
-                                        <field name="active" string="Ativo"/>
-                        </group>
-                        <group string="Status Atual">
-                            <field name="is_busy" string="Ocupada?" readonly="1"/>
+                            <field name="is_busy" string="Em Uso" readonly="1"/>
                             <field name="current_process_id" string="Processo em Andamento"
                                    readonly="1"
                                    attrs="{'invisible': [('is_busy', '=', False)]}"/>
+                            <field name="active" string="Ativo"/>
+                        </group>
+                        <group string="Configurações">
+                            <field name="allow_parallel" string="Permite Paralelo"
+                                   widget="boolean_toggle"
+                                   help="Centro aceita múltiplos processos simultâneos."/>
+                            <field name="bypass_sequence" string="Libera Sequência"
+                                   widget="boolean_toggle"
+                                   help="Processos neste centro ignoram validação de sequência."/>
                         </group>
                     </group>
                 </sheet>

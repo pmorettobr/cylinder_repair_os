@@ -26,11 +26,11 @@
                 <sheet>
                     <group>
                         <group string="Classificação">
-                            <field name="duration_planned" string="Tempo Previsto (min)"
-                                   help="Tempo padrão em minutos. Copiado para a OS ao carregar."/>
                             <field name="component_type_id" string="Componente" required="1"/>
                             <field name="name" string="Operação" required="1"/>
                             <field name="machine_id" string="Máquina Padrão"/>
+                            <field name="duration_planned" string="Tempo Previsto (min)"
+                                   help="Tempo padrão em minutos. Copiado para a OS ao carregar."/>
                             <field name="sequence" string="Ordem de Execução"/>
                             <field name="active"/>
                         </group>
