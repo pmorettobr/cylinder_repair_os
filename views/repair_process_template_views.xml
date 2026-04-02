@@ -7,7 +7,6 @@
         <field name="model">repair.process.template</field>
         <field name="arch" type="xml">
             <tree string="Catálogo de Processos"
-                  editable="bottom"
                   default_order="component_type_id, sequence">
                 <field name="sequence" widget="handle"/>
                 <field name="component_type_id" string="Componente" required="1"/>
@@ -27,6 +26,8 @@
                 <sheet>
                     <group>
                         <group string="Classificação">
+                            <field name="duration_planned" string="Tempo Previsto (min)"
+                                   help="Tempo padrão em minutos. Copiado para a OS ao carregar."/>
                             <field name="component_type_id" string="Componente" required="1"/>
                             <field name="name" string="Operação" required="1"/>
                             <field name="machine_id" string="Máquina Padrão"/>

@@ -25,3 +25,4 @@ access_repair_partner_operator,res.partner operator,base.model_res_partner,cylin
 access_repair_users_operator,res.users operator,base.model_res_users,cylinder_repair_os.group_repair_operator,1,0,0,0
 access_repair_line_operator,repair.line operator,repair.model_repair_line,cylinder_repair_os.group_repair_operator,1,1,1,1
 access_repair_fee_operator,repair.fee operator,repair.model_repair_fee,cylinder_repair_os.group_repair_operator,1,1,1,1
+access_repair_machine_operator,repair.machine.operator,model_repair_machine_operator,base.group_user,1,1,1,1

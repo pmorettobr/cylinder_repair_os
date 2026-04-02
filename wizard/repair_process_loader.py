@@ -126,6 +126,7 @@ class RepairProcessLoader(models.TransientModel):
                 'component_type_id': line.component_type_id.id if line.component_type_id else False,
                 'machine_id': line.machine_id.id if line.machine_id else False,
                 'block_on_quality_fail': line.block_on_quality_fail,
+                'duration_planned': line.duration_planned or 0.0,
                 'state': 'ready',
             }
             process = self.env['repair.os.process'].create(process_vals)

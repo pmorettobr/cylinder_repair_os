@@ -48,6 +48,11 @@ class RepairProcessTemplate(models.Model):
         default=False,
         help='Se marcado, o processo não pode ser concluído enquanto houver itens reprovados.',
     )
+    duration_planned = fields.Float(
+        string='Tempo Previsto (min)',
+        default=0.0,
+        help='Tempo padrão de execução em minutos. Copiado automaticamente para a OS ao carregar.',
+    )
 
     def name_get(self):
         result = []

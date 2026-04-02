@@ -110,8 +110,9 @@ class RepairOsProcess(models.Model):
     # ── Operador e Tempo Previsto ─────────────────────────────────────────
 
     operator_id = fields.Many2one(
-        'res.users',
+        'repair.machine.operator',
         string='Operador',
+        domain="[('machine_id', '=', machine_id)]",
         help='Operador responsável por este processo.',
     )
     duration_planned = fields.Float(
@@ -271,9 +272,13 @@ class RepairOsProcess(models.Model):
         - Processos com a MESMA sequência rodam em paralelo (sem bloqueio).
         - Um processo só pode iniciar se TODOS os processos com sequência
           ESTRITAMENTE MENOR estiverem concluídos (done) ou cancelados.
+        - Se o Centro de Trabalho tem bypass_sequence=True, pula a validação.
         """
         for rec in self:
             if not rec.component_type_id:
+                continue
+            # Bypass de sequência ativo no centro de trabalho
+            if rec.machine_id and rec.machine_id.bypass_sequence:
                 continue
             # Busca processos com sequência ESTRITAMENTE menor que a atual
             # que ainda não estejam concluídos ou cancelados

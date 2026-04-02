@@ -581,11 +581,13 @@
                                    readonly="1" optional="show"/>
                             <field name="name" string="Operação" readonly="1" optional="show"/>
                             <field name="machine_id" string="Centro de Trabalho" readonly="1" optional="show"/>
-                            <field name="operator_id" string="Operador" optional="show"/>
+                            <field name="operator_id" string="Operador"
+                                   domain="[('machine_id', '=', machine_id)]"
+                                   optional="show"/>
                             <field name="date_planned" string="Data Prog."
                                    widget="date" optional="show"/>
                             <field name="date_start_orig" string="Dt. Início" readonly="1" optional="show"/>
-                            <field name="duration_planned" string="Prev. (min)" readonly="1" optional="show"/>
+                            <field name="duration_planned" string="Prev. (min)" optional="show"/>
                             <field name="duration_display" string="Tempo" readonly="1" optional="show"
                                    class="o_repair_timer"/>
                             <field name="state" string="Situação" widget="badge"
