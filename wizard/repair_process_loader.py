@@ -17,6 +17,7 @@ class RepairProcessLoaderLine(models.TransientModel):
     quality_template_id = fields.Many2one(
         'repair.quality.template', string='Template QC')
     block_on_quality_fail = fields.Boolean(string='Bloquear se Reprovar?')
+    duration_planned = fields.Float(string='Tempo Previsto (min)', default=0.0)
 
 
 class RepairProcessLoader(models.TransientModel):
@@ -63,6 +64,7 @@ class RepairProcessLoader(models.TransientModel):
                 'name': tmpl.name,
                 'service_description': tmpl.service_description or False,
                 'machine_id': tmpl.machine_id.id if tmpl.machine_id else False,
+                'duration_planned': tmpl.duration_planned or 0.0,
                 'quality_template_id': tmpl.quality_template_id.id if tmpl.quality_template_id else False,
                 'block_on_quality_fail': tmpl.block_on_quality_fail,
             }))
