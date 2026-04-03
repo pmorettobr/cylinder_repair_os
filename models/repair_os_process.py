@@ -443,6 +443,30 @@ class RepairOsProcess(models.Model):
                 {'process_id': rec.id, 'state': 'done'},
             )
 
+    def action_move_up(self):
+        """Move o processo uma posição acima dentro do mesmo componente."""
+        self.ensure_one()
+        siblings = self.search([
+            ('repair_id', '=', self.repair_id.id),
+            ('component_type_id', '=', self.component_type_id.id),
+            ('id', '!=', self.id),
+            ('sequence', '<=', self.sequence),
+        ], order='sequence desc', limit=1)
+        if siblings:
+            self.sequence, siblings.sequence = siblings.sequence, self.sequence
+
+    def action_move_down(self):
+        """Move o processo uma posição abaixo dentro do mesmo componente."""
+        self.ensure_one()
+        siblings = self.search([
+            ('repair_id', '=', self.repair_id.id),
+            ('component_type_id', '=', self.component_type_id.id),
+            ('id', '!=', self.id),
+            ('sequence', '>=', self.sequence),
+        ], order='sequence asc', limit=1)
+        if siblings:
+            self.sequence, siblings.sequence = siblings.sequence, self.sequence
+
     def action_cancel(self):
         """Cancelar processo."""
         machines = self.env['repair.machine']
