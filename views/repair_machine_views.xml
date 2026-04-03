@@ -59,6 +59,19 @@
                                    help="Processos neste centro ignoram validação de sequência."/>
                         </group>
                     </group>
+
+                    <!-- Operadores vinculados -->
+                    <notebook>
+                        <page string="Operadores" name="operators">
+                            <field name="operator_ids" nolabel="1">
+                                <tree editable="bottom" create="1">
+                                    <field name="name" string="Nome"/>
+                                    <field name="notes" string="Observação"/>
+                                    <field name="active" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>

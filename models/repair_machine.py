@@ -39,11 +39,15 @@ class RepairMachine(models.Model):
         store=False,
     )
 
+    operator_ids = fields.One2many(
+        'repair.machine.operator',
+        'machine_id',
+        string='Operadores',
+    )
+
     def _compute_operator_count(self):
         for rec in self:
-            rec.operator_count = self.env['repair.machine.operator'].search_count([
-                ('machine_id', '=', rec.id)
-            ])
+            rec.operator_count = len(rec.operator_ids.filtered('active'))
 
     # is_busy store=True para permitir uso em filtros/domain de busca.
     # Recomputado explicitamente pelos métodos do repair.os.process.
