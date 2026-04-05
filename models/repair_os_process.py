@@ -354,7 +354,7 @@ class RepairOsProcess(models.Model):
         machines._update_busy_status()
         for rec in self:
             rec._notify_process_update('progress')
-        return False
+        return self[0].repair_id.with_context(process_refresh=True).action_open_processes_grouped()
 
     def action_pause(self):
         """Pausar processo — acumula tempo decorrido."""
@@ -375,7 +375,7 @@ class RepairOsProcess(models.Model):
         machines._update_busy_status()
         for rec in self:
             rec._notify_process_update('paused')
-        return False
+        return self[0].repair_id.with_context(process_refresh=True).action_open_processes_grouped()
 
     def action_finish(self):
         """
