@@ -175,7 +175,7 @@
                         domain="[('os_state','=','done')]"/>
                 <separator/>
                 <filter name="overdue" string="Atrasadas"
-                        domain="[('is_overdue','=',True)]"/>
+                        domain="[('deadline_date', '&lt;', context_today().strftime('%Y-%m-%d')), ('os_state', 'not in', ['done', 'cancel'])]"/>
                 <group expand="1" string="Agrupar por">
                     <filter name="group_state" string="Estado"
                             context="{'group_by': 'os_state'}"/>
