@@ -354,7 +354,7 @@ class RepairOsProcess(models.Model):
         machines._update_busy_status()
         for rec in self:
             rec._notify_process_update('progress')
-        return {'type': 'ir.actions.act_window_close'}
+        return False
 
     def action_pause(self):
         """Pausar processo — acumula tempo decorrido."""
@@ -375,7 +375,7 @@ class RepairOsProcess(models.Model):
         machines._update_busy_status()
         for rec in self:
             rec._notify_process_update('paused')
-        return {'type': 'ir.actions.act_window_close'}
+        return False
 
     def action_finish(self):
         """
@@ -406,7 +406,7 @@ class RepairOsProcess(models.Model):
                         return rec._open_quality_popup()
 
             rec._do_finish()
-        return {'type': 'ir.actions.act_window_close'}
+        return False
 
     def _do_finish(self):
         """Finalização efetiva do processo."""

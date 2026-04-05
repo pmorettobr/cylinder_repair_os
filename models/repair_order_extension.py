@@ -85,28 +85,28 @@ class RepairOrder(models.Model):
     process_count = fields.Integer(
         string='Total de Processos',
         compute='_compute_progress',
-        store=True,
+        store=False,
     )
     process_done_count = fields.Integer(
         string='Concluídos',
         compute='_compute_progress',
-        store=True,
+        store=False,
     )
     process_progress_count = fields.Integer(
         string='Em Andamento',
         compute='_compute_progress',
-        store=True,
+        store=False,
     )
     progress_percent = fields.Float(
         string='Progresso (%)',
         compute='_compute_progress',
-        store=True,
+        store=False,
         digits=(5, 1),
     )
     is_overdue = fields.Boolean(
         string='Atrasada',
         compute='_compute_progress',
-        store=True,
+        store=False,
     )
 
     # ── Campos display (evitam totalização no agrupamento) ───────────────────
