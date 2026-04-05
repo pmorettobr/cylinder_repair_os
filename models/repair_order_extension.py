@@ -106,7 +106,7 @@ class RepairOrder(models.Model):
     is_overdue = fields.Boolean(
         string='Atrasada',
         compute='_compute_progress',
-        store=False,
+        store=True,
     )
 
     # ── Campos display (evitam totalização no agrupamento) ───────────────────
