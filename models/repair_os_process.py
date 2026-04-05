@@ -308,6 +308,9 @@ class RepairOsProcess(models.Model):
         for rec in self:
             if not rec.machine_id:
                 continue
+            # Se allow_parallel está ativo no centro, ignora verificação de ocupação
+            if rec.machine_id.allow_parallel:
+                continue
             busy = self.search([
                 ('machine_id', '=', rec.machine_id.id),
                 ('state', '=', 'progress'),
@@ -403,6 +406,7 @@ class RepairOsProcess(models.Model):
                         return rec._open_quality_popup()
 
             rec._do_finish()
+        return {'type': 'ir.actions.act_window_close'}
 
     def _do_finish(self):
         """Finalização efetiva do processo."""
@@ -428,12 +432,7 @@ class RepairOsProcess(models.Model):
             })
             if rec.machine_id:
                 rec.machine_id._update_busy_status()
-            # Notifica clientes desktop sobre atualização
-            self.env['bus.bus']._sendone(
-                'repair_os_%d' % rec.repair_id.id,
-                'process_update',
-                {'process_id': rec.id, 'state': 'done'},
-            )
+            rec._notify_process_update('done')
 
     def _notify_process_update(self, state):
         """Dispara notificação bus para desktop e mobile com skip_navigation."""
