@@ -936,3 +936,21 @@ th[data-name="has_deviation"] {
 }
 
 
+
+/* ══ Botões de reordenação ▲▼ ══ */
+.o_repair_move_btn {
+    padding: 0 2px !important;
+    color: #94a3b8 !important;
+    line-height: 1 !important;
+}
+.o_repair_move_btn:hover {
+    color: #475569 !important;
+}
+.o_repair_handle_icon {
+    font-size: 10px !important;
+    margin-right: 2px;
+    opacity: 0.5;
+}
+.o_repair_caret {
+    font-size: 13px !important;
+}

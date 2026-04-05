@@ -1,7 +1,10 @@
 /**
  * cylinder_repair_os — timer.js
  * 1. Cronômetro em tempo real (1s)
- * 2. Agrupamento visual por componente — reorganiza DOM + injeta headers
+ * 2. Agrupamento visual por componente (reorganiza DOM + headers colapsáveis)
+ * 3. Headers condicionais (thead visível só quando grupo expandido)
+ * 4. Bus listener com skip_navigation (sem redirect)
+ * 5. Classe CSS na página de processos
  */
 (function () {
     'use strict';
@@ -42,8 +45,7 @@
     function getComponentName(row) {
         var cell = row.querySelector('[name="component_name"]');
         if (!cell) return '(Sem Componente)';
-        var text = cell.textContent.trim();
-        return text || '(Sem Componente)';
+        return cell.textContent.trim() || '(Sem Componente)';
     }
 
     // ── Cria linha de cabeçalho de grupo ─────────────────────────────────
@@ -75,12 +77,28 @@
                 next.style.display = collapsed ? '' : 'none';
                 next = next.nextElementSibling;
             }
+            // 3. Headers condicionais — esconde thead quando todos colapsados
+            updateTheadVisibility();
         });
 
         return tr;
     }
 
-    // ── Aplica agrupamento visual ─────────────────────────────────────────
+    // ── 3. Headers condicionais ───────────────────────────────────────────
+    function updateTheadVisibility() {
+        var wrapper = document.querySelector('.o_form_view [name="process_ids"] .o_list_renderer');
+        if (!wrapper) return;
+        var thead = wrapper.querySelector('thead');
+        if (!thead) return;
+        var headers = wrapper.querySelectorAll('.o_repair_group_header');
+        if (!headers.length) return;
+        var allCollapsed = Array.from(headers).every(function(h) {
+            return h.dataset.collapsed === '1';
+        });
+        thead.style.display = allCollapsed ? 'none' : '';
+    }
+
+    // ── Agrupamento visual ────────────────────────────────────────────────
     var _lastHash = '';
     var _grouping = false;
 
@@ -88,56 +106,88 @@
         if (_grouping) return;
         var wrapper = document.querySelector('.o_form_view [name="process_ids"] .o_list_renderer');
         if (!wrapper) return;
-
         var tbody = wrapper.querySelector('tbody');
         if (!tbody) return;
-
         var rows = Array.from(tbody.querySelectorAll('tr.o_data_row'));
         if (!rows.length) return;
 
-        // Hash para evitar reprocessar sem mudança
         var hash = rows.map(function(r) {
             return r.dataset.id + ':' + getComponentName(r);
         }).join('|');
-
         if (hash === _lastHash) return;
         _lastHash = hash;
 
         _grouping = true;
-
-        // Remove cabeçalhos anteriores
         tbody.querySelectorAll('.o_repair_group_header').forEach(function(h) { h.remove(); });
 
-        // Coleta todos os componentes em ordem de aparição (preserva ordem original)
-        var compOrder = [];
-        var compMap = {};
+        var groups = [];
+        var cur = null;
         rows.forEach(function(row) {
             var comp = getComponentName(row);
-            if (!compMap[comp]) {
-                compMap[comp] = [];
-                compOrder.push(comp);
+            if (!cur || cur.name !== comp) {
+                cur = { name: comp, rows: [] };
+                groups.push(cur);
             }
-            compMap[comp].push(row);
+            cur.rows.push(row);
         });
 
-        // Reorganiza o DOM: agrupa todas as linhas do mesmo componente
-        compOrder.forEach(function(comp, idx) {
+        groups.forEach(function(group, idx) {
             var color = COLORS[idx % COLORS.length];
-            var groupRows = compMap[comp];
-            var colspan = groupRows[0].querySelectorAll('td').length || 20;
-
-            // Injeta cabeçalho antes do primeiro grupo
-            var header = makeGroupHeader(comp, groupRows.length, colspan);
+            var firstRow = group.rows[0];
+            var colspan = firstRow.querySelectorAll('td').length || 20;
+            var header = makeGroupHeader(group.name, group.rows.length, colspan);
             tbody.appendChild(header);
-
-            // Move todas as linhas do componente para depois do cabeçalho
-            groupRows.forEach(function(row) {
+            group.rows.forEach(function(row) {
                 row.style.backgroundColor = color;
                 tbody.appendChild(row);
             });
         });
 
+        updateTheadVisibility();
         _grouping = false;
+    }
+
+    // ── Classe CSS na página de processos ────────────────────────────────
+    function applyPageClass() {
+        var hasProcessIds = !!document.querySelector('.o_form_view [name="process_ids"]');
+        var action = document.querySelector('.o_action');
+        if (action) action.classList.toggle('o_repair_process_page', hasProcessIds);
+    }
+
+    // ── 4. Bus listener com skip_navigation ──────────────────────────────
+    function getRepairIdFromUrl() {
+        try {
+            var hash = window.location.hash || '';
+            var m = hash.match(/[?&]id=(\d+)/);
+            if (m) return parseInt(m[1]);
+        } catch(e) {}
+        return null;
+    }
+
+    function startBusListener() {
+        try {
+            var webClient = document.querySelector('.o_web_client');
+            if (!webClient || !webClient.__owl__) return;
+
+            var comp = webClient.__owl__.component;
+            if (!comp || !comp.env || !comp.env.services) return;
+            var bus = comp.env.services['bus_service'];
+            if (!bus) return;
+
+            var repairId = getRepairIdFromUrl();
+            if (!repairId) return;
+
+            var channel = 'repair_os_' + repairId + '_processes';
+            bus.subscribe(channel, function(payload) {
+                if (!payload || !payload.skip_navigation) return;
+                // Atualiza só se estamos na tela de programação
+                if (!document.querySelector('.o_form_view [name="process_ids"]')) return;
+                // Reseta hash para forçar reagrupamento
+                _lastHash = '';
+                setTimeout(applyGrouping, 300);
+            });
+            bus.addChannel(channel);
+        } catch(e) {}
     }
 
     // ── Observer ─────────────────────────────────────────────────────────
@@ -156,79 +206,6 @@
             _timer = setTimeout(applyGrouping, 200);
         }
     });
-
-    function applyPageClass() {
-        var hasProcessIds = !!document.querySelector('.o_form_view [name="process_ids"]');
-        var action = document.querySelector('.o_action');
-        if (action) {
-            action.classList.toggle('o_repair_process_page', hasProcessIds);
-        }
-    }
-
-    // ── Bus listener — sincronização desktop/mobile ──────────────────────
-    function getRepairIdFromPage() {
-        // Extrai repair_id do URL ou do DOM
-        var hash = window.location.hash || '';
-        var m = hash.match(/[?&]id=(\d+)/) || hash.match(/#.*?id=(\d+)/);
-        if (m) return parseInt(m[1]);
-        // Tenta pelo breadcrumb (ex: "2312 — ds")
-        var bc = document.querySelector('.o_breadcrumb .o_last_breadcrumb_item');
-        if (bc) {
-            var m2 = bc.textContent.match(/(\d+)/);
-            if (m2) return parseInt(m2[1]);
-        }
-        return null;
-    }
-
-    function startBusListener() {
-        try {
-            // Odoo 16 expõe o bus via window.owl ou via require
-            var bus = null;
-            if (window.__owl__ && window.odoo) {
-                // Tenta via env de componente ativo
-                var webClient = document.querySelector('.o_web_client');
-                if (webClient && webClient.__owl__) {
-                    var env = webClient.__owl__.component && webClient.__owl__.component.env;
-                    if (env && env.services && env.services['bus_service']) {
-                        bus = env.services['bus_service'];
-                    }
-                }
-            }
-            if (!bus) return;
-
-            var repairId = getRepairIdFromPage();
-            if (!repairId) return;
-
-            var channel = 'repair_os_' + repairId;
-            bus.subscribe(channel, function(payload) {
-                if (payload && payload.type === 'process_update') {
-                    // Recarrega o One2many de processos
-                    setTimeout(function() {
-                        var refreshBtn = document.querySelector(
-                            '.o_form_view [name="process_ids"] .o_list_renderer'
-                        );
-                        if (refreshBtn) {
-                            _lastHash = ''; // força reprocessamento do agrupamento
-                            applyGrouping();
-                        }
-                        // Dispara reload do form via Action service se disponível
-                        try {
-                            var env2 = document.querySelector('.o_web_client').__owl__.component.env;
-                            if (env2 && env2.services && env2.services.action) {
-                                // Só recarrega se estamos na tela de programação
-                                if (document.querySelector('.o_form_view [name="process_ids"]')) {
-                                    env2.services.action.restore();
-                                }
-                            }
-                        } catch(e) {}
-                    }, 300);
-                }
-            });
-            bus.addChannel(channel);
-        } catch(e) {
-            // Bus não disponível — sem problema, funciona sem sync
-        }
-    }
 
     function init() {
         obs.observe(document.body, { childList: true, subtree: true });

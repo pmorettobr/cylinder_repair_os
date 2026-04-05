@@ -349,13 +349,8 @@ class RepairOsProcess(models.Model):
             if rec.machine_id:
                 machines |= rec.machine_id
         machines._update_busy_status()
-        # Notifica clientes desktop sobre atualização
         for rec in self:
-            self.env['bus.bus']._sendone(
-                'repair_os_%d' % rec.repair_id.id,
-                'process_update',
-                {'process_id': rec.id, 'state': 'progress'},
-            )
+            rec._notify_process_update('progress')
 
     def action_pause(self):
         """Pausar processo — acumula tempo decorrido."""
@@ -374,13 +369,8 @@ class RepairOsProcess(models.Model):
             if rec.machine_id:
                 machines |= rec.machine_id
         machines._update_busy_status()
-        # Notifica clientes desktop sobre atualização
         for rec in self:
-            self.env['bus.bus']._sendone(
-                'repair_os_%d' % rec.repair_id.id,
-                'process_update',
-                {'process_id': rec.id, 'state': 'paused'},
-            )
+            rec._notify_process_update('paused')
 
     def action_finish(self):
         """
@@ -442,6 +432,20 @@ class RepairOsProcess(models.Model):
                 'process_update',
                 {'process_id': rec.id, 'state': 'done'},
             )
+
+    def _notify_process_update(self, state):
+        """Dispara notificação bus para desktop e mobile com skip_navigation."""
+        for rec in self:
+            channel = 'repair_os_%d_processes' % rec.repair_id.id
+            self.env['bus.bus']._sendone(channel, 'process_state_changed', {
+                'process_id': rec.id,
+                'state': state,
+                'repair_id': rec.repair_id.id,
+                'component_type_id': rec.component_type_id.id,
+                'sequence': rec.sequence,
+                'skip_navigation': True,
+                'source': 'backend',
+            })
 
     def action_move_up(self):
         """Move o processo uma posição acima dentro do mesmo componente."""

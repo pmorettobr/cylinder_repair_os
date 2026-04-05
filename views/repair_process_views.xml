@@ -617,17 +617,20 @@
                             <button name="action_finish" type="object"
                                     string="Concluir" class="btn-sm o_repair_btn_concluir"
                                     attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
-                            <!-- Reordenar -->
+                            <!-- Handle + ▲▼ compactos -->
                             <button name="action_move_up" type="object"
-                                    icon="fa-arrow-up"
-                                    class="btn-sm btn-link text-secondary"
+                                    class="btn-sm btn-link o_repair_move_btn"
                                     title="Mover para cima"
-                                    attrs="{'invisible': [('state', 'not in', ['ready'])]}"/>
+                                    attrs="{'invisible': [('state', 'not in', ['ready'])]}">
+                                <i class="fa fa-grip-vertical o_repair_handle_icon"/>
+                                <i class="fa fa-caret-up o_repair_caret"/>
+                            </button>
                             <button name="action_move_down" type="object"
-                                    icon="fa-arrow-down"
-                                    class="btn-sm btn-link text-secondary"
+                                    class="btn-sm btn-link o_repair_move_btn"
                                     title="Mover para baixo"
-                                    attrs="{'invisible': [('state', 'not in', ['ready'])]}"/>
+                                    attrs="{'invisible': [('state', 'not in', ['ready'])]}">
+                                <i class="fa fa-caret-down o_repair_caret"/>
+                            </button>
                             <button name="action_cancel" type="object"
                                     icon="fa-ban" class="btn-sm btn-link text-danger"
                                     title="Cancelar"
