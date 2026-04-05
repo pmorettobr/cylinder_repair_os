@@ -1,9 +1,9 @@
 /**
  * cylinder_repair_os — timer.js
  * 1. Cronômetro em tempo real (1s)
- * 2. Agrupamento visual por componente (reorganiza DOM + headers colapsáveis)
- * 3. Headers condicionais (thead visível só quando grupo expandido)
- * 4. Bus listener com skip_navigation (sem redirect)
+ * 2. Agrupamento visual por componente
+ * 3. Headers condicionais
+ * 4. Bus listener com skip_navigation
  * 5. Classe CSS na página de processos
  */
 (function () {
@@ -77,7 +77,6 @@
                 next.style.display = collapsed ? '' : 'none';
                 next = next.nextElementSibling;
             }
-            // 3. Headers condicionais — esconde thead quando todos colapsados
             updateTheadVisibility();
         });
 
@@ -100,26 +99,28 @@
 
     // ── Agrupamento visual ────────────────────────────────────────────────
     var _lastHash = '';
-    var _grouping = false;
 
     function applyGrouping() {
-        if (_grouping) return;
         var wrapper = document.querySelector('.o_form_view [name="process_ids"] .o_list_renderer');
         if (!wrapper) return;
         var tbody = wrapper.querySelector('tbody');
         if (!tbody) return;
+
+        // Só pega linhas reais — ignora cabeçalhos injetados
         var rows = Array.from(tbody.querySelectorAll('tr.o_data_row'));
         if (!rows.length) return;
 
         var hash = rows.map(function(r) {
-            return r.dataset.id + ':' + getComponentName(r);
+            return (r.dataset.id || '') + ':' + getComponentName(r);
         }).join('|');
         if (hash === _lastHash) return;
         _lastHash = hash;
 
-        _grouping = true;
-        tbody.querySelectorAll('.o_repair_group_header').forEach(function(h) { h.remove(); });
+        // Remove cabeçalhos anteriores sem disparar observer
+        Array.from(tbody.querySelectorAll('.o_repair_group_header'))
+            .forEach(function(h) { h.remove(); });
 
+        // Agrupa por componente
         var groups = [];
         var cur = null;
         rows.forEach(function(row) {
@@ -131,6 +132,7 @@
             cur.rows.push(row);
         });
 
+        // Reorganiza DOM e injeta cabeçalhos
         groups.forEach(function(group, idx) {
             var color = COLORS[idx % COLORS.length];
             var firstRow = group.rows[0];
@@ -144,7 +146,6 @@
         });
 
         updateTheadVisibility();
-        _grouping = false;
     }
 
     // ── Classe CSS na página de processos ────────────────────────────────
@@ -155,56 +156,52 @@
     }
 
     // ── 4. Bus listener com skip_navigation ──────────────────────────────
-    function getRepairIdFromUrl() {
-        try {
-            var hash = window.location.hash || '';
-            var m = hash.match(/[?&]id=(\d+)/);
-            if (m) return parseInt(m[1]);
-        } catch(e) {}
-        return null;
-    }
-
     function startBusListener() {
         try {
             var webClient = document.querySelector('.o_web_client');
             if (!webClient || !webClient.__owl__) return;
-
             var comp = webClient.__owl__.component;
             if (!comp || !comp.env || !comp.env.services) return;
             var bus = comp.env.services['bus_service'];
             if (!bus) return;
 
-            var repairId = getRepairIdFromUrl();
-            if (!repairId) return;
+            var hash = window.location.hash || '';
+            var m = hash.match(/[?&]id=(\d+)/);
+            if (!m) return;
+            var repairId = parseInt(m[1]);
 
             var channel = 'repair_os_' + repairId + '_processes';
             bus.subscribe(channel, function(payload) {
                 if (!payload || !payload.skip_navigation) return;
-                // Atualiza só se estamos na tela de programação
                 if (!document.querySelector('.o_form_view [name="process_ids"]')) return;
-                // Reseta hash para forçar reagrupamento
                 _lastHash = '';
-                setTimeout(applyGrouping, 300);
+                setTimeout(applyGrouping, 400);
             });
             bus.addChannel(channel);
         } catch(e) {}
     }
 
-    // ── Observer ─────────────────────────────────────────────────────────
-    var _timer = null;
+    // ── Observer — debounced, ignora mudanças de cabeçalhos ──────────────
+    var _debounce = null;
 
     var obs = new MutationObserver(function(mutations) {
-        var relevant = mutations.some(function(m) {
-            return !Array.from(m.addedNodes).every(function(n) {
-                return n.classList && n.classList.contains('o_repair_group_header');
+        // Ignora mutações causadas pelo próprio JS (cabeçalhos e cores)
+        var onlyOurs = mutations.every(function(m) {
+            return Array.from(m.addedNodes).every(function(n) {
+                return n.nodeType !== 1 ||
+                    n.classList.contains('o_repair_group_header');
+            }) && Array.from(m.removedNodes).every(function(n) {
+                return n.nodeType !== 1 ||
+                    n.classList.contains('o_repair_group_header');
             });
         });
+        if (onlyOurs) return;
+
         tick();
         applyPageClass();
-        if (relevant) {
-            clearTimeout(_timer);
-            _timer = setTimeout(applyGrouping, 200);
-        }
+
+        clearTimeout(_debounce);
+        _debounce = setTimeout(applyGrouping, 250);
     });
 
     function init() {
