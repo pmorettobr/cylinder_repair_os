@@ -256,21 +256,21 @@ class RepairOrder(models.Model):
     def action_open_processes_grouped(self):
         """Abre form wrapper de processos agrupados com smart buttons."""
         self.ensure_one()
-        # target 'self' quando chamado após ação de processo (evita redirect)
-        target = 'self' if self.env.context.get('process_refresh') else 'current'
+        view_id = self.env.ref('cylinder_repair_os.view_repair_order_process_wrapper').id
         return {
             'type': 'ir.actions.act_window',
             'name': 'Programação — %s' % (self.os_number or self.name or ''),
             'res_model': 'repair.order',
             'res_id': self.id,
             'view_mode': 'form',
-            'views': [(self.env.ref('cylinder_repair_os.view_repair_order_process_wrapper').id, 'form')],
+            'view_id': view_id,
+            'views': [(view_id, 'form')],
             'context': {
                 'default_repair_id': self.id,
                 'active_repair_id': self.id,
                 'repair_id': self.id,
             },
-            'target': target,
+            'target': 'current',
         }
 
     def action_open_process_loader(self):
