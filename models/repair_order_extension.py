@@ -254,7 +254,7 @@ class RepairOrder(models.Model):
         return self.action_open_process_loader()
 
     def action_open_processes_grouped(self):
-        """Abre form wrapper de processos agrupados com smart buttons."""
+        """Abre form wrapper de processos — substitui a view atual (target: self)."""
         self.ensure_one()
         view_id = self.env.ref('cylinder_repair_os.view_repair_order_process_wrapper').id
         return {
@@ -270,7 +270,19 @@ class RepairOrder(models.Model):
                 'active_repair_id': self.id,
                 'repair_id': self.id,
             },
-            'target': 'current',
+            'target': 'self',
+        }
+
+    def action_open_os_form(self):
+        """Volta para o form padrão da OS."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'OS %s' % (self.os_number or self.name or ''),
+            'res_model': 'repair.order',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'self',
         }
 
     def action_open_process_loader(self):

@@ -80,9 +80,10 @@
                                 class="oe_stat_button"
                                 icon="fa-list-ul"
                                 attrs="{'invisible': [('process_count', '=', 0)]}">
-                            <field name="process_count"
-                                   widget="statinfo"
-                                   string="Programação"/>
+                            <div class="o_stat_info">
+                                <field name="process_count" class="o_stat_value"/>
+                                <span class="o_stat_text">Programação</span>
+                            </div>
                         </button>
 
                         <!-- Placeholder Programação — desativado sem processos -->

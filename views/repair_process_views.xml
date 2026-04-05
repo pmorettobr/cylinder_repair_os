@@ -522,6 +522,18 @@
                     <!-- Smart buttons no topo -->
                     <div class="oe_button_box" name="button_box">
 
+                        <!-- Voltar à OS -->
+                        <button name="action_open_os_form"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-arrow-left"
+                                title="Voltar à Ordem de Serviço">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Voltar</span>
+                                <span class="o_stat_text">à OS</span>
+                            </div>
+                        </button>
+
                         <!-- Adicionar Processos -->
                         <button name="action_open_process_loader"
                                 type="object"
@@ -538,7 +550,7 @@
                                 type="object"
                                 class="oe_stat_button o_repair_stat_disabled"
                                 icon="fa-list-ul">
-                            <field name="process_count" widget="statinfo" string="Processos"/>
+                            <field name="process_count" widget="statinfo" string="Programação"/>
                         </button>
 
                     </div>
