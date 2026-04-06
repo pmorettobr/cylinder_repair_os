@@ -572,6 +572,7 @@
                         <tree string="Processos por Componente"
                               create="0"
                               delete="0"
+                              no_open="1"
                               decoration-success="state == 'done'"
                               decoration-warning="state == 'progress'"
                               decoration-info="state == 'paused'"
