@@ -345,9 +345,13 @@ class RepairOsProcess(models.Model):
             }
             if not rec.date_start_orig:
                 vals['date_start_orig'] = now
-                # Inicia a OS automaticamente se ainda estiver só confirmada
+                # Inicia a OS automaticamente se ainda estiver só confirmada.
+                # Usa SQL direto (_set_os_state_silent) para NÃO atualizar
+                # write_date/__last_update no repair.order — evita que o cliente
+                # web detecte mudança no registro pai e recarregue o form com a
+                # view padrão em vez de permanecer no Form Wrapper.
                 if rec.repair_id.os_state == 'confirmed':
-                    rec.repair_id.action_start_os()
+                    rec.repair_id._set_os_state_silent('in_progress')
             rec.write(vals)
             if rec.machine_id:
                 machines |= rec.machine_id

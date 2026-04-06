@@ -193,6 +193,40 @@ class RepairOrder(models.Model):
     def action_start_os(self):
         self.write({'os_state': 'in_progress'})
 
+    def _set_os_state_silent(self, new_state):
+        """
+        Atualiza os_state via SQL direto, SEM passar pelo ORM.
+
+        Por que SQL direto aqui:
+        O ORM write() atualiza write_date/__last_update no repair.order.
+        O cliente web do Odoo 16 monitora __last_update do registro exibido
+        no form; quando detecta mudança, recarrega o form — mas sem o contexto
+        do Form Wrapper, resolvendo para a view padrão de repair.order.
+
+        Usando SQL direto, os_state é gravado no banco sem alterar write_date,
+        tornando a atualização invisível para o cliente nessa request.
+        O valor fica disponível para reads subsequentes após invalidate_recordset.
+
+        Uso exclusivo: chamado por repair.os.process.action_start() quando a OS
+        ainda está em 'confirmed' e precisa avançar para 'in_progress' de forma
+        transparente ao form wrapper.
+
+        Rastreamento de chatter: propositalmente omitido neste caminho para evitar
+        o reload. Caso necessite, adicione manualmente via message_post após a
+        chamada, em contexto que não envolva o form wrapper.
+        """
+        valid_states = ('draft', 'confirmed', 'in_progress', 'done', 'cancel')
+        if new_state not in valid_states:
+            raise ValueError('os_state inválido: %s' % new_state)
+        ids = self.ids
+        if not ids:
+            return
+        self.env.cr.execute(
+            "UPDATE repair_order SET os_state = %s WHERE id = ANY(%s)",
+            (new_state, ids)
+        )
+        self.invalidate_recordset(['os_state'])
+
     def action_done_os(self):
         for rec in self:
             pending = rec.process_ids.filtered(
