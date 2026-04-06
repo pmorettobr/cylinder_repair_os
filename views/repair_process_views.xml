@@ -570,9 +570,8 @@
                            context="{'default_repair_id': id}"
                            nolabel="1">
                         <tree string="Processos por Componente"
-                              editable="bottom"
                               create="0"
-                              no_open="1"
+                              delete="0"
                               decoration-success="state == 'done'"
                               decoration-warning="state == 'progress'"
                               decoration-info="state == 'paused'"
