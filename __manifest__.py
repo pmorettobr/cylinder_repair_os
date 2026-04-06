@@ -26,6 +26,7 @@ Funcionalidades:
         'security/ir.model.access.csv',
         'data/hide_menus.xml',
         'views/repair_machine_views.xml',
+        'views/repair_machine_operator_views.xml',
         'views/repair_component_views.xml',
         'views/repair_process_template_views.xml',
         'views/repair_quality_template_views.xml',

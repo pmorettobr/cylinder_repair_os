@@ -5,3 +5,4 @@ from . import repair_process_template
 from . import repair_quality_template
 from . import repair_order_extension
 from . import repair_os_process
+from . import repair_machine_operator

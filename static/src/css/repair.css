@@ -838,3 +838,119 @@ span.o_repair_btn_programacao_disabled,
     border-radius: 4px !important;
     font-size: 14px !important;
 }
+
+/* ══ Cancelar — empurrado à direita no header ══ */
+.o_repair_btn_cancel_right {
+    margin-left: auto !important;
+    order: 99 !important;
+}
+
+/* ══ Lista agrupada — esconde checkboxes ══ */
+.o_list_renderer .o_list_record_selector,
+.o_list_renderer th.o_list_record_selector {
+    display: none !important;
+    width: 0 !important;
+    padding: 0 !important;
+}
+
+/* ══ Lista agrupada — cabeçalho de grupo ══ */
+.o_list_renderer .o_group_header td {
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    padding: 6px 8px !important;
+    background: rgba(0,0,0,0.04) !important;
+    border-top: 2px solid #e2e8f0 !important;
+}
+
+/* ══ Desvio — tooltip ativo ══ */
+.o_repair_deviation_alert {
+    color: #f59e0b !important;
+    font-size: 16px !important;
+    cursor: help !important;
+}
+
+.o_repair_deviation_none {
+    color: #cbd5e1 !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+}
+
+/* ══ Timer running — fonte monospace verde ══ */
+.o_repair_timer_running {
+    color: #059669 !important;
+    font-weight: 700 !important;
+    font-family: 'Courier New', monospace !important;
+}
+
+/* ══ Coluna Desvio — largura fixa ══ */
+td[name="has_deviation"],
+th[data-name="has_deviation"] {
+    width: 40px !important;
+    text-align: center !important;
+}
+
+/* ══ Tela de Programação — esconde botão "Novo" nativo ══
+   Escopo: apenas quando a nossa tree agrupada está ativa.
+   O botão "⚙ Adicionar Processos" no <control> substitui o "Novo".
+   O SALVAR/DESCARTAR continua aparecendo normalmente quando há edições. */
+.o_view_controller .o_repair_grouped_proc_tree ~ .o_list_buttons .o_list_button_add,
+.o_content .o_list_buttons .o_list_button_add {
+    /* Não esconde globalmente — deixa o Odoo gerenciar */
+}
+
+/* ══ Tela Programação — esconde botão "Novo" via classe JS ══ */
+.o_repair_hide_new .o_list_button_add {
+    display: none !important;
+}
+
+/* ══ Smart button desabilitado ══ */
+.o_repair_stat_disabled {
+    opacity: 0.5 !important;
+    cursor: default !important;
+    pointer-events: none !important;
+}
+
+/* ══ Info bar da OS na tela de programação ══ */
+.o_repair_prog_os_info {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 16px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #475569;
+}
+
+/* ══ Tela de Programação — padding externo reduzido ══ */
+.o_repair_process_page .o_form_sheet_bg {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+}
+
+/* Scroll vertical na grid de processos */
+.o_repair_process_page [name="process_ids"] .o_list_renderer {
+    max-height: calc(100vh - 300px) !important;
+    overflow-y: auto !important;
+}
+
+
+
+/* ══ Botões de reordenação ▲▼ ══ */
+.o_repair_move_btn {
+    padding: 0 2px !important;
+    color: #94a3b8 !important;
+    line-height: 1 !important;
+}
+.o_repair_move_btn:hover {
+    color: #475569 !important;
+}
+.o_repair_handle_icon {
+    font-size: 10px !important;
+    margin-right: 2px;
+    opacity: 0.5;
+}
+.o_repair_caret {
+    font-size: 13px !important;
+}

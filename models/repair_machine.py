@@ -20,12 +20,34 @@ class RepairMachine(models.Model):
         string='Máquina',
         required=True,
     )
-    operator_name = fields.Char(
-        string='Operador Padrão',
-        help='Nome do operador responsável por esta máquina.',
-    )
     active = fields.Boolean(default=True)
-    notes = fields.Text(string='Observações')
+
+    allow_parallel = fields.Boolean(
+        string='Permite Paralelo',
+        default=False,
+        help='Se marcado, este centro aceita múltiplos processos simultâneos mesmo estando ocupado.',
+    )
+    bypass_sequence = fields.Boolean(
+        string='Libera Sequência',
+        default=False,
+        help='Se marcado, processos neste centro podem ser iniciados '
+             'independente da ordem de sequência.',
+    )
+    operator_count = fields.Integer(
+        string='Operadores',
+        compute='_compute_operator_count',
+        store=False,
+    )
+
+    operator_ids = fields.One2many(
+        'repair.machine.operator',
+        'machine_id',
+        string='Operadores',
+    )
+
+    def _compute_operator_count(self):
+        for rec in self:
+            rec.operator_count = len(rec.operator_ids.filtered('active'))
 
     # is_busy store=True para permitir uso em filtros/domain de busca.
     # Recomputado explicitamente pelos métodos do repair.os.process.
@@ -68,6 +90,19 @@ class RepairMachine(models.Model):
     _sql_constraints = [
         ('code_unique', 'unique(code)', 'Já existe uma máquina com este código.'),
     ]
+
+    def action_view_operators(self):
+        """Abre a lista de operadores deste centro de trabalho."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Operadores — %s' % self.name,
+            'res_model': 'repair.machine.operator',
+            'view_mode': 'list,form',
+            'domain': [('machine_id', '=', self.id)],
+            'context': {'default_machine_id': self.id},
+            'target': 'current',
+        }
 
     def name_get(self):
         result = []

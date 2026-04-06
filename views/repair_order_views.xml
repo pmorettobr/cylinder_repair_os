@@ -46,18 +46,59 @@
                     <button name="action_confirm_and_start" string="CONFIRMAR"
                             type="object" class="btn-primary"
                             attrs="{'invisible': [('os_state', '!=', 'draft')]}"/>
-                    <button name="action_cancel_os" string="Cancelar"
-                            type="object" class="o_repair_btn_cancel_soft"
-                            attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
                     <button name="action_done_os" string="CONCLUIR OS"
-                            type="object" class="btn-primary o_repair_btn_conclude_right"
+                            type="object" class="btn-primary"
                             attrs="{'invisible': [('os_state', '!=', 'in_progress')]}"/>
+                    <button name="action_cancel_os" string="Cancelar"
+                            type="object" class="o_repair_btn_cancel_soft o_repair_btn_cancel_right"
+                            attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
                 </header>
 
                 <sheet>
                     <field name="state" invisible="1"/>
                     <field name="company_id" invisible="1"/>
                     <field name="is_overdue" invisible="1"/>
+
+                    <!-- ── Smart Buttons ── -->
+                    <div class="oe_button_box" name="button_box">
+
+                        <!-- Carregar Processos -->
+                        <button name="action_open_process_loader"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-cog"
+                                attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Carregar</span>
+                                <span class="o_stat_text">Processos</span>
+                            </div>
+                        </button>
+
+                        <!-- Programação de OS — mostra contagem -->
+                        <button name="action_open_processes_grouped"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-list-ul"
+                                attrs="{'invisible': [('process_count', '=', 0)]}">
+                            <div class="o_stat_info">
+                                <field name="process_count" class="o_stat_value"/>
+                                <span class="o_stat_text">Programação</span>
+                            </div>
+                        </button>
+
+                        <!-- Placeholder Programação — desativado sem processos -->
+                        <button name="action_open_processes_grouped"
+                                type="object"
+                                class="oe_stat_button o_repair_stat_disabled"
+                                icon="fa-list-ul"
+                                attrs="{'invisible': [('process_count', '!=', 0)]}">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">0</span>
+                                <span class="o_stat_text">Programação</span>
+                            </div>
+                        </button>
+
+                    </div>
 
                     <!-- ── Nº OS grande + badge Tipo alinhados ── -->
                     <div class="o_repair_title_block">
@@ -102,33 +143,6 @@
                         </group>
                     </group>
 
-                    <!-- ── Botões de navegação ── -->
-                    <div class="d-flex gap-2 mt-3 align-items-center">
-                        <!-- CARREGAR PROCESSOS — sempre ativo -->
-                        <button name="action_open_process_loader"
-                                type="object"
-                                class="btn btn-outline-secondary"
-                                attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}">
-                            <i class="fa fa-cog me-2"/>
-                            CARREGAR PROCESSOS
-                        </button>
-                        <!-- PROGRAMAÇÃO DE OS — invisível sem processos, visível com cor própria quando tem -->
-                        <button name="action_open_processes_grouped"
-                                type="object"
-                                class="btn o_repair_btn_programacao"
-                                attrs="{'invisible': [('process_count', '=', 0)]}">
-                            <i class="fa fa-list-ul me-2"/>
-                            PROGRAMAÇÃO DE OS
-                            (<field name="process_count" readonly="1" nolabel="1"/>)
-                        </button>
-                        <!-- placeholder cinza quando sem processos -->
-                        <span class="btn o_repair_btn_programacao_disabled"
-                              attrs="{'invisible': [('process_count', '!=', 0)]}">
-                            <i class="fa fa-list-ul me-2"/>
-                            PROGRAMAÇÃO DE OS (0)
-                        </span>
-                    </div>
-
                 </sheet>
 
             </form>
@@ -162,7 +176,7 @@
                         domain="[('os_state','=','done')]"/>
                 <separator/>
                 <filter name="overdue" string="Atrasadas"
-                        domain="[('is_overdue','=',True)]"/>
+                        domain="[('deadline_date', '&lt;', context_today().strftime('%Y-%m-%d')), ('os_state', 'not in', ['done', 'cancel'])]"/>
                 <group expand="1" string="Agrupar por">
                     <filter name="group_state" string="Estado"
                             context="{'group_by': 'os_state'}"/>

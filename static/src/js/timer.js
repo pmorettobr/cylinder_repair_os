@@ -1,167 +1,152 @@
-/**
- * cylinder_repair_os — Timer em tempo real (HH:MM:SS) + Barra de progresso dinâmica
- */
 (function () {
     'use strict';
 
-    let _timerInterval = null;
+    var COLORS = [
+        'rgba(219,234,254,0.5)',
+        'rgba(220,252,231,0.5)',
+        'rgba(254,249,195,0.5)',
+        'rgba(237,233,254,0.5)',
+        'rgba(255,237,213,0.5)',
+        'rgba(204,251,241,0.5)',
+        'rgba(252,231,243,0.5)',
+        'rgba(241,245,249,0.5)',
+    ];
 
-    function parseServerDatetime(dtStr) {
-        if (!dtStr) return null;
-        const clean = dtStr.replace(' ', 'T') + 'Z';
-        const d = new Date(clean);
-        return isNaN(d.getTime()) ? null : d;
+    function hms(s) {
+        s = Math.max(0, Math.floor(s));
+        return [Math.floor(s/3600), Math.floor((s%3600)/60), s%60]
+            .map(function(n){ return String(n).padStart(2,'0'); }).join(':');
     }
 
-    function formatHMS(totalSeconds) {
-        const s = Math.max(0, Math.floor(totalSeconds));
-        const h = Math.floor(s / 3600);
-        const m = Math.floor((s % 3600) / 60);
-        const sec = s % 60;
-        return String(h).padStart(2, '0') + ':' +
-               String(m).padStart(2, '0') + ':' +
-               String(sec).padStart(2, '0');
-    }
-
-    function updateTimers() {
-        // ── Cronômetro HH:MM:SS ──────────────────────────────────
-        const timers = document.querySelectorAll('.o_repair_timer_running');
-        const now = new Date();
-        timers.forEach(function (el) {
-            const startStr = el.dataset.start;
-            const accMin = parseFloat(el.dataset.acc || '0');
-            if (!startStr) {
-                el.textContent = formatHMS(accMin * 60);
-                return;
-            }
-            const startDate = parseServerDatetime(startStr);
-            if (!startDate) return;
-            const totalSec = accMin * 60 + (now - startDate) / 1000;
-            el.textContent = formatHMS(totalSec);
-        });
-
-        // ── Barra de progresso dinâmica ──────────────────────────
-        // Lê o campo hidden .o_repair_progress_value e aplica ao fill
-        document.querySelectorAll('.o_repair_progress_fill_dynamic').forEach(function (bar) {
-            const form = bar.closest('.o_form_view');
-            if (!form) return;
-            // O campo progress_percent fica num input hidden com class o_repair_progress_value
-            const input = form.querySelector('.o_repair_progress_value input, .o_repair_progress_value .o_field_widget');
-            let pct = 0;
-            if (input) {
-                pct = parseFloat(input.value || input.textContent || '0') || 0;
-            }
-            bar.style.width = Math.min(100, Math.max(0, pct)) + '%';
-        });
-    }
-
-    function startTimerLoop() {
-        if (_timerInterval) clearInterval(_timerInterval);
-        _timerInterval = setInterval(updateTimers, 1000);
-        updateTimers();
-    }
-
-    function stopTimerLoop() {
-        if (_timerInterval) {
-            clearInterval(_timerInterval);
-            _timerInterval = null;
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        startTimerLoop();
-    });
-
-    // Re-inicia quando Odoo navega entre views (SPA)
-    const observer = new MutationObserver(function () {
-        const hasTimers = document.querySelector('.o_repair_timer_running');
-        const hasBars = document.querySelector('.o_repair_progress_fill_dynamic');
-        if ((hasTimers || hasBars) && !_timerInterval) {
-            startTimerLoop();
-        } else if (!hasTimers && !hasBars && _timerInterval) {
-            stopTimerLoop();
-        }
-    });
-
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-
-    window._repairTimer = { start: startTimerLoop, stop: stopTimerLoop };
-})();
-
-/**
- * Agrupamento visual de processos por componente (Opção A — provisório)
- * Injeta separadores visuais entre grupos de componentes na tree de processos.
- */
-(function () {
-    function injectComponentSeparators() {
-        // Busca todas as trees de processos dentro do form da OS
-        const trees = document.querySelectorAll('.o_field_one2many .o_list_view table tbody');
-        trees.forEach(function (tbody) {
-            const rows = Array.from(tbody.querySelectorAll('tr.o_data_row'));
-            if (!rows.length) return;
-
-            let lastComponent = null;
-            rows.forEach(function (row) {
-                // Pega o texto da célula de componente (primeira coluna visível com dados)
-                const cells = row.querySelectorAll('td.o_data_cell');
-                // Coluna componente é a 2ª (após seq)
-                const compCell = cells[1];
-                if (!compCell) return;
-                const compText = compCell.textContent.trim();
-                if (!compText) return;
-
-                if (compText !== lastComponent) {
-                    // Insere separador visual antes desta linha
-                    if (lastComponent !== null) {
-                        const sep = document.createElement('tr');
-                        sep.className = 'o_repair_component_separator';
-                        sep.innerHTML = '<td colspan="20">' + compText + '</td>';
-                        tbody.insertBefore(sep, row);
-                    }
-                    lastComponent = compText;
-                }
+    function tick() {
+        try {
+            var now = Date.now() / 1000;
+            document.querySelectorAll('.o_repair_timer.o_repair_timer_running').forEach(function(el) {
+                var s = el.dataset.start;
+                var acc = parseFloat(el.dataset.acc) || 0;
+                if (!s) return;
+                var t = new Date(s.replace(' ','T')+'Z').getTime() / 1000;
+                if (!isNaN(t)) el.textContent = hms(now - t + acc);
             });
-        });
+        } catch(e) {}
+    }
+    setInterval(tick, 1000);
+
+    function getComponentName(row) {
+        var cell = row.querySelector('[name="component_name"]');
+        if (!cell) return '(Sem Componente)';
+        return cell.textContent.trim() || '(Sem Componente)';
     }
 
-    // Roda após navegação SPA
-    const obs = new MutationObserver(function () {
-        const form = document.querySelector('.o_repair_form');
-        if (form) {
-            setTimeout(injectComponentSeparators, 300);
-        }
-    });
-    obs.observe(document.documentElement, { childList: true, subtree: true });
-})();
-
-/**
- * Tooltip dinâmico para o ícone de desvio
- * Lê o campo deviation_tooltip da linha e atualiza o title do botão
- */
-(function () {
-    function updateDeviationTooltips() {
-        const rows = document.querySelectorAll('.o_repair_form .o_data_row');
-        rows.forEach(function (row) {
-            const alertBtn = row.querySelector('.o_repair_has_tooltip');
-            if (!alertBtn) return;
-
-            // Tenta encontrar o campo deviation_tooltip na linha
-            // O Odoo renderiza campos invisíveis como input hidden ou span
-            const tooltipCell = row.querySelector('[name="deviation_tooltip"]');
-            if (tooltipCell) {
-                const text = tooltipCell.textContent || tooltipCell.value || '';
-                if (text.trim()) {
-                    alertBtn.setAttribute('title', text.trim());
-                }
+    function makeGroupHeader(name, count, colspan) {
+        var tr = document.createElement('tr');
+        tr.className = 'o_repair_group_header';
+        tr.dataset.collapsed = '0';
+        tr.style.cssText = 'background:#e8edf2;border-top:2px solid #cbd5e1;cursor:pointer;user-select:none;';
+        var td = document.createElement('td');
+        td.colSpan = colspan || 20;
+        td.style.cssText = 'padding:5px 12px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#334155;';
+        td.innerHTML =
+            '<span class="o_repair_arrow" style="display:inline-block;margin-right:8px;transition:transform .15s;">▼</span>' +
+            '<span>' + name + '</span>' +
+            '<span style="margin-left:10px;background:#475569;color:#fff;border-radius:10px;padding:1px 9px;font-size:11px;font-weight:600;">' + count + '</span>';
+        tr.appendChild(td);
+        tr.addEventListener('click', function(e) {
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+            var collapsed = tr.dataset.collapsed === '1';
+            tr.dataset.collapsed = collapsed ? '0' : '1';
+            var arrow = tr.querySelector('.o_repair_arrow');
+            if (arrow) arrow.style.transform = collapsed ? '' : 'rotate(-90deg)';
+            var next = tr.nextElementSibling;
+            while (next && !next.classList.contains('o_repair_group_header')) {
+                next.style.display = collapsed ? '' : 'none';
+                next = next.nextElementSibling;
             }
+            updateTheadVisibility();
         });
+        return tr;
     }
 
-    // Atualiza quando o DOM muda
-    const observer = new MutationObserver(function () {
-        if (document.querySelector('.o_repair_form .o_repair_has_tooltip')) {
-            setTimeout(updateDeviationTooltips, 200);
-        }
+    function updateTheadVisibility() {
+        var wrapper = document.querySelector('.o_form_view [name="process_ids"] .o_list_renderer');
+        if (!wrapper) return;
+        var thead = wrapper.querySelector('thead');
+        if (!thead) return;
+        var headers = wrapper.querySelectorAll('.o_repair_group_header');
+        if (!headers.length) return;
+        thead.style.display = Array.from(headers).every(function(h) { return h.dataset.collapsed === '1'; }) ? 'none' : '';
+    }
+
+    var _lastHash = '';
+    var _lastUrl = '';
+
+    function applyGrouping() {
+        var wrapper = document.querySelector('.o_form_view [name="process_ids"] .o_list_renderer');
+        if (!wrapper) return;
+        var tbody = wrapper.querySelector('tbody');
+        if (!tbody) return;
+        var rows = Array.from(tbody.querySelectorAll('tr.o_data_row'));
+        if (!rows.length) return;
+
+        var currentUrl = window.location.href;
+        if (currentUrl !== _lastUrl) { _lastHash = ''; _lastUrl = currentUrl; }
+
+        var hash = rows.map(function(r) { return (r.dataset.id||'') + ':' + getComponentName(r); }).join('|');
+        if (hash === _lastHash) return;
+        _lastHash = hash;
+
+        Array.from(tbody.querySelectorAll('.o_repair_group_header')).forEach(function(h) { h.remove(); });
+
+        var groups = [], cur = null;
+        rows.forEach(function(row) {
+            var comp = getComponentName(row);
+            if (!cur || cur.name !== comp) { cur = {name: comp, rows: []}; groups.push(cur); }
+            cur.rows.push(row);
+        });
+
+        var consolidated = [], seen = {};
+        groups.forEach(function(g) {
+            if (seen[g.name]) { seen[g.name].rows = seen[g.name].rows.concat(g.rows); }
+            else { seen[g.name] = {name: g.name, rows: g.rows.slice()}; consolidated.push(seen[g.name]); }
+        });
+
+        consolidated.forEach(function(group, idx) {
+            var color = COLORS[idx % COLORS.length];
+            var colspan = group.rows[0].querySelectorAll('td').length || 20;
+            tbody.appendChild(makeGroupHeader(group.name, group.rows.length, colspan));
+            group.rows.forEach(function(row) { row.style.backgroundColor = color; tbody.appendChild(row); });
+        });
+
+        updateTheadVisibility();
+    }
+
+    function applyPageClass() {
+        var has = !!document.querySelector('.o_form_view [name="process_ids"]');
+        var el = document.querySelector('.o_action');
+        if (el) el.classList.toggle('o_repair_process_page', has);
+    }
+
+    var _debounce = null;
+    var obs = new MutationObserver(function(mutations) {
+        var onlyOurs = mutations.every(function(m) {
+            return Array.from(m.addedNodes).concat(Array.from(m.removedNodes))
+                .every(function(n) { return n.nodeType !== 1 || n.classList.contains('o_repair_group_header'); });
+        });
+        if (onlyOurs) return;
+        tick();
+        applyPageClass();
+        clearTimeout(_debounce);
+        _debounce = setTimeout(applyGrouping, 250);
     });
-    observer.observe(document.documentElement, { childList: true, subtree: true });
+
+    function init() {
+        obs.observe(document.body, {childList: true, subtree: true});
+        tick();
+        setTimeout(applyGrouping, 600);
+        setTimeout(applyPageClass, 300);
+    }
+
+    document.readyState === 'loading'
+        ? document.addEventListener('DOMContentLoaded', init)
+        : init();
 })();

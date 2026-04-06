@@ -7,7 +7,7 @@
         <field name="name">repair.component.type.tree</field>
         <field name="model">repair.component.type</field>
         <field name="arch" type="xml">
-            <tree string="Componentes" editable="top">
+            <tree string="Componentes">
                 <field name="sequence" widget="handle"/>
                 <field name="code" string="Código"/>
                 <field name="name" string="Componente"/>
@@ -50,7 +50,7 @@
         <field name="name">repair.sub.component.tree</field>
         <field name="model">repair.sub.component</field>
         <field name="arch" type="xml">
-            <tree string="Sub-componentes" editable="top">
+            <tree string="Sub-componentes">
                 <field name="sequence" widget="handle"/>
                 <field name="component_type_id" string="Componente Pai"/>
                 <field name="name" string="Sub-componente"/>

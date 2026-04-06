@@ -107,6 +107,31 @@ class RepairOsProcess(models.Model):
         index=True,
     )
 
+    # ── Operador e Tempo Previsto ─────────────────────────────────────────
+
+    operator_id = fields.Many2one(
+        'repair.machine.operator',
+        string='Operador',
+        domain="[('machine_id', '=', machine_id)]",
+        ondelete='set null',
+        help='Operador responsável por este processo.',
+    )
+    duration_planned = fields.Float(
+        string='Tempo Previsto (min)',
+        default=0.0,
+        help='Tempo previsto para execução do processo em minutos.',
+    )
+    component_name = fields.Char(
+        string='Componente',
+        compute='_compute_component_name',
+        store=False,
+    )
+
+    @api.depends('component_type_id')
+    def _compute_component_name(self):
+        for rec in self:
+            rec.component_name = rec.component_type_id.name or ''
+
     # ── Desvio ────────────────────────────────────────────────────────────────
     has_deviation = fields.Boolean(
         string='Desvio?',
@@ -248,9 +273,13 @@ class RepairOsProcess(models.Model):
         - Processos com a MESMA sequência rodam em paralelo (sem bloqueio).
         - Um processo só pode iniciar se TODOS os processos com sequência
           ESTRITAMENTE MENOR estiverem concluídos (done) ou cancelados.
+        - Se o Centro de Trabalho tem bypass_sequence=True, pula a validação.
         """
         for rec in self:
             if not rec.component_type_id:
+                continue
+            # Bypass de sequência ativo no centro de trabalho
+            if rec.machine_id and rec.machine_id.bypass_sequence:
                 continue
             # Busca processos com sequência ESTRITAMENTE menor que a atual
             # que ainda não estejam concluídos ou cancelados
@@ -279,6 +308,9 @@ class RepairOsProcess(models.Model):
         for rec in self:
             if not rec.machine_id:
                 continue
+            # Se allow_parallel está ativo no centro, ignora verificação de ocupação
+            if rec.machine_id.allow_parallel:
+                continue
             busy = self.search([
                 ('machine_id', '=', rec.machine_id.id),
                 ('state', '=', 'progress'),
@@ -294,6 +326,46 @@ class RepairOsProcess(models.Model):
                         busy.operation_label,
                     )
                 )
+
+    # ── Helper: mantém o Form Wrapper após ação ──────────────────────────────
+
+    def _action_reload_wrapper(self):
+        """
+        Retorna a action do Form Wrapper do registro pai (repair.order).
+
+        Por que é necessário:
+        Em Odoo 16, botões em linhas de tree/One2many retornam `false` →
+        o cliente chama `actionService.restore()` → navega para a action
+        anterior no stack (o Form OS padrão de repair.order).
+
+        Retornar explicitamente a act_window do Wrapper com `target: 'self'`
+        substitui o item atual no action stack pelo Wrapper recém-carregado,
+        mantendo o usuário na tela de Programação sem alterar o breadcrumb.
+
+        Contextos de chamada:
+        - Botão direto na tree do Wrapper  → substitui view atual; fica no Wrapper ✓
+        - Botão no popup Ações (target=new) → fecha popup, exibe Wrapper ✓
+        - Controlador mobile (HTTP)         → retorno ignorado pelo controller ✓
+        """
+        repair = next((r.repair_id for r in self if r.repair_id), None)
+        if not repair:
+            return False
+        try:
+            view_id = self.env.ref(
+                'cylinder_repair_os.view_repair_order_process_wrapper'
+            ).id
+        except Exception:
+            return False
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Programação — %s' % (repair.os_number or repair.name or ''),
+            'res_model': 'repair.order',
+            'res_id': repair.id,
+            'view_mode': 'form',
+            'view_id': view_id,
+            'views': [(view_id, 'form')],
+            'target': 'self',
+        }
 
     # ── Ações de controle ─────────────────────────────────────────────────────
 
@@ -313,13 +385,20 @@ class RepairOsProcess(models.Model):
             }
             if not rec.date_start_orig:
                 vals['date_start_orig'] = now
-                # Inicia a OS automaticamente se ainda estiver só confirmada
+                # Inicia a OS automaticamente se ainda estiver só confirmada.
+                # Usa SQL direto (_set_os_state_silent) para NÃO atualizar
+                # write_date/__last_update no repair.order — evita que o cliente
+                # web detecte mudança no registro pai e recarregue o form com a
+                # view padrão em vez de permanecer no Form Wrapper.
                 if rec.repair_id.os_state == 'confirmed':
-                    rec.repair_id.action_start_os()
+                    rec.repair_id._set_os_state_silent('in_progress')
             rec.write(vals)
             if rec.machine_id:
                 machines |= rec.machine_id
         machines._update_busy_status()
+        for rec in self:
+            rec._notify_process_update('progress')
+        return self._action_reload_wrapper()
 
     def action_pause(self):
         """Pausar processo — acumula tempo decorrido."""
@@ -338,6 +417,9 @@ class RepairOsProcess(models.Model):
             if rec.machine_id:
                 machines |= rec.machine_id
         machines._update_busy_status()
+        for rec in self:
+            rec._notify_process_update('paused')
+        return self._action_reload_wrapper()
 
     def action_finish(self):
         """
@@ -368,6 +450,7 @@ class RepairOsProcess(models.Model):
                         return rec._open_quality_popup()
 
             rec._do_finish()
+        return self._action_reload_wrapper()
 
     def _do_finish(self):
         """Finalização efetiva do processo."""
@@ -393,6 +476,45 @@ class RepairOsProcess(models.Model):
             })
             if rec.machine_id:
                 rec.machine_id._update_busy_status()
+            rec._notify_process_update('done')
+
+    def _notify_process_update(self, state):
+        """Dispara notificação bus para desktop e mobile com skip_navigation."""
+        for rec in self:
+            channel = 'repair_os_%d_processes' % rec.repair_id.id
+            self.env['bus.bus']._sendone(channel, 'process_state_changed', {
+                'process_id': rec.id,
+                'state': state,
+                'repair_id': rec.repair_id.id,
+                'component_type_id': rec.component_type_id.id,
+                'sequence': rec.sequence,
+                'skip_navigation': True,
+                'source': 'backend',
+            })
+
+    def action_move_up(self):
+        """Move o processo uma posição acima dentro do mesmo componente."""
+        self.ensure_one()
+        siblings = self.search([
+            ('repair_id', '=', self.repair_id.id),
+            ('component_type_id', '=', self.component_type_id.id),
+            ('id', '!=', self.id),
+            ('sequence', '<=', self.sequence),
+        ], order='sequence desc', limit=1)
+        if siblings:
+            self.sequence, siblings.sequence = siblings.sequence, self.sequence
+
+    def action_move_down(self):
+        """Move o processo uma posição abaixo dentro do mesmo componente."""
+        self.ensure_one()
+        siblings = self.search([
+            ('repair_id', '=', self.repair_id.id),
+            ('component_type_id', '=', self.component_type_id.id),
+            ('id', '!=', self.id),
+            ('sequence', '>=', self.sequence),
+        ], order='sequence asc', limit=1)
+        if siblings:
+            self.sequence, siblings.sequence = siblings.sequence, self.sequence
 
     def action_cancel(self):
         """Cancelar processo."""
@@ -408,6 +530,7 @@ class RepairOsProcess(models.Model):
             rec.state = 'cancel'
             rec.date_start = False
         machines._update_busy_status()
+        return self._action_reload_wrapper()
 
     def action_reset_to_ready(self):
         """Volta processo cancelado/pausado para Pronto."""
@@ -449,11 +572,21 @@ class RepairOsProcess(models.Model):
     def action_open_loader_from_list(self):
         """Abre o carregador de processos a partir da lista agrupada.
         Funciona mesmo sem registros selecionados, usando active_repair_id do contexto."""
+        ctx = self.env.context
         repair_id = (
-            self.env.context.get('active_repair_id') or
-            self.env.context.get('default_repair_id') or
-            (self and self[0].repair_id.id if self else False)
+            ctx.get('active_repair_id') or
+            ctx.get('default_repair_id') or
+            ctx.get('repair_id') or
+            (self[0].repair_id.id if self else False)
         )
+        if not repair_id:
+            # Tenta extrair do domínio ativo
+            domain = ctx.get('active_domain') or []
+            for clause in domain:
+                if isinstance(clause, (list, tuple)) and len(clause) == 3:
+                    if clause[0] == 'repair_id' and clause[1] == '=':
+                        repair_id = clause[2]
+                        break
         if not repair_id:
             return {'type': 'ir.actions.act_window_close'}
         repair = self.env['repair.order'].browse(repair_id)
@@ -499,6 +632,7 @@ class RepairOsProcess(models.Model):
             if failed:
                 rec.quality_result = 'flagged'
             rec._do_finish()
+        return self._action_reload_wrapper()
 
     # ── Carrega checklist a partir do template ────────────────────────────────
 

@@ -376,14 +376,15 @@
     </record>
 
 
-    <!-- ══ Tree agrupada por componente (Plano B) ════════════════════════ -->
+    <!-- ══ Tree agrupada por componente ══════════════════════════════════ -->
     <record id="view_repair_process_grouped_list" model="ir.ui.view">
         <field name="name">repair.os.process.grouped.list</field>
         <field name="model">repair.os.process</field>
         <field name="arch" type="xml">
             <tree string="Processos por Componente"
                   editable="bottom"
-                  create="0"
+                  create="1"
+                  multi_edit="0"
                   decoration-success="state == 'done'"
                   decoration-warning="state == 'progress'"
                   decoration-info="state == 'paused'"
@@ -393,41 +394,71 @@
                 <control>
                     <button name="action_open_loader_from_list"
                             string="⚙ Adicionar Processos"
-                            type="object"
-                            class="btn btn-secondary"/>
+                            type="object"/>
                 </control>
 
+                <!-- Campos invisíveis necessários para lógica -->
                 <field name="component_type_id" invisible="1"/>
                 <field name="state" invisible="1"/>
                 <field name="has_deviation" invisible="1"/>
+                <field name="deviation_tooltip" invisible="1"/>
+                <field name="deviation_notes" invisible="1"/>
+                <field name="duration_acc" invisible="1" sum="Tempo Acumulado (s)"/>
 
-                <field name="sequence" string="Seq." readonly="1" width="50"/>
-                <field name="name" string="Operação" readonly="1"/>
-                <field name="machine_id" string="Máquina" readonly="1"/>
-                <field name="date_planned" string="Data Prog." widget="date"/>
-                <field name="date_start_orig" string="Dt. Início" readonly="1"/>
-                <field name="duration_display" string="Tempo" readonly="1"
+                <!-- Seq -->
+                <field name="sequence" string="Seq."
+                       readonly="1" optional="show"/>
+
+                <!-- Operação -->
+                <field name="name" string="Operação"
+                       readonly="1" optional="show"/>
+
+                <!-- Centro de Trabalho -->
+                <field name="machine_id" string="Centro de Trabalho"
+                       readonly="1" optional="show"/>
+
+                <!-- Operador — readonly para evitar SALVAR -->
+                <field name="operator_id" string="Operador"
+                       readonly="1" optional="show"/>
+
+                <!-- Data Programada — readonly -->
+                <field name="date_planned" string="Data Prog."
+                       widget="date" readonly="1" optional="show"/>
+
+                <!-- Data Início -->
+                <field name="date_start_orig" string="Dt. Início"
+                       readonly="1" optional="show"/>
+
+                <!-- Tempo Previsto (minutos) -->
+                <field name="duration_planned" string="Prev. (min)"
+                       readonly="1" optional="show"/>
+
+                <!-- Tempo real -->
+                <field name="duration_display" string="Tempo"
+                       readonly="1" optional="show"
                        class="o_repair_timer"/>
-                <field name="duration_acc" string="Tempo Total (seg)"
-                       invisible="1" sum="Tempo Total"/>
-                <field name="state" string="Situação" widget="badge"
+
+                <!-- Situação -->
+                <field name="state" string="Situação"
+                       widget="badge"
                        decoration-success="state == 'done'"
                        decoration-warning="state == 'progress'"
                        decoration-info="state == 'paused'"
                        decoration-muted="state in ('ready', 'cancel')"
-                       readonly="1"/>
+                       readonly="1" optional="show"/>
 
-                <!-- Desvio -->
+                <!-- Desvio com tooltip -->
                 <button name="action_open_deviation_popup" type="object"
                         attrs="{'invisible': [('has_deviation', '=', False)]}"
                         icon="fa-exclamation-triangle"
                         class="btn-sm btn-link o_repair_deviation_alert"
-                        title="Desvio registrado"/>
+                        string=" "/>
                 <button name="action_open_deviation_popup" type="object"
                         attrs="{'invisible': [('has_deviation', '=', True)]}"
                         icon="fa-circle-o"
                         class="btn-sm btn-link o_repair_deviation_none"
-                        title="Sem desvio"/>
+                        title="Sem desvio — clique para registrar"
+                        string=" "/>
 
                 <!-- Ações -->
                 <button name="action_start" type="object"
@@ -439,9 +470,11 @@
                 <button name="action_finish" type="object"
                         string="Concluir" class="btn-sm o_repair_btn_concluir"
                         attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
+
+                <!-- Lixeira na última coluna -->
                 <button name="action_cancel" type="object"
                         icon="fa-ban" class="btn-sm btn-link text-danger"
-                        title="Cancelar"
+                        title="Cancelar processo"
                         attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
             </tree>
         </field>
@@ -477,6 +510,136 @@
         <field name="view_id" ref="view_repair_process_grouped_list"/>
         <field name="search_view_id" ref="view_repair_process_grouped_search"/>
         <field name="context">{'search_default_group_component': 1, 'group_by': ['component_type_id']}</field>
+    </record>
+
+    <!-- ══ Form wrapper para tela de processos com smart button ══ -->
+    <record id="view_repair_order_process_wrapper" model="ir.ui.view">
+        <field name="name">repair.order.process.wrapper</field>
+        <field name="model">repair.order</field>
+        <field name="arch" type="xml">
+            <form string="Programação de OS" create="0" delete="0">
+                <sheet>
+                    <!-- Smart buttons no topo -->
+                    <div class="oe_button_box" name="button_box">
+
+                        <!-- Voltar à OS -->
+                        <button name="action_open_os_form"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-arrow-left"
+                                title="Voltar à Ordem de Serviço">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Voltar</span>
+                                <span class="o_stat_text">à OS</span>
+                            </div>
+                        </button>
+
+                        <!-- Adicionar Processos -->
+                        <button name="action_open_process_loader"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-plus">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Adicionar</span>
+                                <span class="o_stat_text">Processos</span>
+                            </div>
+                        </button>
+
+                        <!-- Contagem de processos — informativo sem clique -->
+                        <button name="action_open_processes_grouped"
+                                type="object"
+                                class="oe_stat_button o_repair_stat_disabled"
+                                icon="fa-list-ul">
+                            <field name="process_count" widget="statinfo" string="Programação"/>
+                        </button>
+
+                    </div>
+
+                    <!-- Info básica da OS -->
+                    <div class="o_repair_prog_os_info">
+                        <span class="fw-bold">OS:</span>
+                        <field name="os_number" readonly="1" class="ms-1"/>
+                        <span class="ms-3 fw-bold">Cliente:</span>
+                        <field name="partner_id" readonly="1" class="ms-1"/>
+                        <span class="ms-3 fw-bold">Produto:</span>
+                        <field name="product_name" readonly="1" class="ms-1"/>
+                    </div>
+
+                    <!-- Lista de processos agrupados -->
+                    <field name="process_ids"
+                           context="{'default_repair_id': id}"
+                           nolabel="1">
+                        <tree string="Processos por Componente"
+                              editable="bottom"
+                              create="0"
+                              no_open="1"
+                              decoration-success="state == 'done'"
+                              decoration-warning="state == 'progress'"
+                              decoration-info="state == 'paused'"
+                              decoration-muted="state in ('ready', 'cancel')"
+                              default_order="sequence">
+
+                            <!-- Campos invisíveis -->
+                            <field name="state" invisible="1"/>
+                            <field name="has_deviation" invisible="1"/>
+                            <field name="deviation_tooltip" invisible="1"/>
+                            <field name="duration_acc" invisible="1" sum="Tempo Total (s)"/>
+
+                            <!-- Seq primeiro -->
+                            <field name="sequence" string="Seq." readonly="1" optional="show"/>
+
+                            <!-- Componente — visível e usado pelo JS para agrupamento -->
+                            <field name="component_name" string="Componente"
+                                   readonly="1" optional="show"/>
+                            <field name="name" string="Operação" readonly="1" optional="show"/>
+                            <field name="machine_id" string="Centro de Trabalho" readonly="1" optional="show"/>
+                            <field name="operator_id" string="Operador"
+                                   domain="[('machine_id', '=', machine_id)]"
+                                   optional="show"/>
+                            <field name="date_planned" string="Data Prog."
+                                   widget="date" optional="show"/>
+                            <field name="date_start_orig" string="Dt. Início" readonly="1" optional="show"/>
+                            <field name="duration_planned" string="Prev. (min)" optional="show"/>
+                            <field name="duration_display" string="Tempo" readonly="1" optional="show"
+                                   class="o_repair_timer"/>
+                            <field name="state" string="Situação" widget="badge"
+                                   decoration-success="state == 'done'"
+                                   decoration-warning="state == 'progress'"
+                                   decoration-info="state == 'paused'"
+                                   decoration-muted="state in ('ready', 'cancel')"
+                                   readonly="1" optional="show"/>
+
+                            <button name="action_open_deviation_popup" type="object"
+                                    attrs="{'invisible': [('has_deviation', '=', False)]}"
+                                    icon="fa-exclamation-triangle"
+                                    class="btn-sm btn-link o_repair_deviation_alert"
+                                    title="Desvio registrado"/>
+                            <button name="action_open_deviation_popup" type="object"
+                                    attrs="{'invisible': [('has_deviation', '=', True)]}"
+                                    icon="fa-circle-o"
+                                    class="btn-sm btn-link o_repair_deviation_none"
+                                    title="Sem desvio"/>
+
+                            <button name="action_start" type="object"
+                                    string="Iniciar" class="btn-sm btn-success"
+                                    attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
+                            <button name="action_pause" type="object"
+                                    string="Pausar" class="btn-sm btn-warning"
+                                    attrs="{'invisible': [('state', '!=', 'progress')]}"/>
+                            <button name="action_finish" type="object"
+                                    string="Concluir" class="btn-sm o_repair_btn_concluir"
+                                    attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
+
+                            <button name="action_cancel" type="object"
+                                    icon="fa-ban" class="btn-sm btn-link text-danger"
+                                    title="Cancelar"
+                                    attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
+                        </tree>
+                    </field>
+
+                </sheet>
+            </form>
+        </field>
     </record>
 
 
