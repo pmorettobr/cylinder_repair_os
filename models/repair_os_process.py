@@ -327,6 +327,46 @@ class RepairOsProcess(models.Model):
                     )
                 )
 
+    # ── Helper: mantém o Form Wrapper após ação ──────────────────────────────
+
+    def _action_reload_wrapper(self):
+        """
+        Retorna a action do Form Wrapper do registro pai (repair.order).
+
+        Por que é necessário:
+        Em Odoo 16, botões em linhas de tree/One2many retornam `false` →
+        o cliente chama `actionService.restore()` → navega para a action
+        anterior no stack (o Form OS padrão de repair.order).
+
+        Retornar explicitamente a act_window do Wrapper com `target: 'self'`
+        substitui o item atual no action stack pelo Wrapper recém-carregado,
+        mantendo o usuário na tela de Programação sem alterar o breadcrumb.
+
+        Contextos de chamada:
+        - Botão direto na tree do Wrapper  → substitui view atual; fica no Wrapper ✓
+        - Botão no popup Ações (target=new) → fecha popup, exibe Wrapper ✓
+        - Controlador mobile (HTTP)         → retorno ignorado pelo controller ✓
+        """
+        repair = next((r.repair_id for r in self if r.repair_id), None)
+        if not repair:
+            return False
+        try:
+            view_id = self.env.ref(
+                'cylinder_repair_os.view_repair_order_process_wrapper'
+            ).id
+        except Exception:
+            return False
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Programação — %s' % (repair.os_number or repair.name or ''),
+            'res_model': 'repair.order',
+            'res_id': repair.id,
+            'view_mode': 'form',
+            'view_id': view_id,
+            'views': [(view_id, 'form')],
+            'target': 'self',
+        }
+
     # ── Ações de controle ─────────────────────────────────────────────────────
 
     def action_start(self):
@@ -358,7 +398,7 @@ class RepairOsProcess(models.Model):
         machines._update_busy_status()
         for rec in self:
             rec._notify_process_update('progress')
-        return False
+        return self._action_reload_wrapper()
 
     def action_pause(self):
         """Pausar processo — acumula tempo decorrido."""
@@ -379,7 +419,7 @@ class RepairOsProcess(models.Model):
         machines._update_busy_status()
         for rec in self:
             rec._notify_process_update('paused')
-        return False
+        return self._action_reload_wrapper()
 
     def action_finish(self):
         """
@@ -410,7 +450,7 @@ class RepairOsProcess(models.Model):
                         return rec._open_quality_popup()
 
             rec._do_finish()
-        return False
+        return self._action_reload_wrapper()
 
     def _do_finish(self):
         """Finalização efetiva do processo."""
@@ -490,6 +530,7 @@ class RepairOsProcess(models.Model):
             rec.state = 'cancel'
             rec.date_start = False
         machines._update_busy_status()
+        return self._action_reload_wrapper()
 
     def action_reset_to_ready(self):
         """Volta processo cancelado/pausado para Pronto."""
@@ -591,6 +632,7 @@ class RepairOsProcess(models.Model):
             if failed:
                 rec.quality_result = 'flagged'
             rec._do_finish()
+        return self._action_reload_wrapper()
 
     # ── Carrega checklist a partir do template ────────────────────────────────
 
