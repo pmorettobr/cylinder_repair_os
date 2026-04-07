@@ -2,10 +2,12 @@
 
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-
 import { Component, useState, onMounted } from "@odoo/owl";
 
 class RepairProcessListWidget extends Component {
+
+    static template = "cylinder_repair_os.RepairProcessList";
+    static props = ["record", "name", "*"];
 
     setup() {
         this.notif     = useService("notification");
@@ -90,9 +92,6 @@ class RepairProcessListWidget extends Component {
             cancel:"o_repair_row_cancel" }[s] || "");
     }
 }
-
-RepairProcessListWidget.template = "cylinder_repair_os.RepairProcessList";
-RepairProcessListWidget.props    = ["record", "name", "*"];
 
 const FIELDS = [
     { name: "sequence",          type: "integer" },
