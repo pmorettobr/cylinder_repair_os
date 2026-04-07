@@ -1,29 +1,28 @@
 /** @odoo-module **/
 
 import { registry } from "@web/core/registry";
-import { useService } from "@web/core/utils/hooks";
-import { Component, useState, onMounted } from "@odoo/owl";
+import { X2ManyField, x2ManyField } from "@web/views/fields/x2many/x2many_field";
+import { useState, onMounted } from "@odoo/owl";
 
-class RepairProcessListWidget extends Component {
+class RepairProcessListWidget extends X2ManyField {
 
     static template = "cylinder_repair_os.RepairProcessList";
-    static props = ["record", "name", "*"];
 
     setup() {
-        this.notif     = useService("notification");
+        super.setup();
         this.collapsed = useState({});
         onMounted(() => this._restoreCollapse());
-        console.log("[RepairProcessList] mounted ok — Component:", typeof Component);
+        console.log("[RepairProcessList] mounted ok");
     }
 
-    get records() {
+    get processRecords() {
         try { return this.props.record.data[this.props.name].records || []; }
         catch (_) { return []; }
     }
 
     get grouped() {
         const map = new Map();
-        const sorted = [...this.records].sort((a, b) => {
+        const sorted = [...this.processRecords].sort((a, b) => {
             const ca = (a.data.component_type_id || [0])[0];
             const cb = (b.data.component_type_id || [0])[0];
             if (ca !== cb) return ca - cb;
@@ -93,24 +92,7 @@ class RepairProcessListWidget extends Component {
     }
 }
 
-const FIELDS = [
-    { name: "sequence",          type: "integer" },
-    { name: "component_type_id", type: "many2one", relation: "repair.component.type" },
-    { name: "name",              type: "char" },
-    { name: "machine_id",        type: "many2one", relation: "repair.machine" },
-    { name: "operator_id",       type: "many2one", relation: "repair.machine.operator" },
-    { name: "date_planned",      type: "date" },
-    { name: "date_start_orig",   type: "datetime" },
-    { name: "date_start",        type: "datetime" },
-    { name: "duration_acc",      type: "float" },
-    { name: "duration_display",  type: "char" },
-    { name: "state",             type: "selection" },
-    { name: "has_deviation",     type: "boolean" },
-    { name: "deviation_tooltip", type: "char" },
-];
-
 registry.category("fields").add("repair_process_list", {
+    ...x2ManyField,
     component: RepairProcessListWidget,
-    supportedTypes: ["one2many"],
-    relatedFields: () => FIELDS,
 });
