@@ -345,20 +345,13 @@ class RepairOsProcess(models.Model):
             }
             if not rec.date_start_orig:
                 vals['date_start_orig'] = now
-                # Inicia a OS automaticamente se ainda estiver só confirmada.
-                # Usa SQL direto (_set_os_state_silent) para NÃO atualizar
-                # write_date/__last_update no repair.order — evita que o cliente
-                # web detecte mudança no registro pai e recarregue o form com a
-                # view padrão em vez de permanecer no Form Wrapper.
-                if rec.repair_id.os_state == 'confirmed':
-                    rec.repair_id._set_os_state_silent('in_progress')
             rec.write(vals)
             if rec.machine_id:
                 machines |= rec.machine_id
         machines._update_busy_status()
         for rec in self:
             rec._notify_process_update('progress')
-        return True
+        return False
 
     def action_pause(self):
         """Pausar processo — acumula tempo decorrido."""
@@ -379,7 +372,7 @@ class RepairOsProcess(models.Model):
         machines._update_busy_status()
         for rec in self:
             rec._notify_process_update('paused')
-        return True
+        return False
 
     def action_finish(self):
         """
@@ -410,7 +403,7 @@ class RepairOsProcess(models.Model):
                         return rec._open_quality_popup()
 
             rec._do_finish()
-        return True
+        return False
 
     def _do_finish(self):
         """Finalização efetiva do processo."""
@@ -490,7 +483,7 @@ class RepairOsProcess(models.Model):
             rec.state = 'cancel'
             rec.date_start = False
         machines._update_busy_status()
-        return True
+        return False
 
     def action_reset_to_ready(self):
         """Volta processo cancelado/pausado para Pronto."""
@@ -592,7 +585,7 @@ class RepairOsProcess(models.Model):
             if failed:
                 rec.quality_result = 'flagged'
             rec._do_finish()
-        return True
+        return False
 
     # ── Carrega checklist a partir do template ────────────────────────────────
 

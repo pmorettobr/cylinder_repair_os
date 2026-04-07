@@ -620,6 +620,11 @@
                                     class="btn-sm btn-link o_repair_deviation_none"
                                     title="Sem desvio"/>
 
+                            <button name="action_open_actions_popup" type="object"
+                                    string="Ações"
+                                    class="btn-sm btn-secondary"
+                                    attrs="{'invisible': [('state', 'in', ['done', 'cancel'])]}"/>
+
                             <button name="action_start" type="object"
                                     string="Iniciar" class="btn-sm btn-success"
                                     attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
