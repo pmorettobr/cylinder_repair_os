@@ -3,7 +3,7 @@
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 
-const { Component, useState, onMounted } = owl;
+import { Component, useState, onMounted } from "@odoo/owl";
 
 class RepairProcessListWidget extends Component {
 
