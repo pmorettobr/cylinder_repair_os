@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- TREE Templates -->
+    <record id="view_repair_quality_template_tree" model="ir.ui.view">
+        <field name="name">repair.quality.template.tree</field>
+        <field name="model">repair.quality.template</field>
+        <field name="arch" type="xml">
+            <tree string="Templates de Qualidade">
+                <field name="name" string="Template"/>
+                <field name="check_count" string="Itens"/>
+                <field name="block_on_fail" string="Bloquear se Reprovar?"/>
+                <field name="active" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- FORM Template -->
+    <record id="view_repair_quality_template_form" model="ir.ui.view">
+        <field name="name">repair.quality.template.form</field>
+        <field name="model">repair.quality.template</field>
+        <field name="arch" type="xml">
+            <form string="Template de Qualidade">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Template de Qualidade"/>
+                        <h1><field name="name" placeholder="Nome do template..."/></h1>
+                    </div>
+                    <group>
+                        <field name="block_on_fail"
+                               string="Bloquear conclusão se houver item Reprovado?"/>
+                        <field name="active"/>
+                    </group>
+                    <notebook>
+                        <page string="Itens de Verificação" name="checks">
+                            <field name="check_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" string="Verificação"
+                                           placeholder="Ex: Acabamento superficial OK..."/>
+                                    <field name="is_required" string="Obrigatório?"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Observações" name="notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_repair_quality_templates" model="ir.actions.act_window">
+        <field name="name">Templates de Qualidade</field>
+        <field name="res_model">repair.quality.template</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

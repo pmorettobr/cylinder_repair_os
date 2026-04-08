@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- TREE -->
+    <record id="view_repair_machine_tree" model="ir.ui.view">
+        <field name="name">repair.machine.tree</field>
+        <field name="model">repair.machine</field>
+        <field name="arch" type="xml">
+            <tree string="Centros de Trabalho"
+                  decoration-danger="is_busy == True">
+                <field name="code" string="Código"/>
+                <field name="name" string="Centro de Trabalho"/>
+                <field name="is_busy" string="Ocupada?" widget="boolean"/>
+                <field name="current_process_id" string="Processo em Andamento" optional="show"/>
+                <field name="active" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- FORM -->
+    <record id="view_repair_machine_form" model="ir.ui.view">
+        <field name="name">repair.machine.form</field>
+        <field name="model">repair.machine</field>
+        <field name="arch" type="xml">
+            <form string="Centro de Trabalho">
+                <sheet>
+                    <!-- Smart buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_operators"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-users"
+                                attrs="{'invisible': [('id', '=', False)]}">
+                            <field name="operator_count" widget="statinfo" string="Operadores"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name" string="Centro de Trabalho"/>
+                        <h1>
+                            <field name="name" placeholder="Nome da máquina..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Identificação">
+                            <field name="code" string="Código"/>
+                            <field name="is_busy" string="Em Uso" readonly="1"/>
+                            <field name="current_process_id" string="Processo em Andamento"
+                                   readonly="1"
+                                   attrs="{'invisible': [('is_busy', '=', False)]}"/>
+                            <field name="active" string="Ativo"/>
+                        </group>
+                        <group string="Configurações">
+                            <field name="allow_parallel" string="Permite Paralelo"
+                                   widget="boolean_toggle"
+                                   help="Centro aceita múltiplos processos simultâneos."/>
+                            <field name="bypass_sequence" string="Libera Sequência"
+                                   widget="boolean_toggle"
+                                   help="Processos neste centro ignoram validação de sequência."/>
+                        </group>
+                    </group>
+
+                    <!-- Operadores vinculados -->
+                    <notebook>
+                        <page string="Operadores" name="operators">
+                            <field name="operator_ids" nolabel="1">
+                                <tree editable="bottom" create="1">
+                                    <field name="name" string="Nome"/>
+                                    <field name="notes" string="Observação"/>
+                                    <field name="active" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- SEARCH -->
+    <record id="view_repair_machine_search" model="ir.ui.view">
+        <field name="name">repair.machine.search</field>
+        <field name="model">repair.machine</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Máquinas">
+                <field name="name" string="Centro de Trabalho"/>
+                <field name="code" string="Código"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_repair_machines" model="ir.actions.act_window">
+        <field name="name">Centros de Trabalho</field>
+        <field name="res_model">repair.machine</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_repair_machine_search"/>
+    </record>
+
+</odoo>
