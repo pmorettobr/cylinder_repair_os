@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- -- TREE ----------------------------------------------------------- -->
+    <!-- TREE -->
     <record id="view_repair_order_os_tree" model="ir.ui.view">
         <field name="name">repair.order.os.tree</field>
         <field name="model">repair.order</field>
@@ -32,7 +32,7 @@
         </field>
     </record>
 
-    <!-- -- FORM ----------------------------------------------------------- -->
+    <!-- FORM -->
     <record id="view_repair_order_os_form" model="ir.ui.view">
         <field name="name">repair.order.os.form</field>
         <field name="model">repair.order</field>
@@ -59,7 +59,7 @@
                     <field name="company_id" invisible="1"/>
                     <field name="is_overdue" invisible="1"/>
 
-                    <!-- ── Smart Buttons ── -->
+                    <!-- Smart Buttons -->
                     <div class="oe_button_box" name="button_box">
 
                         <!-- Carregar Processos -->
@@ -100,7 +100,7 @@
 
                     </div>
 
-                    <!-- ── Nº OS grande + badge Tipo alinhados ── -->
+                    <!-- Nº OS grande + badge Tipo alinhados -->
                     <div class="o_repair_title_block">
                         <div class="o_repair_title_row">
                             <div class="o_repair_os_number_wrap">
@@ -123,7 +123,7 @@
                         </div>
                     </div>
 
-                    <!-- ── Dados da OS ── -->
+                    <!-- Dados da OS -->
                     <group>
                         <group string="Identificação">
                             <field name="partner_id" string="Cliente" required="1"/>
@@ -149,7 +149,7 @@
         </field>
     </record>
 
-    <!-- -- SEARCH --------------------------------------------------------- -->
+    <!-- SEARCH -->
     <record id="view_repair_order_os_search" model="ir.ui.view">
         <field name="name">repair.order.os.search</field>
         <field name="model">repair.order</field>
@@ -193,7 +193,7 @@
         </field>
     </record>
 
-    <!-- -- ACTIONS -------------------------------------------------------- -->
+    <!-- ACTIONS -->
     <record id="action_repair_orders_os" model="ir.actions.act_window">
         <field name="name">Ordens de Serviço</field>
         <field name="res_model">repair.order</field>
