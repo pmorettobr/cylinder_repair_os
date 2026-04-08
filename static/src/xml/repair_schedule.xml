@@ -6,8 +6,7 @@
 
     <t t-if="state.loading">
         <div class="text-center p-5 text-muted">
-            <i class="fa fa-spinner fa-spin fa-2x"/>
-            <div class="mt-2">Carregando...</div>
+            <i class="fa fa-spinner fa-spin fa-2x"/><div class="mt-2">Carregando...</div>
         </div>
     </t>
 
@@ -18,41 +17,40 @@
     <t t-else="">
 
         <!-- CABEÇALHO -->
-        <div class="o_repair_schedule_header">
-            <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom bg-white flex-wrap">
+        <div class="o_repair_schedule_header border-bottom bg-white px-3 py-2 d-flex align-items-center gap-3 flex-wrap">
 
-                <button class="btn btn-sm btn-outline-secondary" t-on-click="goBackToOs">
-                    <i class="fa fa-arrow-left me-1"/>Voltar à OS
-                </button>
+            <button class="btn btn-sm btn-outline-secondary" t-on-click="goBackToOs">
+                <i class="fa fa-arrow-left me-1"/>Voltar à OS
+            </button>
 
-                <button class="btn btn-sm btn-outline-primary" t-on-click="openProcessLoader">
-                    <i class="fa fa-plus me-1"/>Adicionar Processos
-                </button>
+            <button class="btn btn-sm btn-outline-primary" t-on-click="openProcessLoader">
+                <i class="fa fa-plus me-1"/>Adicionar Processos
+            </button>
 
-                <span class="badge bg-secondary">
-                    <t t-esc="state.processes.length"/> processo(s)
+            <span class="badge bg-light text-secondary border">
+                <t t-esc="state.processes.length"/> processos
+            </span>
+
+            <div class="vr"/>
+
+            <span class="fw-bold" style="font-size:1rem;">
+                OS <t t-esc="state.repairInfo.os_number or '—'"/>
+            </span>
+
+            <t t-if="state.repairInfo.partner_id">
+                <span class="text-muted">|</span>
+                <span>
+                    <t t-esc="state.repairInfo.partner_id[1]"/>
                 </span>
+            </t>
 
-                <div class="vr mx-1"/>
+            <t t-if="state.repairInfo.product_name">
+                <span class="text-muted">|</span>
+                <span>
+                    <t t-esc="state.repairInfo.product_name"/>
+                </span>
+            </t>
 
-                <span class="fw-bold me-1">
-                    <t t-esc="state.repairInfo.os_number or '—'"/>
-                </span>
-                <span t-att-class="'badge me-2 ' + osStateBadge(state.repairInfo.os_state)"
-                      t-esc="osStateLabel(state.repairInfo.os_state)"/>
-                <span class="text-muted small me-1">Cliente:</span>
-                <span class="small me-3">
-                    <t t-esc="state.repairInfo.partner_id ? state.repairInfo.partner_id[1] : '—'"/>
-                </span>
-                <t t-if="state.repairInfo.product_name">
-                    <span class="text-muted small me-1">Produto:</span>
-                    <span class="small me-3"><t t-esc="state.repairInfo.product_name"/></span>
-                </t>
-                <t t-if="state.repairInfo.deadline_date">
-                    <span class="text-muted small me-1">Prazo:</span>
-                    <span class="small"><t t-esc="fmtDate(state.repairInfo.deadline_date)"/></span>
-                </t>
-            </div>
         </div>
 
         <!-- GRID -->
@@ -67,26 +65,45 @@
 
             <t t-foreach="grouped" t-as="group" t-key="group.id">
 
-                <!-- Cabeçalho do componente -->
-                <div class="o_repair_group_header d-flex align-items-center gap-2 px-3 py-2 mt-2"
-                     t-on-click="() => this.toggleGroup(group.id)"
-                     style="cursor:pointer;background:#e8edf2;border-left:4px solid #4f46e5;border-radius:4px;">
-                    <span style="font-size:11px;font-weight:700;color:#334155;">
-                        <t t-if="state.collapsed[group.id]">▶</t>
-                        <t t-else="">▼</t>
-                    </span>
-                    <span style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#334155;">
-                        <t t-esc="group.name"/>
-                    </span>
-                    <span class="badge bg-secondary">
-                        <t t-esc="group.records.length"/> processo(s)
-                    </span>
-                    <t t-if="group.prog > 0">
-                        <span class="badge text-bg-warning"><t t-esc="group.prog"/> em andamento</span>
-                    </t>
-                    <t t-if="group.done === group.records.length and group.records.length > 0">
-                        <span class="badge bg-success">✓ Concluído</span>
-                    </t>
+                <!-- Cabeçalho do componente com cor rotativa e barra de progresso -->
+                <div class="o_repair_group_header mt-3 rounded overflow-hidden"
+                     t-attf-style="border-left: 4px solid {{ groupColor(group_index).border }}; background: {{ groupColor(group_index).bg }};">
+
+                    <div class="d-flex align-items-center gap-2 px-3 py-2"
+                         style="cursor:pointer;"
+                         t-on-click="() => this.toggleGroup(group.id)">
+                        <span style="font-size:12px;font-weight:600;color:#374151;">
+                            <t t-if="state.collapsed[group.id]">▶</t>
+                            <t t-else="">▼</t>
+                        </span>
+                        <span style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#374151;">
+                            <t t-esc="group.name"/>
+                        </span>
+                        <span class="badge bg-white text-secondary border" style="font-size:11px;">
+                            <t t-esc="group.records.length"/> processo(s)
+                        </span>
+                        <t t-if="group.prog > 0">
+                            <span class="badge text-bg-warning" style="font-size:11px;">
+                                <t t-esc="group.prog"/> em andamento
+                            </span>
+                        </t>
+                        <t t-if="group.done === group.records.length and group.records.length > 0">
+                            <span class="badge bg-success" style="font-size:11px;">✓ Concluído</span>
+                        </t>
+                        <span class="ms-auto text-muted" style="font-size:11px;">
+                            <t t-esc="groupProgress(group)"/>%
+                        </span>
+                    </div>
+
+                    <!-- Barra de progresso -->
+                    <div class="progress" style="height:4px;border-radius:0;">
+                        <div class="progress-bar"
+                             role="progressbar"
+                             t-attf-style="width: {{ groupProgress(group) }}%; background-color: {{ groupColor(group_index).border }};"
+                             t-att-aria-valuenow="groupProgress(group)"
+                             aria-valuemin="0"
+                             aria-valuemax="100"/>
+                    </div>
                 </div>
 
                 <t t-if="!state.collapsed[group.id]">
@@ -97,14 +114,15 @@
                                 <col style="width:42px"/>
                                 <col/>
                                 <col style="width:120px"/>
-                                <col style="width:130px"/>
-                                <col style="width:105px"/>
-                                <col style="width:115px"/>
-                                <col style="width:82px"/>
+                                <col style="width:120px"/>
+                                <col style="width:100px"/>
+                                <col style="width:110px"/>
+                                <col style="width:75px"/>
+                                <col style="width:75px"/>
                                 <col style="width:95px"/>
                                 <col style="width:28px"/>
-                                <col style="width:210px"/>
-                                <col style="width:58px"/>
+                                <col style="width:200px"/>
+                                <col style="width:64px"/>
                             </colgroup>
                             <thead class="table-light">
                                 <tr>
@@ -115,6 +133,7 @@
                                     <th>Operador</th>
                                     <th>Data Prog.</th>
                                     <th>Dt. Início</th>
+                                    <th>Previsto</th>
                                     <th>Tempo</th>
                                     <th>Situação</th>
                                     <th class="text-center">⚠</th>
@@ -132,19 +151,15 @@
                                         t-on-drop="(ev) => this.onDrop(ev, group.id, rec.id)"
                                         t-on-dragend="() => this.onDragEnd()">
 
-                                        <!-- Handle -->
                                         <td class="text-center text-muted o_repair_drag_handle">⠿</td>
 
-                                        <!-- Seq -->
-                                        <td class="text-center text-muted small">
+                                        <td class="text-center text-muted">
                                             <t t-esc="rec.sequence"/>
                                         </td>
 
-                                        <!-- Operação -->
-                                        <td class="fw-medium small"><t t-esc="rec.name"/></td>
+                                        <td><t t-esc="rec.name"/></td>
 
-                                        <!-- Máquina -->
-                                        <td class="small text-muted">
+                                        <td class="text-muted">
                                             <t t-esc="rec.machine_id ? rec.machine_id[1] : '—'"/>
                                         </td>
 
@@ -164,8 +179,7 @@
                                                 </select>
                                             </t>
                                             <t t-else="">
-                                                <span class="small"
-                                                      style="cursor:pointer;"
+                                                <span style="cursor:pointer;"
                                                       t-att-class="!rec.operator_id ? 'text-muted fst-italic' : ''"
                                                       t-on-click="() => this.startEditOperator(rec)">
                                                     <t t-if="rec.operator_id">
@@ -186,8 +200,7 @@
                                                        t-on-blur="() => this.cancelEditDate()"/>
                                             </t>
                                             <t t-else="">
-                                                <span class="small"
-                                                      style="cursor:pointer;"
+                                                <span style="cursor:pointer;"
                                                       t-att-class="!rec.date_planned ? 'text-muted fst-italic' : ''"
                                                       t-on-click="() => this.startEditDate(rec.id)">
                                                     <t t-if="rec.date_planned">
@@ -199,14 +212,37 @@
                                         </td>
 
                                         <!-- Dt. Início -->
-                                        <td class="small text-muted">
+                                        <td class="text-muted">
                                             <t t-esc="fmtDatetime(rec.date_start_orig)"/>
                                         </td>
 
-                                        <!-- Tempo — data-acc em segundos para o timer.js -->
+                                        <!-- Tempo Previsto editável HH:MM -->
                                         <td>
-                                            <span class="o_repair_timer small"
-                                                  t-att-class="rec.state === 'progress' ? 'o_repair_timer_running fw-bold' : 'text-muted'"
+                                            <t t-if="state.editPlannedId === rec.id">
+                                                <input type="text"
+                                                       class="form-control form-control-sm"
+                                                       placeholder="HH:MM"
+                                                       maxlength="5"
+                                                       t-att-value="_min2hhmm(rec.duration_planned)"
+                                                       t-on-change="(ev) => this.savePlanned(rec.id, ev)"
+                                                       t-on-blur="() => this.cancelEditPlanned()"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span style="cursor:pointer;"
+                                                      t-att-class="!rec.duration_planned ? 'text-muted fst-italic' : ''"
+                                                      t-on-click="() => this.startEditPlanned(rec.id)">
+                                                    <t t-if="rec.duration_planned">
+                                                        <t t-esc="_min2hhmm(rec.duration_planned)"/>
+                                                    </t>
+                                                    <t t-else="">00:00</t>
+                                                </span>
+                                            </t>
+                                        </td>
+
+                                        <!-- Tempo real (cronômetro) -->
+                                        <td>
+                                            <span class="o_repair_timer"
+                                                  t-att-class="rec.state === 'progress' ? 'o_repair_timer_running fw-bold text-warning' : 'text-muted'"
                                                   t-att-data-start="rec.state === 'progress' ? (rec.date_start or '') : ''"
                                                   t-att-data-acc="(rec.duration_acc or 0) * 60">
                                                 <t t-esc="timerDisplay(rec)"/>
@@ -235,7 +271,7 @@
                                             </t>
                                         </td>
 
-                                        <!-- Botões de ação principais -->
+                                        <!-- Botões principais -->
                                         <td class="o_repair_proc_actions">
                                             <t t-if="state.loadingId === rec.id">
                                                 <i class="fa fa-spinner fa-spin text-muted"/>
@@ -256,22 +292,24 @@
                                             </t>
                                         </td>
 
-                                        <!-- Coluna fixa: Cancelar + Excluir — sempre visível -->
-                                        <td class="text-nowrap">
-                                            <t t-if="rec.state === 'ready' or rec.state === 'paused'">
-                                                <button class="btn btn-sm btn-link text-danger p-0 me-1"
-                                                        title="Cancelar processo"
-                                                        t-on-click="() => this.onCancel(rec.id)">
-                                                    <i class="fa fa-times-circle"/>
-                                                </button>
-                                            </t>
-                                            <t t-if="rec.state === 'ready' or rec.state === 'cancel'">
-                                                <button class="btn btn-sm btn-link text-danger p-0"
-                                                        title="Excluir processo"
-                                                        t-on-click="() => this.onDelete(rec.id)">
-                                                    <i class="fa fa-trash"/>
-                                                </button>
-                                            </t>
+                                        <!-- Cancelar + Excluir — coluna fixa -->
+                                        <td>
+                                            <div class="d-flex gap-2 align-items-center">
+                                                <t t-if="rec.state === 'ready' or rec.state === 'paused'">
+                                                    <button class="btn btn-link text-danger p-0"
+                                                            title="Cancelar processo"
+                                                            t-on-click="() => this.onCancel(rec.id)">
+                                                        <i class="fa fa-times-circle fa-lg"/>
+                                                    </button>
+                                                </t>
+                                                <t t-if="rec.state === 'ready' or rec.state === 'cancel'">
+                                                    <button class="btn btn-link text-danger p-0"
+                                                            title="Excluir processo"
+                                                            t-on-click="() => this.onDelete(rec.id)">
+                                                        <i class="fa fa-trash fa-lg"/>
+                                                    </button>
+                                                </t>
+                                            </div>
                                         </td>
 
                                     </tr>
