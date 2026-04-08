@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- ══ Popup de Ações (Iniciar / Pausar / Concluir) ══════════════════ -->
+    <!-- -- Popup de Ações (Iniciar / Pausar / Concluir) ------------------ -->
     <record id="view_repair_process_actions_popup" model="ir.ui.view">
         <field name="name">repair.os.process.actions.popup</field>
         <field name="model">repair.os.process</field>
@@ -66,7 +66,7 @@
         </field>
     </record>
 
-    <!-- ══ Popup de Detalhes / Desvio / Anexo ════════════════════════════ -->
+    <!-- -- Popup de Detalhes / Desvio / Anexo ---------------------------- -->
     <record id="view_repair_process_details_popup" model="ir.ui.view">
         <field name="name">repair.os.process.details.popup</field>
         <field name="model">repair.os.process</field>
@@ -117,7 +117,7 @@
         </field>
     </record>
 
-    <!-- ══ Popup de Controle de Qualidade ════════════════════════════════ -->
+    <!-- -- Popup de Controle de Qualidade -------------------------------- -->
     <record id="view_repair_process_quality_popup" model="ir.ui.view">
         <field name="name">repair.os.process.quality.popup</field>
         <field name="model">repair.os.process</field>
@@ -174,7 +174,7 @@
         </field>
     </record>
 
-    <!-- ══ Tree standalone de processos (Acompanhamento) ═════════════════ -->
+    <!-- -- Tree standalone de processos (Acompanhamento) ----------------- -->
     <record id="view_repair_process_tree" model="ir.ui.view">
         <field name="name">repair.os.process.tree</field>
         <field name="model">repair.os.process</field>
@@ -335,7 +335,7 @@
     </record>
 
 
-    <!-- ══ Popup de Desvio (coluna Desvio) ══════════════════════════════ -->
+    <!-- -- Popup de Desvio (coluna Desvio) ------------------------------ -->
     <record id="view_repair_process_deviation_popup" model="ir.ui.view">
         <field name="name">repair.os.process.deviation.popup</field>
         <field name="model">repair.os.process</field>
@@ -376,7 +376,7 @@
     </record>
 
 
-    <!-- ══ Tree agrupada por componente ══════════════════════════════════ -->
+    <!-- -- Tree agrupada por componente ---------------------------------- -->
     <record id="view_repair_process_grouped_list" model="ir.ui.view">
         <field name="name">repair.os.process.grouped.list</field>
         <field name="model">repair.os.process</field>
@@ -512,7 +512,7 @@
         <field name="context">{'search_default_group_component': 1, 'group_by': ['component_type_id']}</field>
     </record>
 
-    <!-- ══ Form wrapper para tela de processos com smart button ══ -->
+    <!-- -- Form wrapper para tela de processos com smart button -- -->
     <record id="view_repair_order_process_wrapper" model="ir.ui.view">
         <field name="name">repair.order.process.wrapper</field>
         <field name="model">repair.order</field>

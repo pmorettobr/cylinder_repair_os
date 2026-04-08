@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- ══ Kanban de Processos — Acompanhamento ═══════════════════════════ -->
+    <!-- -- Kanban de Processos — Acompanhamento --------------------------- -->
     <record id="view_repair_process_kanban" model="ir.ui.view">
         <field name="name">repair.os.process.kanban</field>
         <field name="model">repair.os.process</field>
@@ -99,7 +99,7 @@
         </field>
     </record>
 
-    <!-- ══ Actions de Acompanhamento ══════════════════════════════════════ -->
+    <!-- -- Actions de Acompanhamento -------------------------------------- -->
 
     <!-- Status Geral -->
     <record id="action_repair_tracking_all" model="ir.actions.act_window">

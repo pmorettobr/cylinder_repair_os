@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- ══ Kanban de OS ═══════════════════════════════════════════════════ -->
+    <!-- -- Kanban de OS --------------------------------------------------- -->
     <record id="view_repair_dashboard_kanban" model="ir.ui.view">
         <field name="name">repair.dashboard.kanban</field>
         <field name="model">repair.order</field>
@@ -98,7 +98,7 @@
         </field>
     </record>
 
-    <!-- ══ Action Dashboard ═══════════════════════════════════════════════ -->
+    <!-- -- Action Dashboard ----------------------------------------------- -->
     <record id="action_repair_dashboard" model="ir.actions.act_window">
         <field name="name">Dashboard — Ordens de Serviço</field>
         <field name="res_model">repair.order</field>
