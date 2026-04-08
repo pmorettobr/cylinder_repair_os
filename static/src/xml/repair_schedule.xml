@@ -19,8 +19,6 @@
 
         <!-- CABEÇALHO -->
         <div class="o_repair_schedule_header">
-
-            <!-- Barra de navegação e info -->
             <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom bg-white flex-wrap">
 
                 <button class="btn btn-sm btn-outline-secondary" t-on-click="goBackToOs">
@@ -42,22 +40,18 @@
                 </span>
                 <span t-att-class="'badge me-2 ' + osStateBadge(state.repairInfo.os_state)"
                       t-esc="osStateLabel(state.repairInfo.os_state)"/>
-
                 <span class="text-muted small me-1">Cliente:</span>
                 <span class="small me-3">
                     <t t-esc="state.repairInfo.partner_id ? state.repairInfo.partner_id[1] : '—'"/>
                 </span>
-
                 <t t-if="state.repairInfo.product_name">
                     <span class="text-muted small me-1">Produto:</span>
                     <span class="small me-3"><t t-esc="state.repairInfo.product_name"/></span>
                 </t>
-
                 <t t-if="state.repairInfo.deadline_date">
                     <span class="text-muted small me-1">Prazo:</span>
                     <span class="small"><t t-esc="fmtDate(state.repairInfo.deadline_date)"/></span>
                 </t>
-
             </div>
         </div>
 
@@ -109,7 +103,8 @@
                                 <col style="width:82px"/>
                                 <col style="width:95px"/>
                                 <col style="width:28px"/>
-                                <col style="width:230px"/>
+                                <col style="width:210px"/>
+                                <col style="width:58px"/>
                             </colgroup>
                             <thead class="table-light">
                                 <tr>
@@ -123,6 +118,7 @@
                                     <th>Tempo</th>
                                     <th>Situação</th>
                                     <th class="text-center">⚠</th>
+                                    <th></th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -140,7 +136,9 @@
                                         <td class="text-center text-muted o_repair_drag_handle">⠿</td>
 
                                         <!-- Seq -->
-                                        <td class="text-center text-muted small"><t t-esc="rec.sequence"/></td>
+                                        <td class="text-center text-muted small">
+                                            <t t-esc="rec.sequence"/>
+                                        </td>
 
                                         <!-- Operação -->
                                         <td class="fw-medium small"><t t-esc="rec.name"/></td>
@@ -192,7 +190,9 @@
                                                       style="cursor:pointer;"
                                                       t-att-class="!rec.date_planned ? 'text-muted fst-italic' : ''"
                                                       t-on-click="() => this.startEditDate(rec.id)">
-                                                    <t t-if="rec.date_planned"><t t-esc="fmtDate(rec.date_planned)"/></t>
+                                                    <t t-if="rec.date_planned">
+                                                        <t t-esc="fmtDate(rec.date_planned)"/>
+                                                    </t>
                                                     <t t-else="">definir</t>
                                                 </span>
                                             </t>
@@ -203,13 +203,13 @@
                                             <t t-esc="fmtDatetime(rec.date_start_orig)"/>
                                         </td>
 
-                                        <!-- Tempo -->
+                                        <!-- Tempo — data-acc em segundos para o timer.js -->
                                         <td>
                                             <span class="o_repair_timer small"
                                                   t-att-class="rec.state === 'progress' ? 'o_repair_timer_running fw-bold' : 'text-muted'"
-                                                  t-att-data-start="rec.date_start or ''"
-                                                  t-att-data-acc="rec.duration_acc or 0">
-                                                <t t-esc="rec.duration_display or '00:00:00'"/>
+                                                  t-att-data-start="rec.state === 'progress' ? (rec.date_start or '') : ''"
+                                                  t-att-data-acc="(rec.duration_acc or 0) * 60">
+                                                <t t-esc="timerDisplay(rec)"/>
                                             </span>
                                         </td>
 
@@ -235,7 +235,7 @@
                                             </t>
                                         </td>
 
-                                        <!-- Botões de ação -->
+                                        <!-- Botões de ação principais -->
                                         <td class="o_repair_proc_actions">
                                             <t t-if="state.loadingId === rec.id">
                                                 <i class="fa fa-spinner fa-spin text-muted"/>
@@ -253,20 +253,24 @@
                                                     <button class="o_repair_action_btn o_repair_btn_finish"
                                                             t-on-click="() => this.onFinish(rec.id)">Concluir</button>
                                                 </t>
-                                                <t t-if="rec.state === 'ready' or rec.state === 'paused'">
-                                                    <button class="btn btn-sm btn-link text-danger p-0 ms-1"
-                                                            title="Cancelar processo"
-                                                            t-on-click="() => this.onCancel(rec.id)">
-                                                        <i class="fa fa-times-circle"/>
-                                                    </button>
-                                                </t>
-                                                <t t-if="rec.state === 'ready' or rec.state === 'cancel'">
-                                                    <button class="btn btn-sm btn-link text-danger p-0 ms-1"
-                                                            title="Excluir processo"
-                                                            t-on-click="() => this.onDelete(rec.id)">
-                                                        <i class="fa fa-trash"/>
-                                                    </button>
-                                                </t>
+                                            </t>
+                                        </td>
+
+                                        <!-- Coluna fixa: Cancelar + Excluir — sempre visível -->
+                                        <td class="text-nowrap">
+                                            <t t-if="rec.state === 'ready' or rec.state === 'paused'">
+                                                <button class="btn btn-sm btn-link text-danger p-0 me-1"
+                                                        title="Cancelar processo"
+                                                        t-on-click="() => this.onCancel(rec.id)">
+                                                    <i class="fa fa-times-circle"/>
+                                                </button>
+                                            </t>
+                                            <t t-if="rec.state === 'ready' or rec.state === 'cancel'">
+                                                <button class="btn btn-sm btn-link text-danger p-0"
+                                                        title="Excluir processo"
+                                                        t-on-click="() => this.onDelete(rec.id)">
+                                                    <i class="fa fa-trash"/>
+                                                </button>
                                             </t>
                                         </td>
 
