@@ -96,7 +96,6 @@ class RepairSchedule extends Component {
         try {
             const res = await this.orm.call("repair.os.process", method, [[id]]);
             if (res && res.type) {
-                // Normaliza views para doAction aceitar o dict do Python
                 if (!res.views) {
                     const vmode = res.view_mode || "form";
                     res.views = [[res.view_id || false, vmode.split(",")[0]]];
@@ -181,7 +180,6 @@ class RepairSchedule extends Component {
     goBackToOs() { this.action.restore(); }
 
     async openProcessLoader() {
-        // Constrói a action diretamente — mais seguro que orm.call em client action
         try {
             this.action.doAction({
                 type: "ir.actions.act_window",
@@ -254,6 +252,74 @@ class RepairSchedule extends Component {
         }
     }
 
+    // ── Timer display ─────────────────────────────────────────────────
+
+    /*
+     * Calcula o display do timer para renderização.
+     * - Em andamento (progress): acumulado + tempo desde date_start
+     * - Pausado / outro: só o acumulado (duration_acc em minutos)
+     * O timer.js continua atualizando os elementos .o_repair_timer_running
+     * no DOM via setInterval — aqui só garantimos o valor inicial correto.
+     */
+    timerDisplay(rec) {
+        if (rec.duration_display) return rec.duration_display;
+        const acc = rec.duration_acc || 0;
+        const totalSec = Math.round(acc * 60);
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+        return [h, m, s].map(n => String(n).padStart(2, "0")).join(":");
+    }
+
+    // ── Redimensionamento de colunas ──────────────────────────────────
+
+    _initColResize(tableEl) {
+        if (!tableEl || tableEl._resizeInited) return;
+        tableEl._resizeInited = true;
+
+        const STORE_KEY = "cyl_col_widths";
+        const ths = Array.from(tableEl.querySelectorAll("thead th"));
+
+        try {
+            const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+            ths.forEach((th, i) => {
+                if (saved[i]) th.style.width = saved[i] + "px";
+            });
+        } catch (_) {}
+
+        ths.slice(0, -1).forEach((th, i) => {
+            const handle = document.createElement("div");
+            handle.className = "o_repair_col_resizer";
+            th.appendChild(handle);
+
+            let startX, startW;
+
+            handle.addEventListener("mousedown", (ev) => {
+                ev.preventDefault();
+                startX = ev.pageX;
+                startW = th.offsetWidth;
+                handle.classList.add("resizing");
+
+                const onMove = (e) => {
+                    const newW = Math.max(40, startW + (e.pageX - startX));
+                    th.style.width = newW + "px";
+                };
+                const onUp = () => {
+                    handle.classList.remove("resizing");
+                    document.removeEventListener("mousemove", onMove);
+                    document.removeEventListener("mouseup", onUp);
+                    try {
+                        const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+                        saved[i] = th.offsetWidth;
+                        localStorage.setItem(STORE_KEY, JSON.stringify(saved));
+                    } catch (_) {}
+                };
+                document.addEventListener("mousemove", onMove);
+                document.addEventListener("mouseup", onUp);
+            });
+        });
+    }
+
     // ── Formatação ────────────────────────────────────────────────────
 
     fmtDate(v) {
@@ -291,61 +357,6 @@ class RepairSchedule extends Component {
                  paused:"text-bg-info", done:"bg-success",
                  cancel:"bg-secondary" }[s] || "bg-secondary";
     }
-    // ── Redimensionamento de colunas ──────────────────────────────────
-
-    _initColResize(tableEl) {
-        if (!tableEl || tableEl._resizeInited) return;
-        tableEl._resizeInited = true;
-
-        const STORE_KEY = "cyl_col_widths";
-        const ths = Array.from(tableEl.querySelectorAll("thead th"));
-
-        // Restaura larguras salvas
-        try {
-            const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
-            ths.forEach((th, i) => {
-                if (saved[i]) th.style.width = saved[i] + "px";
-            });
-        } catch (_) {}
-
-        // Adiciona handle em cada th (exceto o último)
-        ths.slice(0, -1).forEach((th, i) => {
-            const handle = document.createElement("div");
-            handle.className = "o_repair_col_resizer";
-            th.appendChild(handle);
-
-            let startX, startW;
-
-            handle.addEventListener("mousedown", (ev) => {
-                ev.preventDefault();
-                startX = ev.pageX;
-                startW = th.offsetWidth;
-                handle.classList.add("resizing");
-
-                const onMove = (e) => {
-                    const newW = Math.max(40, startW + (e.pageX - startX));
-                    th.style.width = newW + "px";
-                };
-
-                const onUp = () => {
-                    handle.classList.remove("resizing");
-                    document.removeEventListener("mousemove", onMove);
-                    document.removeEventListener("mouseup", onUp);
-                    // Persiste no localStorage
-                    try {
-                        const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
-                        saved[i] = th.offsetWidth;
-                        localStorage.setItem(STORE_KEY, JSON.stringify(saved));
-                    } catch (_) {}
-                };
-
-                document.addEventListener("mousemove", onMove);
-                document.addEventListener("mouseup", onUp);
-            });
-        });
-    }
-
-
     rowCls(s, isDragOver) {
         const base = { done:"o_repair_row_done", progress:"o_repair_row_progress",
                        paused:"o_repair_row_paused", cancel:"o_repair_row_cancel" }[s] || "";
