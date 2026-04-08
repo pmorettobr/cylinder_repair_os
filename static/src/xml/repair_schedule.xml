@@ -84,7 +84,7 @@
                             <t t-esc="group.name"/>
                         </span>
                         <!-- done/total -->
-                        <span class="badge bg-white text-secondary border" style="font-size:11px;">
+                        <span style="font-size:12px;color:#374151;font-weight:600;">
                             <t t-esc="group.done"/>/<t t-esc="group.records.length"/> concluídos
                         </span>
                         <t t-if="group.prog > 0">
@@ -237,6 +237,7 @@
                                         <!-- Situação -->
                                         <td>
                                             <span t-att-class="'badge ' + stateBadge(rec.state)"
+                                                  style="font-size:12px;"
                                                   t-esc="stateLabel(rec.state)"/>
                                         </td>
 
