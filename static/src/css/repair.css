@@ -963,40 +963,39 @@ th[data-name="has_deviation"] {
     height: 100%;
     background: #fff;
 }
-
 .o_repair_schedule_header { flex-shrink: 0; }
-
 .o_repair_schedule_body {
     flex: 1;
     overflow-y: auto;
     padding: 8px 16px 24px;
 }
 
-/* Tabela com scroll horizontal e colunas fixas */
-.o_repair_table_wrap {
-    overflow-x: auto;
-    margin-bottom: 0;
+/* Barra de progresso geral no cabeçalho */
+.o_repair_global_progress_wrap {
+    width: 160px;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
 }
-.o_repair_proc_table {
-    table-layout: fixed;
-    min-width: 860px;
-    width: 100%;
+.o_repair_global_progress_bar {
+    height: 100%;
+    border-radius: 4px;
+    min-width: 0;
 }
 
-/* Handle de arrastar */
-.o_repair_drag_handle {
-    cursor: grab;
-    user-select: none;
-    font-size: 14px;
-    color: #9ca3af;
-}
+/* Tabela */
+.o_repair_table_wrap { overflow-x: auto; margin-bottom: 0; }
+.o_repair_proc_table { table-layout: fixed; min-width: 900px; width: 100%; }
+
+/* Handle arrastar */
+.o_repair_drag_handle { cursor: grab; user-select: none; color: #9ca3af; }
 .o_repair_drag_handle:active { cursor: grabbing; }
-
-/* Linha com drag over */
 .o_repair_drag_over td { border-top: 2px solid #4f46e5 !important; }
 tr.o_repair_drag_over { background: rgba(79,70,229,0.06) !important; }
 
-/* Botões de ação — estilo MRP arredondado */
+/* Botões ação estilo MRP */
 .o_repair_action_btn {
     display: inline-block;
     padding: 2px 12px;
@@ -1015,22 +1014,12 @@ tr.o_repair_drag_over { background: rgba(79,70,229,0.06) !important; }
 .o_repair_btn_pause  { background: #d97706; color: #fff; }
 .o_repair_btn_finish { background: #4f46e5; color: #fff; }
 
-/* Resize handle nas colunas */
-.o_repair_proc_table th {
-    position: relative;
-    overflow: visible;
-}
+/* Resize handle */
+.o_repair_proc_table th { position: relative; overflow: visible; }
 .o_repair_col_resizer {
-    position: absolute;
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 6px;
-    cursor: col-resize;
-    user-select: none;
-    z-index: 1;
+    position: absolute; right: 0; top: 0;
+    height: 100%; width: 6px;
+    cursor: col-resize; user-select: none; z-index: 1;
 }
 .o_repair_col_resizer:hover,
-.o_repair_col_resizer.resizing {
-    background: rgba(79,70,229,0.35);
-}
+.o_repair_col_resizer.resizing { background: rgba(79,70,229,0.35); }
