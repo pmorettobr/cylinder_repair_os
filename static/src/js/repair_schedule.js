@@ -12,16 +12,17 @@ class RepairSchedule extends Component {
         this.notif  = useService("notification");
 
         this.state = useState({
-            repairInfo:      {},
-            processes:       [],
-            loading:         true,
-            loadingId:       null,
-            editDateId:      null,
-            editOperatorId:  null,
-            operatorOptions: [],
-            collapsed:       {},
-            dragSrcId:       null,
-            dragOverId:      null,
+            repairInfo:         {},
+            processes:          [],
+            loading:            true,
+            loadingId:          null,
+            editDateId:         null,
+            editOperatorId:     null,
+            editPlannedId:      null,
+            operatorOptions:    [],
+            collapsed:          {},
+            dragSrcId:          null,
+            dragOverId:         null,
         });
 
         const ctx = this.props.action.context || {};
@@ -52,7 +53,7 @@ class RepairSchedule extends Component {
                     [["repair_id", "=", this.repairId]],
                     ["sequence", "name", "component_type_id", "machine_id",
                      "operator_id", "date_planned", "date_start_orig", "date_start",
-                     "duration_acc", "duration_display", "state",
+                     "duration_acc", "duration_planned", "duration_display", "state",
                      "has_deviation", "deviation_notes"]
                 ),
             ]);
@@ -130,8 +131,9 @@ class RepairSchedule extends Component {
     // ── Edição inline — Data ──────────────────────────────────────────
 
     startEditDate(id) {
-        this.state.editDateId = id;
+        this.state.editDateId     = id;
         this.state.editOperatorId = null;
+        this.state.editPlannedId  = null;
     }
     cancelEditDate() { this.state.editDateId = null; }
 
@@ -151,6 +153,7 @@ class RepairSchedule extends Component {
     async startEditOperator(rec) {
         this.state.editOperatorId = rec.id;
         this.state.editDateId     = null;
+        this.state.editPlannedId  = null;
         this.state.operatorOptions = [];
         try {
             const domain = rec.machine_id ? [["machine_id", "=", rec.machine_id[0]]] : [];
@@ -175,6 +178,27 @@ class RepairSchedule extends Component {
         }
     }
 
+    // ── Edição inline — Tempo Previsto ────────────────────────────────
+
+    startEditPlanned(id) {
+        this.state.editPlannedId  = id;
+        this.state.editDateId     = null;
+        this.state.editOperatorId = null;
+    }
+    cancelEditPlanned() { this.state.editPlannedId = null; }
+
+    async savePlanned(id, ev) {
+        const raw = ev.target.value || "00:00";
+        this.state.editPlannedId = null;
+        const minutes = this._hhmm2min(raw);
+        try {
+            await this.orm.write("repair.os.process", [id], { duration_planned: minutes });
+            await this._loadData();
+        } catch (e) {
+            this.notif.add((e.data && e.data.message) || "Erro ao salvar tempo previsto", { type: "danger" });
+        }
+    }
+
     // ── Navegação ─────────────────────────────────────────────────────
 
     goBackToOs() { this.action.restore(); }
@@ -195,7 +219,7 @@ class RepairSchedule extends Component {
         }
     }
 
-    // ── Colapso de grupos ─────────────────────────────────────────────
+    // ── Colapso ───────────────────────────────────────────────────────
 
     toggleGroup(id) { this.state.collapsed[id] = !this.state.collapsed[id]; }
 
@@ -205,17 +229,14 @@ class RepairSchedule extends Component {
         this.state.dragSrcId = id;
         ev.dataTransfer.effectAllowed = "move";
     }
-
     onDragOver(ev, id) {
         ev.preventDefault();
         ev.dataTransfer.dropEffect = "move";
         if (this.state.dragOverId !== id) this.state.dragOverId = id;
     }
-
     onDragLeave(ev) {
         if (!ev.currentTarget.contains(ev.relatedTarget)) this.state.dragOverId = null;
     }
-
     onDragEnd() {
         this.state.dragSrcId  = null;
         this.state.dragOverId = null;
@@ -227,19 +248,15 @@ class RepairSchedule extends Component {
         this.state.dragSrcId  = null;
         this.state.dragOverId = null;
         if (!srcId || srcId === targetId) return;
-
         const group = this.grouped.find(g => g.id === groupId);
         if (!group || !Array.isArray(group.records)) return;
-
         const ids    = group.records.map(r => r.id);
         const srcIdx = ids.indexOf(srcId);
         const tgtIdx = ids.indexOf(targetId);
         if (srcIdx === -1 || tgtIdx === -1) return;
-
         const reordered = [...ids];
         reordered.splice(srcIdx, 1);
         reordered.splice(tgtIdx, 0, srcId);
-
         try {
             await Promise.all(
                 reordered.map((id, idx) =>
@@ -252,57 +269,82 @@ class RepairSchedule extends Component {
         }
     }
 
+    // ── Conversão HH:MM ↔ minutos ─────────────────────────────────────
+
+    _min2hhmm(minutes) {
+        if (!minutes && minutes !== 0) return "00:00";
+        const total = Math.round(minutes);
+        const h = Math.floor(total / 60);
+        const m = total % 60;
+        return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0");
+    }
+
+    _hhmm2min(str) {
+        if (!str) return 0;
+        const parts = String(str).split(":");
+        const h = parseInt(parts[0]) || 0;
+        const m = parseInt(parts[1]) || 0;
+        return h * 60 + m;
+    }
+
     // ── Timer display ─────────────────────────────────────────────────
 
-    /*
-     * Calcula o display do timer para renderização.
-     * - Em andamento (progress): acumulado + tempo desde date_start
-     * - Pausado / outro: só o acumulado (duration_acc em minutos)
-     * O timer.js continua atualizando os elementos .o_repair_timer_running
-     * no DOM via setInterval — aqui só garantimos o valor inicial correto.
-     */
     timerDisplay(rec) {
+        // Mostra duration_display do servidor quando disponível
+        // Para processos pausados/prontos mostra o acumulado em HH:MM:SS
         if (rec.duration_display) return rec.duration_display;
-        const acc = rec.duration_acc || 0;
-        const totalSec = Math.round(acc * 60);
+        const totalSec = Math.round((rec.duration_acc || 0) * 60);
         const h = Math.floor(totalSec / 3600);
         const m = Math.floor((totalSec % 3600) / 60);
         const s = totalSec % 60;
         return [h, m, s].map(n => String(n).padStart(2, "0")).join(":");
     }
 
-    // ── Redimensionamento de colunas ──────────────────────────────────
+    // ── Cor do grupo (paleta suave rotativa) ──────────────────────────
+
+    groupColor(idx) {
+        const colors = [
+            { bg: "#eff6ff", border: "#3b82f6" }, // azul
+            { bg: "#f0fdf4", border: "#22c55e" }, // verde
+            { bg: "#fefce8", border: "#eab308" }, // amarelo
+            { bg: "#faf5ff", border: "#a855f7" }, // roxo
+            { bg: "#fff7ed", border: "#f97316" }, // laranja
+            { bg: "#ecfdf5", border: "#10b981" }, // esmeralda
+            { bg: "#fdf2f8", border: "#ec4899" }, // rosa
+            { bg: "#f0f9ff", border: "#0ea5e9" }, // céu
+        ];
+        return colors[idx % colors.length];
+    }
+
+    groupProgress(group) {
+        const total = group.records.length;
+        if (!total) return 0;
+        return Math.round((group.done / total) * 100);
+    }
+
+    // ── Resize de colunas ─────────────────────────────────────────────
 
     _initColResize(tableEl) {
         if (!tableEl || tableEl._resizeInited) return;
         tableEl._resizeInited = true;
-
         const STORE_KEY = "cyl_col_widths";
         const ths = Array.from(tableEl.querySelectorAll("thead th"));
-
         try {
             const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
-            ths.forEach((th, i) => {
-                if (saved[i]) th.style.width = saved[i] + "px";
-            });
+            ths.forEach((th, i) => { if (saved[i]) th.style.width = saved[i] + "px"; });
         } catch (_) {}
-
         ths.slice(0, -1).forEach((th, i) => {
             const handle = document.createElement("div");
             handle.className = "o_repair_col_resizer";
             th.appendChild(handle);
-
             let startX, startW;
-
             handle.addEventListener("mousedown", (ev) => {
                 ev.preventDefault();
                 startX = ev.pageX;
                 startW = th.offsetWidth;
                 handle.classList.add("resizing");
-
                 const onMove = (e) => {
-                    const newW = Math.max(40, startW + (e.pageX - startX));
-                    th.style.width = newW + "px";
+                    th.style.width = Math.max(40, startW + (e.pageX - startX)) + "px";
                 };
                 const onUp = () => {
                     handle.classList.remove("resizing");
