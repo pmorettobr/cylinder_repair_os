@@ -352,7 +352,7 @@ class RepairSchedule extends Component {
 
     globalBarStyle() {
         const pct = this.totalProgress;
-        return `width: ${pct}%; background: linear-gradient(90deg, #60a5fa, #4f46e5); transition: width 0.4s ease;`;
+        return `width: ${pct}%; height: 100%; background: linear-gradient(90deg, #60a5fa, #4f46e5); transition: width 0.4s ease; border-radius: 4px;`;
     }
 
     // ── Resize de colunas ─────────────────────────────────────────────
