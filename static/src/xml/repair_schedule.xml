@@ -49,9 +49,8 @@
                     <span class="text-muted" style="font-size:0.85rem;white-space:nowrap;">
                         <t t-esc="totalDone"/>/<t t-esc="state.processes.length"/> concluídos
                     </span>
-                    <div class="o_repair_global_progress_wrap">
-                        <div class="o_repair_global_progress_bar"
-                             t-att-style="globalBarStyle()"/>
+                    <div style="width:160px;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;flex-shrink:0;">
+                        <div t-att-style="globalBarStyle()"/>
                     </div>
                     <span class="fw-bold" style="font-size:0.85rem;color:#4f46e5;white-space:nowrap;">
                         <t t-esc="totalProgress"/>%
