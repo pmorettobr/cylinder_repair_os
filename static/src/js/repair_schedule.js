@@ -12,11 +12,16 @@ class RepairSchedule extends Component {
         this.notif  = useService("notification");
 
         this.state = useState({
-            repairInfo: {},
-            processes: [],
-            loading: true,
-            loadingId: null,
-            editDateId: null,
+            repairInfo:      {},
+            processes:       [],
+            loading:         true,
+            loadingId:       null,
+            editDateId:      null,
+            editOperatorId:  null,
+            operatorOptions: [],
+            collapsed:       {},
+            dragSrcId:       null,
+            dragOverId:      null,
         });
 
         const ctx = this.props.action.context || {};
@@ -25,28 +30,33 @@ class RepairSchedule extends Component {
         onWillStart(async () => { await this._loadData(); });
     }
 
-    // ── Dados ──────────────────────────────────────────────────────────────
+    // ── Carregamento de dados ─────────────────────────────────────────
 
     async _loadData() {
         if (!this.repairId) { this.state.loading = false; return; }
-
-        const repairs = await this.orm.searchRead(
-            "repair.order",
-            [["id", "=", this.repairId]],
-            ["os_number", "product_name", "partner_id", "os_state", "deadline_date"]
-        );
-        this.state.repairInfo = repairs[0] || {};
-
-        const procs = await this.orm.searchRead(
-            "repair.os.process",
-            [["repair_id", "=", this.repairId]],
-            ["sequence", "name", "component_type_id", "machine_id",
-             "operator_id", "date_planned", "date_start_orig", "date_start",
-             "duration_acc", "duration_display", "state",
-             "has_deviation", "deviation_notes"]
-        );
-        this.state.processes = procs;
-        this.state.loading = false;
+        try {
+            const [repairs, procs] = await Promise.all([
+                this.orm.searchRead(
+                    "repair.order",
+                    [["id", "=", this.repairId]],
+                    ["os_number", "product_name", "partner_id", "os_state", "deadline_date"]
+                ),
+                this.orm.searchRead(
+                    "repair.os.process",
+                    [["repair_id", "=", this.repairId]],
+                    ["sequence", "name", "component_type_id", "machine_id",
+                     "operator_id", "date_planned", "date_start_orig", "date_start",
+                     "duration_acc", "duration_display", "state",
+                     "has_deviation", "deviation_notes"]
+                ),
+            ]);
+            this.state.repairInfo = repairs[0] || {};
+            this.state.processes  = procs;
+        } catch (e) {
+            this.notif.add("Erro ao carregar dados", { type: "danger" });
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     get grouped() {
@@ -70,7 +80,7 @@ class RepairSchedule extends Component {
         return [...map.values()];
     }
 
-    // ── Ações de processo ──────────────────────────────────────────────────
+    // ── Ações de processo ─────────────────────────────────────────────
 
     async _run(method, id) {
         this.state.loadingId = id;
@@ -94,10 +104,23 @@ class RepairSchedule extends Component {
     onCancel(id)    { return this._run("action_cancel", id); }
     onDeviation(id) { return this._run("action_open_deviation_popup", id); }
 
-    // ── Data editável inline ───────────────────────────────────────────────
+    async onDelete(id) {
+        if (!confirm("Excluir este processo?")) return;
+        try {
+            await this.orm.unlink("repair.os.process", [id]);
+            await this._loadData();
+        } catch (e) {
+            this.notif.add((e.data && e.data.message) || "Erro ao excluir", { type: "danger" });
+        }
+    }
 
-    startEditDate(id)  { this.state.editDateId = id; }
-    cancelEditDate()   { this.state.editDateId = null; }
+    // ── Edição inline — Data ──────────────────────────────────────────
+
+    startEditDate(id) {
+        this.state.editDateId     = id;
+        this.state.editOperatorId = null;
+    }
+    cancelEditDate() { this.state.editDateId = null; }
 
     async saveDate(id, ev) {
         const val = ev.target.value || false;
@@ -110,29 +133,106 @@ class RepairSchedule extends Component {
         }
     }
 
-    // ── Navegação ──────────────────────────────────────────────────────────
+    // ── Edição inline — Operador ──────────────────────────────────────
 
-    goBackToOs() {
-        this.action.doAction({
-            type: "ir.actions.act_window",
-            res_model: "repair.order",
-            res_id: this.repairId,
-            view_mode: "form",
-            views: [[false, "form"]],
-            target: "current",
-        });
-    }
-
-    async openProcessLoader() {
+    async startEditOperator(rec) {
+        this.state.editOperatorId = rec.id;
+        this.state.editDateId     = null;
         try {
-            const res = await this.orm.call("repair.order", "action_open_process_loader", [[this.repairId]]);
-            await this.action.doAction(res, { onClose: () => this._loadData() });
+            const domain = rec.machine_id ? [["machine_id", "=", rec.machine_id[0]]] : [];
+            this.state.operatorOptions = await this.orm.searchRead(
+                "repair.machine.operator", domain, ["id", "name"]
+            );
+        } catch (_) {
+            this.state.operatorOptions = [];
+        }
+    }
+    cancelEditOperator() { this.state.editOperatorId = null; }
+
+    async saveOperator(id, ev) {
+        const val = ev.target.value ? parseInt(ev.target.value) : false;
+        this.state.editOperatorId = null;
+        try {
+            await this.orm.write("repair.os.process", [id], { operator_id: val });
+            await this._loadData();
         } catch (e) {
-            this.notif.add("Erro ao abrir carregador", { type: "danger" });
+            this.notif.add((e.data && e.data.message) || "Erro ao salvar operador", { type: "danger" });
         }
     }
 
-    // ── Formatação ─────────────────────────────────────────────────────────
+    // ── Navegação ─────────────────────────────────────────────────────
+
+    goBackToOs() { this.action.restore(); }
+
+    async openProcessLoader() {
+        try {
+            const res = await this.orm.call(
+                "repair.order", "action_open_process_loader", [[this.repairId]]
+            );
+            await this.action.doAction(res, { onClose: () => this._loadData() });
+        } catch (e) {
+            this.notif.add((e.data && e.data.message) || "Erro ao abrir carregador", { type: "danger" });
+        }
+    }
+
+    // ── Colapso de grupos ─────────────────────────────────────────────
+
+    toggleGroup(id) { this.state.collapsed[id] = !this.state.collapsed[id]; }
+
+    // ── Drag and drop — reordenar dentro do grupo ─────────────────────
+
+    onDragStart(ev, id) {
+        this.state.dragSrcId = id;
+        ev.dataTransfer.effectAllowed = "move";
+    }
+
+    onDragOver(ev, id) {
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = "move";
+        if (this.state.dragOverId !== id) this.state.dragOverId = id;
+    }
+
+    onDragLeave(ev) {
+        if (!ev.currentTarget.contains(ev.relatedTarget)) this.state.dragOverId = null;
+    }
+
+    onDragEnd() {
+        this.state.dragSrcId  = null;
+        this.state.dragOverId = null;
+    }
+
+    async onDrop(ev, groupId, targetId) {
+        ev.preventDefault();
+        const srcId = this.state.dragSrcId;
+        this.state.dragSrcId  = null;
+        this.state.dragOverId = null;
+        if (!srcId || srcId === targetId) return;
+
+        const group = this.grouped.find(g => g.id === groupId);
+        if (!group) return;
+
+        const ids = group.records.map(r => r.id);
+        const srcIdx = ids.indexOf(srcId);
+        const tgtIdx = ids.indexOf(targetId);
+        if (srcIdx === -1 || tgtIdx === -1) return;
+
+        const reordered = [...ids];
+        reordered.splice(srcIdx, 1);
+        reordered.splice(tgtIdx, 0, srcId);
+
+        try {
+            await Promise.all(
+                reordered.map((id, idx) =>
+                    this.orm.write("repair.os.process", [id], { sequence: (idx + 1) * 10 })
+                )
+            );
+            await this._loadData();
+        } catch (e) {
+            this.notif.add("Erro ao reordenar", { type: "danger" });
+        }
+    }
+
+    // ── Formatação ────────────────────────────────────────────────────
 
     fmtDate(v) {
         if (!v) return "";
@@ -151,8 +251,9 @@ class RepairSchedule extends Component {
     }
 
     osStateLabel(s) {
-        return { draft:"Rascunho", confirmed:"Confirmada", in_progress:"Em Andamento",
-                 done:"Concluída", cancel:"Cancelada" }[s] || s;
+        return { draft:"Rascunho", confirmed:"Confirmada",
+                 in_progress:"Em Andamento", done:"Concluída",
+                 cancel:"Cancelada" }[s] || s;
     }
 
     osStateBadge(s) {
@@ -172,9 +273,10 @@ class RepairSchedule extends Component {
                  cancel:"bg-secondary" }[s] || "bg-secondary";
     }
 
-    rowCls(s) {
-        return { done:"o_repair_row_done", progress:"o_repair_row_progress",
-                 paused:"o_repair_row_paused", cancel:"o_repair_row_cancel" }[s] || "";
+    rowCls(s, isDragOver) {
+        const base = { done:"o_repair_row_done", progress:"o_repair_row_progress",
+                       paused:"o_repair_row_paused", cancel:"o_repair_row_cancel" }[s] || "";
+        return "o_repair_proc_row " + base + (isDragOver ? " o_repair_drag_over" : "");
     }
 }
 
