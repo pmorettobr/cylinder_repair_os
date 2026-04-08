@@ -288,24 +288,16 @@ class RepairOrder(models.Model):
         return self.action_open_process_loader()
 
     def action_open_processes_grouped(self):
-        """Abre form wrapper de processos — substitui a view atual (target: self)."""
+        """Abre tela OWL de programação como client action."""
         self.ensure_one()
-        view_id = self.env.ref('cylinder_repair_os.view_repair_order_process_wrapper').id
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Programação — %s' % (self.os_number or self.name or ''),
-            'res_model': 'repair.order',
-            'res_id': self.id,
-            'view_mode': 'form',
-            'view_id': view_id,
-            'views': [(view_id, 'form')],
-            'context': {
-                'default_repair_id': self.id,
-                'active_repair_id': self.id,
-                'repair_id': self.id,
-            },
-            'target': 'self',
+        action = self.env.ref('cylinder_repair_os.action_repair_schedule').read()[0]
+        action['name'] = 'Programação — %s' % (self.os_number or self.name or '')
+        action['context'] = {
+            'active_repair_id': self.id,
+            'default_repair_id': self.id,
+            'repair_id': self.id,
         }
+        return action
 
     def action_open_os_form(self):
         """Volta para o form padrão da OS."""

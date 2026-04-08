@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="cylinder_repair_os.RepairSchedule" owl="1">
+    <div class="o_action o_repair_schedule_action">
+
+        <!-- Loading -->
+        <t t-if="state.loading">
+            <div class="text-center p-5 text-muted">
+                <i class="fa fa-spinner fa-spin fa-2x"/>
+                <div class="mt-2">Carregando processos...</div>
+            </div>
+        </t>
+
+        <!-- Sem repair_id -->
+        <t t-elif="!repairId">
+            <div class="text-center p-5 text-muted">
+                OS não identificada.
+            </div>
+        </t>
+
+        <!-- Conteúdo -->
+        <t t-else="">
+            <!-- Cabeçalho da OS -->
+            <div class="o_repair_schedule_header p-3 border-bottom bg-light d-flex align-items-center gap-4">
+                <span class="fw-bold fs-5">
+                    OS: <t t-esc="state.repairInfo.os_number or '—'"/>
+                </span>
+                <span>
+                    <span class="text-muted me-1">Cliente:</span>
+                    <t t-esc="state.repairInfo.partner_id ? state.repairInfo.partner_id[1] : '—'"/>
+                </span>
+                <span>
+                    <span class="text-muted me-1">Produto:</span>
+                    <t t-esc="state.repairInfo.product_name or '—'"/>
+                </span>
+                <span t-att-class="'badge ' + (state.repairInfo.os_state === 'in_progress' ? 'text-bg-warning' : state.repairInfo.os_state === 'done' ? 'bg-success' : 'bg-secondary')">
+                    <t t-esc="state.repairInfo.os_state or ''"/>
+                </span>
+            </div>
+
+            <!-- Grid de processos -->
+            <div class="p-3">
+                <t t-if="grouped.length === 0">
+                    <div class="text-center text-muted py-5">
+                        Nenhum processo carregado para esta OS.
+                    </div>
+                </t>
+                <t t-foreach="grouped" t-as="group" t-key="group.id">
+                    <!-- Cabeçalho do componente -->
+                    <div class="o_repair_group_header px-3 py-2 mb-1 rounded"
+                         style="background:#e8edf2;border-left:4px solid #4f46e5;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#334155;">
+                        <t t-esc="group.name"/>
+                        <span class="badge bg-secondary ms-2" t-esc="group.records.length + ' processo(s)'"/>
+                    </div>
+                    <!-- Linhas -->
+                    <table class="table table-sm table-hover mb-3">
+                        <thead class="table-light small">
+                            <tr>
+                                <th style="width:40px">Seq.</th>
+                                <th>Operação</th>
+                                <th style="width:140px">Máquina</th>
+                                <th style="width:110px">Data Prog.</th>
+                                <th style="width:130px">Dt. Início</th>
+                                <th style="width:90px">Tempo</th>
+                                <th style="width:120px">Situação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="group.records" t-as="rec" t-key="rec.id">
+                                <tr t-att-class="rowCls(rec.state)">
+                                    <td class="text-center"><t t-esc="rec.sequence"/></td>
+                                    <td><t t-esc="rec.name"/></td>
+                                    <td><t t-esc="rec.machine_id ? rec.machine_id[1] : '—'"/></td>
+                                    <td><t t-esc="fmtDate(rec.date_planned)"/></td>
+                                    <td><t t-esc="fmtDatetime(rec.date_start_orig)"/></td>
+                                    <td>
+                                        <span class="o_repair_timer"
+                                              t-att-class="rec.state === 'progress' ? 'o_repair_timer_running fw-bold text-warning' : 'text-muted'"
+                                              t-att-data-start="rec.date_start or ''"
+                                              t-att-data-acc="rec.duration_acc or 0">
+                                            <t t-esc="rec.duration_display or '00:00:00'"/>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span t-att-class="stateBadge(rec.state)"
+                                              t-esc="stateLabel(rec.state)"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+            </div>
+        </t>
+    </div>
+</t>
+
+</templates>

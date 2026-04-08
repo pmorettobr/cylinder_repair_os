@@ -1,28 +1,40 @@
 /** @odoo-module **/
+/**
+ * cylinder_repair_os — RepairProcessListWidget
+ *
+ * Usa @odoo-module para ESM (garantindo registry/useService corretos),
+ * mas acessa OWL via global `owl` que em Odoo 16 É a mesma instância.
+ * Evita o problema de import "@odoo/owl" que falha silenciosamente
+ * em algumas builds do Community 16.
+ */
 
 import { registry } from "@web/core/registry";
-import { X2ManyField, x2ManyField } from "@web/views/fields/x2many/x2many_field";
-import { useState, onMounted } from "@odoo/owl";
+import { useService } from "@web/core/utils/hooks";
 
-class RepairProcessListWidget extends X2ManyField {
+// owl global = mesma instância que @odoo/owl no contexto ESM do Odoo 16
+const { Component, useState, onMounted } = owl;
 
-    static template = "cylinder_repair_os.RepairProcessList";
+class RepairProcessListWidget extends Component {
 
     setup() {
-        super.setup();
+        this.orm       = useService("orm");
+        this.action    = useService("action");
+        this.notif     = useService("notification");
         this.collapsed = useState({});
+        this.loadingId = useState({ val: null });
+        this.editDate  = useState({ id: null });
         onMounted(() => this._restoreCollapse());
-        console.log("[RepairProcessList] mounted ok");
+        console.log("[RepairProcessListWidget] mounted, Component:", Component.name);
     }
 
-    get processRecords() {
+    get records() {
         try { return this.props.record.data[this.props.name].records || []; }
         catch (_) { return []; }
     }
 
     get grouped() {
         const map = new Map();
-        const sorted = [...this.processRecords].sort((a, b) => {
+        const sorted = [...this.records].sort((a, b) => {
             const ca = (a.data.component_type_id || [0])[0];
             const cb = (b.data.component_type_id || [0])[0];
             if (ca !== cb) return ca - cb;
@@ -43,17 +55,14 @@ class RepairProcessListWidget extends X2ManyField {
 
     toggle(id) {
         this.collapsed[id] = !this.collapsed[id];
-        try {
-            localStorage.setItem(
-                "cyl_col_" + (this.props.record.resId || "new"),
-                JSON.stringify(Object.assign({}, this.collapsed))
-            );
-        } catch (_) {}
+        try { localStorage.setItem(this._lsKey(), JSON.stringify(Object.assign({}, this.collapsed))); } catch (_) {}
     }
+
+    _lsKey() { return "cyl_col_" + (this.props.record.resId || "new"); }
 
     _restoreCollapse() {
         try {
-            const s = localStorage.getItem("cyl_col_" + (this.props.record.resId || "new"));
+            const s = localStorage.getItem(this._lsKey());
             if (s) Object.assign(this.collapsed, JSON.parse(s));
         } catch (_) {}
     }
@@ -75,24 +84,88 @@ class RepairProcessListWidget extends X2ManyField {
     }
 
     stateLabel(s) {
-        return { ready:"Pronto", progress:"Em Andamento", paused:"Pausado",
-                 done:"Concluído", cancel:"Cancelado" }[s] || s;
+        const m = { ready:"Pronto", progress:"Em Andamento", paused:"Pausado",
+                    done:"Concluido", cancel:"Cancelado" };
+        return m[s] || s;
     }
 
     stateCls(s) {
-        return "badge " + ({ ready:"bg-secondary", progress:"o_repair_state_progress",
-                              paused:"o_repair_state_paused", done:"bg-success",
-                              cancel:"bg-secondary" }[s] || "bg-secondary");
+        const m = { ready:"o_repair_state_ready", progress:"o_repair_state_progress",
+                    paused:"o_repair_state_paused", done:"o_repair_state_done",
+                    cancel:"o_repair_state_cancel" };
+        return "badge " + (m[s] || "bg-secondary");
     }
 
     rowCls(s) {
-        return "o_repair_proc_row " + ({ done:"o_repair_row_done",
-            progress:"o_repair_row_progress", paused:"o_repair_row_paused",
-            cancel:"o_repair_row_cancel" }[s] || "");
+        const m = { done:"o_repair_row_done", progress:"o_repair_row_progress",
+                    paused:"o_repair_row_paused", cancel:"o_repair_row_cancel" };
+        return "o_repair_proc_row " + (m[s] || "");
     }
+
+    startEdit(id)  { this.editDate.id = id; }
+    cancelEdit()   { this.editDate.id = null; }
+
+    async saveDate(id, ev) {
+        this.editDate.id = null;
+        const val = ev.target.value || false;
+        try {
+            await this.orm.write("repair.os.process", [id], { date_planned: val });
+            await this._reload();
+        } catch (e) {
+            this.notif.add((e.data && e.data.message) || "Erro ao salvar data", { type: "danger" });
+        }
+    }
+
+    async _run(method, id) {
+        this.loadingId.val = id;
+        try {
+            const res = await this.orm.call("repair.os.process", method, [[id]]);
+            if (res && res.type === "ir.actions.act_window") {
+                await this.action.doAction(res, { onClose: () => this._reload() });
+            } else {
+                await this._reload();
+            }
+        } catch (e) {
+            this.notif.add((e.data && e.data.message) || e.message || "Erro", { type: "danger" });
+        } finally {
+            this.loadingId.val = null;
+        }
+    }
+
+    async _reload() {
+        await this.props.record.load();
+        this.props.record.model.notify();
+    }
+
+    onStart(id)     { return this._run("action_start",  id); }
+    onPause(id)     { return this._run("action_pause",  id); }
+    onFinish(id)    { return this._run("action_finish", id); }
+    onCancel(id)    { return this._run("action_cancel", id); }
+    onDeviation(id) { return this._run("action_open_deviation_popup", id); }
 }
 
+RepairProcessListWidget.template = "cylinder_repair_os.RepairProcessList";
+RepairProcessListWidget.props    = ["record", "name", "*"];
+
+const FIELDS = [
+    { name: "sequence",          type: "integer" },
+    { name: "component_type_id", type: "many2one", relation: "repair.component.type" },
+    { name: "name",              type: "char" },
+    { name: "machine_id",        type: "many2one", relation: "repair.machine" },
+    { name: "date_planned",      type: "date" },
+    { name: "date_start_orig",   type: "datetime" },
+    { name: "date_start",        type: "datetime" },
+    { name: "duration_acc",      type: "float" },
+    { name: "duration_display",  type: "char" },
+    { name: "state",             type: "selection" },
+    { name: "has_deviation",     type: "boolean" },
+    { name: "deviation_tooltip", type: "char" },
+];
+
 registry.category("fields").add("repair_process_list", {
-    ...x2ManyField,
     component: RepairProcessListWidget,
+    supportedTypes: ["one2many"],
+    relatedFields: () => FIELDS,
 });
+
+console.log("[cylinder_repair_os] repair_process_list registered — Component same as owl.Component:", Component === owl.Component, "| is constructor:", typeof RepairProcessListWidget === "function");

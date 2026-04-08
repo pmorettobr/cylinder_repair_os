@@ -565,11 +565,82 @@
                         <field name="product_name" readonly="1" class="ms-1"/>
                     </div>
 
-                    <!-- Lista de processos agrupados — widget OWL -->
+                    <!-- Lista de processos agrupados -->
                     <field name="process_ids"
-                           widget="repair_process_list"
                            context="{'default_repair_id': id}"
-                           nolabel="1"/>
+                           nolabel="1">
+                        <tree string="Processos por Componente"
+                              create="0"
+                              delete="0"
+                              no_open="1"
+                              decoration-success="state == 'done'"
+                              decoration-warning="state == 'progress'"
+                              decoration-info="state == 'paused'"
+                              decoration-muted="state in ('ready', 'cancel')"
+                              default_order="sequence">
+
+                            <!-- Campos invisíveis -->
+                            <field name="state" invisible="1"/>
+                            <field name="has_deviation" invisible="1"/>
+                            <field name="deviation_tooltip" invisible="1"/>
+                            <field name="duration_acc" invisible="1" sum="Tempo Total (s)"/>
+
+                            <!-- Seq primeiro -->
+                            <field name="sequence" string="Seq." readonly="1" optional="show"/>
+
+                            <!-- Componente — visível e usado pelo JS para agrupamento -->
+                            <field name="component_name" string="Componente"
+                                   readonly="1" optional="show"/>
+                            <field name="name" string="Operação" readonly="1" optional="show"/>
+                            <field name="machine_id" string="Centro de Trabalho" readonly="1" optional="show"/>
+                            <field name="operator_id" string="Operador"
+                                   domain="[('machine_id', '=', machine_id)]"
+                                   optional="show"/>
+                            <field name="date_planned" string="Data Prog."
+                                   widget="date" optional="show"/>
+                            <field name="date_start_orig" string="Dt. Início" readonly="1" optional="show"/>
+                            <field name="duration_planned" string="Prev. (min)" optional="show"/>
+                            <field name="duration_display" string="Tempo" readonly="1" optional="show"
+                                   class="o_repair_timer"/>
+                            <field name="state" string="Situação" widget="badge"
+                                   decoration-success="state == 'done'"
+                                   decoration-warning="state == 'progress'"
+                                   decoration-info="state == 'paused'"
+                                   decoration-muted="state in ('ready', 'cancel')"
+                                   readonly="1" optional="show"/>
+
+                            <button name="action_open_deviation_popup" type="object"
+                                    attrs="{'invisible': [('has_deviation', '=', False)]}"
+                                    icon="fa-exclamation-triangle"
+                                    class="btn-sm btn-link o_repair_deviation_alert"
+                                    title="Desvio registrado"/>
+                            <button name="action_open_deviation_popup" type="object"
+                                    attrs="{'invisible': [('has_deviation', '=', True)]}"
+                                    icon="fa-circle-o"
+                                    class="btn-sm btn-link o_repair_deviation_none"
+                                    title="Sem desvio"/>
+
+                            <button name="action_open_actions_popup" type="object"
+                                    string="Ações"
+                                    class="btn-sm btn-secondary"
+                                    attrs="{'invisible': [('state', 'in', ['done', 'cancel'])]}"/>
+
+                            <button name="action_start" type="object"
+                                    string="Iniciar" class="btn-sm btn-success"
+                                    attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
+                            <button name="action_pause" type="object"
+                                    string="Pausar" class="btn-sm btn-warning"
+                                    attrs="{'invisible': [('state', '!=', 'progress')]}"/>
+                            <button name="action_finish" type="object"
+                                    string="Concluir" class="btn-sm o_repair_btn_concluir"
+                                    attrs="{'invisible': [('state', 'not in', ['progress', 'paused'])]}"/>
+
+                            <button name="action_cancel" type="object"
+                                    icon="fa-ban" class="btn-sm btn-link text-danger"
+                                    title="Cancelar"
+                                    attrs="{'invisible': [('state', 'not in', ['ready', 'paused'])]}"/>
+                        </tree>
+                    </field>
 
                 </sheet>
             </form>
@@ -585,6 +656,12 @@
         <field name="binding_view_types">list</field>
         <field name="state">code</field>
         <field name="code">action = records.action_open_loader_from_list()</field>
+    </record>
+
+    <!-- Client action — tela OWL de programação -->
+    <record id="action_repair_schedule" model="ir.actions.client">
+        <field name="name">Programação de OS</field>
+        <field name="tag">cylinder_repair_os.schedule</field>
     </record>
 
 </odoo>
