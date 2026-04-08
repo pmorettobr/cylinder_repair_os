@@ -90,6 +90,18 @@ class RepairSchedule extends Component {
         return [...map.values()];
     }
 
+    // ── Progresso geral ────────────────────────────────────────────────
+
+    get totalDone() {
+        return this.state.processes.filter(p => p.state === "done").length;
+    }
+
+    get totalProgress() {
+        const total = this.state.processes.length;
+        if (!total) return 0;
+        return Math.round((this.totalDone / total) * 100);
+    }
+
     // ── Ações de processo ─────────────────────────────────────────────
 
     async _run(method, id) {
@@ -131,7 +143,7 @@ class RepairSchedule extends Component {
     // ── Edição inline — Data ──────────────────────────────────────────
 
     startEditDate(id) {
-        this.state.editDateId     = id;
+        this.state.editDateId = id;
         this.state.editOperatorId = null;
         this.state.editPlannedId  = null;
     }
@@ -178,7 +190,7 @@ class RepairSchedule extends Component {
         }
     }
 
-    // ── Edição inline — Tempo Previsto ────────────────────────────────
+    // ── Edição inline — Tempo Previsto (timepicker) ───────────────────
 
     startEditPlanned(id) {
         this.state.editPlannedId  = id;
@@ -241,7 +253,6 @@ class RepairSchedule extends Component {
         this.state.dragSrcId  = null;
         this.state.dragOverId = null;
     }
-
     async onDrop(ev, groupId, targetId) {
         ev.preventDefault();
         const srcId = this.state.dragSrcId;
@@ -269,7 +280,7 @@ class RepairSchedule extends Component {
         }
     }
 
-    // ── Conversão HH:MM ↔ minutos ─────────────────────────────────────
+    // ── HH:MM ↔ minutos ──────────────────────────────────────────────
 
     _min2hhmm(minutes) {
         if (!minutes && minutes !== 0) return "00:00";
@@ -290,8 +301,6 @@ class RepairSchedule extends Component {
     // ── Timer display ─────────────────────────────────────────────────
 
     timerDisplay(rec) {
-        // Mostra duration_display do servidor quando disponível
-        // Para processos pausados/prontos mostra o acumulado em HH:MM:SS
         if (rec.duration_display) return rec.duration_display;
         const totalSec = Math.round((rec.duration_acc || 0) * 60);
         const h = Math.floor(totalSec / 3600);
@@ -300,26 +309,46 @@ class RepairSchedule extends Component {
         return [h, m, s].map(n => String(n).padStart(2, "0")).join(":");
     }
 
-    // ── Cor do grupo (paleta suave rotativa) ──────────────────────────
+    // ── Cores e progresso dos grupos ──────────────────────────────────
 
-    groupColor(idx) {
-        const colors = [
-            { bg: "#eff6ff", border: "#3b82f6" }, // azul
-            { bg: "#f0fdf4", border: "#22c55e" }, // verde
-            { bg: "#fefce8", border: "#eab308" }, // amarelo
-            { bg: "#faf5ff", border: "#a855f7" }, // roxo
-            { bg: "#fff7ed", border: "#f97316" }, // laranja
-            { bg: "#ecfdf5", border: "#10b981" }, // esmeralda
-            { bg: "#fdf2f8", border: "#ec4899" }, // rosa
-            { bg: "#f0f9ff", border: "#0ea5e9" }, // céu
+    // Retorna objeto com bg, border, gradStart, gradEnd
+    _groupPalette(idx) {
+        const p = [
+            { bg:"#eff6ff", border:"#3b82f6", g1:"#60a5fa", g2:"#2563eb" },
+            { bg:"#f0fdf4", border:"#22c55e", g1:"#4ade80", g2:"#16a34a" },
+            { bg:"#fefce8", border:"#eab308", g1:"#facc15", g2:"#ca8a04" },
+            { bg:"#faf5ff", border:"#a855f7", g1:"#c084fc", g2:"#7c3aed" },
+            { bg:"#fff7ed", border:"#f97316", g1:"#fb923c", g2:"#ea580c" },
+            { bg:"#ecfdf5", border:"#10b981", g1:"#34d399", g2:"#059669" },
+            { bg:"#fdf2f8", border:"#ec4899", g1:"#f472b6", g2:"#db2777" },
+            { bg:"#f0f9ff", border:"#0ea5e9", g1:"#38bdf8", g2:"#0284c7" },
         ];
-        return colors[idx % colors.length];
+        return p[idx % p.length];
+    }
+
+    // Retorna style string completo para o cabeçalho do grupo
+    groupHeaderStyle(idx) {
+        const c = this._groupPalette(idx);
+        return `border-left: 4px solid ${c.border}; background: ${c.bg};`;
+    }
+
+    // Retorna style string para a barra de progresso com degradê
+    groupBarStyle(idx, pct) {
+        const c = this._groupPalette(idx);
+        return `width: ${pct}%; background: linear-gradient(90deg, ${c.g1}, ${c.g2}); transition: width 0.4s ease;`;
     }
 
     groupProgress(group) {
         const total = group.records.length;
         if (!total) return 0;
         return Math.round((group.done / total) * 100);
+    }
+
+    // ── Barra de progresso geral — style string ───────────────────────
+
+    globalBarStyle() {
+        const pct = this.totalProgress;
+        return `width: ${pct}%; background: linear-gradient(90deg, #60a5fa, #4f46e5); transition: width 0.4s ease;`;
     }
 
     // ── Resize de colunas ─────────────────────────────────────────────
@@ -340,13 +369,10 @@ class RepairSchedule extends Component {
             let startX, startW;
             handle.addEventListener("mousedown", (ev) => {
                 ev.preventDefault();
-                startX = ev.pageX;
-                startW = th.offsetWidth;
+                startX = ev.pageX; startW = th.offsetWidth;
                 handle.classList.add("resizing");
-                const onMove = (e) => {
-                    th.style.width = Math.max(40, startW + (e.pageX - startX)) + "px";
-                };
-                const onUp = () => {
+                const onMove = (e) => { th.style.width = Math.max(40, startW + (e.pageX - startX)) + "px"; };
+                const onUp   = () => {
                     handle.classList.remove("resizing");
                     document.removeEventListener("mousemove", onMove);
                     document.removeEventListener("mouseup", onUp);
@@ -369,17 +395,14 @@ class RepairSchedule extends Component {
         const p = v.split("-");
         return p.length === 3 ? (p[2] + "/" + p[1] + "/" + p[0]) : v;
     }
-
     fmtDatetime(v) {
         if (!v) return "";
         try {
             const parts = v.split(" ");
-            const dp = parts[0].split("-");
-            const tp = parts[1].split(":");
+            const dp = parts[0].split("-"); const tp = parts[1].split(":");
             return dp[2] + "/" + dp[1] + " " + tp[0] + ":" + tp[1];
         } catch (_) { return ""; }
     }
-
     osStateLabel(s) {
         return { draft:"Rascunho", confirmed:"Confirmada",
                  in_progress:"Em Andamento", done:"Concluída",
