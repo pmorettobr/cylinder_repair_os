@@ -20,54 +20,44 @@
         <!-- CABEÇALHO -->
         <div class="o_repair_schedule_header">
 
-            <!-- Smartbuttons -->
-            <div class="oe_button_box" name="button_box">
+            <!-- Barra de navegação e info -->
+            <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom bg-white flex-wrap">
 
-                <button class="oe_stat_button" type="button" t-on-click="goBackToOs">
-                    <i class="fa fa-arrow-left o_button_icon"/>
-                    <div class="o_stat_info">
-                        <span class="o_stat_text">Voltar</span>
-                        <span class="o_stat_text">à OS</span>
-                    </div>
+                <button class="btn btn-sm btn-outline-secondary" t-on-click="goBackToOs">
+                    <i class="fa fa-arrow-left me-1"/>Voltar à OS
                 </button>
 
-                <button class="oe_stat_button" type="button" t-on-click="openProcessLoader">
-                    <i class="fa fa-plus o_button_icon"/>
-                    <div class="o_stat_info">
-                        <span class="o_stat_text">Adicionar</span>
-                        <span class="o_stat_text">Processos</span>
-                    </div>
+                <button class="btn btn-sm btn-outline-primary" t-on-click="openProcessLoader">
+                    <i class="fa fa-plus me-1"/>Adicionar Processos
                 </button>
 
-                <div class="oe_stat_button o_repair_stat_info" style="cursor:default;">
-                    <i class="fa fa-list-ul o_button_icon"/>
-                    <div class="o_stat_info">
-                        <span class="o_stat_value"><t t-esc="state.processes.length"/></span>
-                        <span class="o_stat_text">Processos</span>
-                    </div>
-                </div>
+                <span class="badge bg-secondary">
+                    <t t-esc="state.processes.length"/> processo(s)
+                </span>
 
-            </div>
+                <div class="vr mx-1"/>
 
-            <!-- Info da OS -->
-            <div class="o_repair_prog_os_info mt-2 px-3 py-2 border-bottom">
-                <span class="fw-bold fs-5 me-2">
+                <span class="fw-bold me-1">
                     <t t-esc="state.repairInfo.os_number or '—'"/>
                 </span>
-                <span t-att-class="'badge me-3 ' + osStateBadge(state.repairInfo.os_state)"
+                <span t-att-class="'badge me-2 ' + osStateBadge(state.repairInfo.os_state)"
                       t-esc="osStateLabel(state.repairInfo.os_state)"/>
-                <span class="text-muted me-1">Cliente:</span>
-                <span class="me-3 fw-medium">
+
+                <span class="text-muted small me-1">Cliente:</span>
+                <span class="small me-3">
                     <t t-esc="state.repairInfo.partner_id ? state.repairInfo.partner_id[1] : '—'"/>
                 </span>
+
                 <t t-if="state.repairInfo.product_name">
-                    <span class="text-muted me-1">Produto:</span>
-                    <span class="me-3"><t t-esc="state.repairInfo.product_name"/></span>
+                    <span class="text-muted small me-1">Produto:</span>
+                    <span class="small me-3"><t t-esc="state.repairInfo.product_name"/></span>
                 </t>
+
                 <t t-if="state.repairInfo.deadline_date">
-                    <span class="text-muted me-1">Prazo:</span>
-                    <span><t t-esc="fmtDate(state.repairInfo.deadline_date)"/></span>
+                    <span class="text-muted small me-1">Prazo:</span>
+                    <span class="small"><t t-esc="fmtDate(state.repairInfo.deadline_date)"/></span>
                 </t>
+
             </div>
         </div>
 
@@ -83,7 +73,7 @@
 
             <t t-foreach="grouped" t-as="group" t-key="group.id">
 
-                <!-- Cabeçalho do componente (colapsável) -->
+                <!-- Cabeçalho do componente -->
                 <div class="o_repair_group_header d-flex align-items-center gap-2 px-3 py-2 mt-2"
                      t-on-click="() => this.toggleGroup(group.id)"
                      style="cursor:pointer;background:#e8edf2;border-left:4px solid #4f46e5;border-radius:4px;">
@@ -98,32 +88,42 @@
                         <t t-esc="group.records.length"/> processo(s)
                     </span>
                     <t t-if="group.prog > 0">
-                        <span class="badge text-bg-warning">
-                            <t t-esc="group.prog"/> em andamento
-                        </span>
+                        <span class="badge text-bg-warning"><t t-esc="group.prog"/> em andamento</span>
                     </t>
                     <t t-if="group.done === group.records.length and group.records.length > 0">
                         <span class="badge bg-success">✓ Concluído</span>
                     </t>
                 </div>
 
-                <!-- Tabela do grupo -->
                 <t t-if="!state.collapsed[group.id]">
-                    <div class="table-responsive">
+                    <div class="o_repair_table_wrap">
                         <table class="table table-sm table-hover mb-0 o_repair_proc_table">
+                            <colgroup>
+                                <col style="width:28px"/>
+                                <col style="width:42px"/>
+                                <col/>
+                                <col style="width:120px"/>
+                                <col style="width:130px"/>
+                                <col style="width:105px"/>
+                                <col style="width:115px"/>
+                                <col style="width:82px"/>
+                                <col style="width:95px"/>
+                                <col style="width:28px"/>
+                                <col style="width:230px"/>
+                            </colgroup>
                             <thead class="table-light">
                                 <tr>
-                                    <th style="width:28px"></th>
-                                    <th style="width:40px">Seq.</th>
+                                    <th></th>
+                                    <th class="text-center">Seq.</th>
                                     <th>Operação</th>
-                                    <th style="width:130px">Máquina</th>
-                                    <th style="width:140px">Operador</th>
-                                    <th style="width:105px">Data Prog.</th>
-                                    <th style="width:120px">Dt. Início</th>
-                                    <th style="width:85px">Tempo</th>
-                                    <th style="width:100px">Situação</th>
-                                    <th style="width:30px">⚠</th>
-                                    <th style="width:235px"></th>
+                                    <th>Máquina</th>
+                                    <th>Operador</th>
+                                    <th>Data Prog.</th>
+                                    <th>Dt. Início</th>
+                                    <th>Tempo</th>
+                                    <th>Situação</th>
+                                    <th class="text-center">⚠</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -136,20 +136,17 @@
                                         t-on-drop="(ev) => this.onDrop(ev, group.id, rec.id)"
                                         t-on-dragend="() => this.onDragEnd()">
 
-                                        <!-- Handle arrastar -->
-                                        <td class="text-center o_repair_drag_handle text-muted"
-                                            style="cursor:grab;font-size:14px;">⠿</td>
+                                        <!-- Handle -->
+                                        <td class="text-center text-muted o_repair_drag_handle">⠿</td>
 
                                         <!-- Seq -->
-                                        <td class="text-center text-muted small">
-                                            <t t-esc="rec.sequence"/>
-                                        </td>
+                                        <td class="text-center text-muted small"><t t-esc="rec.sequence"/></td>
 
                                         <!-- Operação -->
-                                        <td class="fw-medium"><t t-esc="rec.name"/></td>
+                                        <td class="fw-medium small"><t t-esc="rec.name"/></td>
 
                                         <!-- Máquina -->
-                                        <td class="small">
+                                        <td class="small text-muted">
                                             <t t-esc="rec.machine_id ? rec.machine_id[1] : '—'"/>
                                         </td>
 
@@ -157,13 +154,12 @@
                                         <td>
                                             <t t-if="state.editOperatorId === rec.id">
                                                 <select class="form-select form-select-sm"
-                                                        style="min-width:120px;"
                                                         t-on-change="(ev) => this.saveOperator(rec.id, ev)"
                                                         t-on-blur="() => this.cancelEditOperator()">
                                                     <option value="">— nenhum —</option>
                                                     <t t-foreach="state.operatorOptions" t-as="op" t-key="op.id">
                                                         <option t-att-value="op.id"
-                                                                t-att-selected="rec.operator_id and rec.operator_id[0] === op.id">
+                                                                t-att-selected="rec.operator_id and rec.operator_id[0] === op.id ? 'selected' : ''">
                                                             <t t-esc="op.name"/>
                                                         </option>
                                                     </t>
@@ -182,12 +178,11 @@
                                             </t>
                                         </td>
 
-                                        <!-- Data Prog. editável -->
+                                        <!-- Data Prog. -->
                                         <td>
                                             <t t-if="state.editDateId === rec.id">
                                                 <input type="date"
                                                        class="form-control form-control-sm"
-                                                       style="width:110px;"
                                                        t-att-value="rec.date_planned or ''"
                                                        t-on-change="(ev) => this.saveDate(rec.id, ev)"
                                                        t-on-blur="() => this.cancelEditDate()"/>
@@ -197,9 +192,7 @@
                                                       style="cursor:pointer;"
                                                       t-att-class="!rec.date_planned ? 'text-muted fst-italic' : ''"
                                                       t-on-click="() => this.startEditDate(rec.id)">
-                                                    <t t-if="rec.date_planned">
-                                                        <t t-esc="fmtDate(rec.date_planned)"/>
-                                                    </t>
+                                                    <t t-if="rec.date_planned"><t t-esc="fmtDate(rec.date_planned)"/></t>
                                                     <t t-else="">definir</t>
                                                 </span>
                                             </t>
@@ -210,7 +203,7 @@
                                             <t t-esc="fmtDatetime(rec.date_start_orig)"/>
                                         </td>
 
-                                        <!-- Tempo (cronômetro) -->
+                                        <!-- Tempo -->
                                         <td>
                                             <span class="o_repair_timer small"
                                                   t-att-class="rec.state === 'progress' ? 'o_repair_timer_running fw-bold' : 'text-muted'"
@@ -248,43 +241,32 @@
                                                 <i class="fa fa-spinner fa-spin text-muted"/>
                                             </t>
                                             <t t-else="">
-
                                                 <t t-if="rec.state === 'ready' or rec.state === 'paused'">
-                                                    <button class="o_repair_action_btn btn-success"
-                                                            t-on-click="() => this.onStart(rec.id)">
-                                                        Iniciar
-                                                    </button>
+                                                    <button class="o_repair_action_btn o_repair_btn_start"
+                                                            t-on-click="() => this.onStart(rec.id)">Iniciar</button>
                                                 </t>
-
                                                 <t t-if="rec.state === 'progress'">
-                                                    <button class="o_repair_action_btn btn-warning"
-                                                            t-on-click="() => this.onPause(rec.id)">
-                                                        Pausar
-                                                    </button>
+                                                    <button class="o_repair_action_btn o_repair_btn_pause"
+                                                            t-on-click="() => this.onPause(rec.id)">Pausar</button>
                                                 </t>
-
                                                 <t t-if="rec.state === 'progress' or rec.state === 'paused'">
-                                                    <button class="o_repair_action_btn o_repair_btn_concluir"
-                                                            t-on-click="() => this.onFinish(rec.id)">
-                                                        Concluir
-                                                    </button>
+                                                    <button class="o_repair_action_btn o_repair_btn_finish"
+                                                            t-on-click="() => this.onFinish(rec.id)">Concluir</button>
                                                 </t>
-
                                                 <t t-if="rec.state === 'ready' or rec.state === 'paused'">
-                                                    <button class="o_repair_action_btn btn-secondary ms-1"
+                                                    <button class="btn btn-sm btn-link text-danger p-0 ms-1"
+                                                            title="Cancelar processo"
                                                             t-on-click="() => this.onCancel(rec.id)">
-                                                        Cancelar
+                                                        <i class="fa fa-times-circle"/>
                                                     </button>
                                                 </t>
-
                                                 <t t-if="rec.state === 'ready' or rec.state === 'cancel'">
-                                                    <button class="btn btn-sm btn-link text-danger p-0 ms-2"
+                                                    <button class="btn btn-sm btn-link text-danger p-0 ms-1"
                                                             title="Excluir processo"
                                                             t-on-click="() => this.onDelete(rec.id)">
                                                         <i class="fa fa-trash"/>
                                                     </button>
                                                 </t>
-
                                             </t>
                                         </td>
 

@@ -2,7 +2,7 @@
 
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-const { Component, useState, onWillStart } = owl;
+const { Component, useState, onWillStart, onMounted, onPatched } = owl;
 
 class RepairSchedule extends Component {
 
@@ -28,9 +28,15 @@ class RepairSchedule extends Component {
         this.repairId = ctx.active_repair_id || ctx.default_repair_id || ctx.repair_id || false;
 
         onWillStart(async () => { await this._loadData(); });
+
+        const initResize = () => {
+            document.querySelectorAll(".o_repair_proc_table").forEach(t => this._initColResize(t));
+        };
+        onMounted(initResize);
+        onPatched(initResize);
     }
 
-    // ── Carregamento de dados ─────────────────────────────────────────
+    // ── Dados ─────────────────────────────────────────────────────────
 
     async _loadData() {
         if (!this.repairId) { this.state.loading = false; return; }
@@ -51,17 +57,20 @@ class RepairSchedule extends Component {
                 ),
             ]);
             this.state.repairInfo = repairs[0] || {};
-            this.state.processes  = procs;
+            this.state.processes  = Array.isArray(procs) ? procs : [];
         } catch (e) {
             this.notif.add("Erro ao carregar dados", { type: "danger" });
+            this.state.processes = [];
         } finally {
             this.state.loading = false;
         }
     }
 
     get grouped() {
+        const procs = this.state.processes;
+        if (!Array.isArray(procs)) return [];
         const map = new Map();
-        const sorted = [...this.state.processes].sort((a, b) => {
+        const sorted = [...procs].sort((a, b) => {
             const ca = (a.component_type_id || [0])[0];
             const cb = (b.component_type_id || [0])[0];
             if (ca !== cb) return ca - cb;
@@ -86,8 +95,13 @@ class RepairSchedule extends Component {
         this.state.loadingId = id;
         try {
             const res = await this.orm.call("repair.os.process", method, [[id]]);
-            if (res && res.type === "ir.actions.act_window") {
-                await this.action.doAction(res, { onClose: () => this._loadData() });
+            if (res && res.type) {
+                // Normaliza views para doAction aceitar o dict do Python
+                if (!res.views) {
+                    const vmode = res.view_mode || "form";
+                    res.views = [[res.view_id || false, vmode.split(",")[0]]];
+                }
+                this.action.doAction(res, { onClose: () => this._loadData() });
             } else {
                 await this._loadData();
             }
@@ -117,7 +131,7 @@ class RepairSchedule extends Component {
     // ── Edição inline — Data ──────────────────────────────────────────
 
     startEditDate(id) {
-        this.state.editDateId     = id;
+        this.state.editDateId = id;
         this.state.editOperatorId = null;
     }
     cancelEditDate() { this.state.editDateId = null; }
@@ -138,11 +152,13 @@ class RepairSchedule extends Component {
     async startEditOperator(rec) {
         this.state.editOperatorId = rec.id;
         this.state.editDateId     = null;
+        this.state.operatorOptions = [];
         try {
             const domain = rec.machine_id ? [["machine_id", "=", rec.machine_id[0]]] : [];
-            this.state.operatorOptions = await this.orm.searchRead(
+            const ops = await this.orm.searchRead(
                 "repair.machine.operator", domain, ["id", "name"]
             );
+            this.state.operatorOptions = Array.isArray(ops) ? ops : [];
         } catch (_) {
             this.state.operatorOptions = [];
         }
@@ -165,11 +181,17 @@ class RepairSchedule extends Component {
     goBackToOs() { this.action.restore(); }
 
     async openProcessLoader() {
+        // Constrói a action diretamente — mais seguro que orm.call em client action
         try {
-            const res = await this.orm.call(
-                "repair.order", "action_open_process_loader", [[this.repairId]]
-            );
-            await this.action.doAction(res, { onClose: () => this._loadData() });
+            this.action.doAction({
+                type: "ir.actions.act_window",
+                name: "Carregar Processos",
+                res_model: "repair.process.loader",
+                view_mode: "form",
+                views: [[false, "form"]],
+                target: "new",
+                context: { default_repair_id: this.repairId },
+            }, { onClose: () => this._loadData() });
         } catch (e) {
             this.notif.add((e.data && e.data.message) || "Erro ao abrir carregador", { type: "danger" });
         }
@@ -179,7 +201,7 @@ class RepairSchedule extends Component {
 
     toggleGroup(id) { this.state.collapsed[id] = !this.state.collapsed[id]; }
 
-    // ── Drag and drop — reordenar dentro do grupo ─────────────────────
+    // ── Drag and drop ─────────────────────────────────────────────────
 
     onDragStart(ev, id) {
         this.state.dragSrcId = id;
@@ -209,9 +231,9 @@ class RepairSchedule extends Component {
         if (!srcId || srcId === targetId) return;
 
         const group = this.grouped.find(g => g.id === groupId);
-        if (!group) return;
+        if (!group || !Array.isArray(group.records)) return;
 
-        const ids = group.records.map(r => r.id);
+        const ids    = group.records.map(r => r.id);
         const srcIdx = ids.indexOf(srcId);
         const tgtIdx = ids.indexOf(targetId);
         if (srcIdx === -1 || tgtIdx === -1) return;
@@ -253,25 +275,76 @@ class RepairSchedule extends Component {
     osStateLabel(s) {
         return { draft:"Rascunho", confirmed:"Confirmada",
                  in_progress:"Em Andamento", done:"Concluída",
-                 cancel:"Cancelada" }[s] || s;
+                 cancel:"Cancelada" }[s] || (s || "");
     }
-
     osStateBadge(s) {
         return { draft:"bg-secondary", confirmed:"text-bg-primary",
                  in_progress:"text-bg-warning", done:"bg-success",
                  cancel:"bg-danger" }[s] || "bg-secondary";
     }
-
     stateLabel(s) {
         return { ready:"Pronto", progress:"Em Andamento", paused:"Pausado",
-                 done:"Concluído", cancel:"Cancelado" }[s] || s;
+                 done:"Concluído", cancel:"Cancelado" }[s] || (s || "");
     }
-
     stateBadge(s) {
         return { ready:"bg-secondary", progress:"text-bg-warning",
                  paused:"text-bg-info", done:"bg-success",
                  cancel:"bg-secondary" }[s] || "bg-secondary";
     }
+    // ── Redimensionamento de colunas ──────────────────────────────────
+
+    _initColResize(tableEl) {
+        if (!tableEl || tableEl._resizeInited) return;
+        tableEl._resizeInited = true;
+
+        const STORE_KEY = "cyl_col_widths";
+        const ths = Array.from(tableEl.querySelectorAll("thead th"));
+
+        // Restaura larguras salvas
+        try {
+            const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+            ths.forEach((th, i) => {
+                if (saved[i]) th.style.width = saved[i] + "px";
+            });
+        } catch (_) {}
+
+        // Adiciona handle em cada th (exceto o último)
+        ths.slice(0, -1).forEach((th, i) => {
+            const handle = document.createElement("div");
+            handle.className = "o_repair_col_resizer";
+            th.appendChild(handle);
+
+            let startX, startW;
+
+            handle.addEventListener("mousedown", (ev) => {
+                ev.preventDefault();
+                startX = ev.pageX;
+                startW = th.offsetWidth;
+                handle.classList.add("resizing");
+
+                const onMove = (e) => {
+                    const newW = Math.max(40, startW + (e.pageX - startX));
+                    th.style.width = newW + "px";
+                };
+
+                const onUp = () => {
+                    handle.classList.remove("resizing");
+                    document.removeEventListener("mousemove", onMove);
+                    document.removeEventListener("mouseup", onUp);
+                    // Persiste no localStorage
+                    try {
+                        const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+                        saved[i] = th.offsetWidth;
+                        localStorage.setItem(STORE_KEY, JSON.stringify(saved));
+                    } catch (_) {}
+                };
+
+                document.addEventListener("mousemove", onMove);
+                document.addEventListener("mouseup", onUp);
+            });
+        });
+    }
+
 
     rowCls(s, isDragOver) {
         const base = { done:"o_repair_row_done", progress:"o_repair_row_progress",
