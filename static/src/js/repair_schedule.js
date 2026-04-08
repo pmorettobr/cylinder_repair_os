@@ -335,7 +335,11 @@ class RepairSchedule extends Component {
     // Retorna style string para a barra de progresso com degradê
     groupBarStyle(idx, pct) {
         const c = this._groupPalette(idx);
-        return `width: ${pct}%; background: linear-gradient(90deg, ${c.g1}, ${c.g2}); transition: width 0.4s ease;`;
+        return `width: ${pct}%; height: 5px; background: linear-gradient(90deg, ${c.g1}, ${c.g2}); transition: width 0.4s ease; border-radius: 0;`;
+    }
+
+    groupWrapStyle() {
+        return "height: 5px; background: #e5e7eb; border-radius: 0; overflow: hidden;";
     }
 
     groupProgress(group) {
