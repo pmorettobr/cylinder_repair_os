@@ -332,7 +332,6 @@ class RepairOsProcess(models.Model):
     def action_start(self):
         """Iniciar processo — primeiro início ou retomada após pausa."""
         self._validate_os_started()
-        self._validate_date_planned()
         self._validate_sequence()
         self._validate_machine_available()
 
