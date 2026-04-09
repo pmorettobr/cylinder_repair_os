@@ -51,10 +51,10 @@ class RepairSchedule extends Component {
         // Bus: subscreve ao canal específico desta OS para receber
         // atualizações do mobile em tempo real
         if (this.repairId) {
+            // Bus: tenta receber notificações em tempo real
             const busChannel = "repair_os_" + this.repairId + "_processes";
-            // Odoo 16: bus_service usa addEventListener, não subscribe
             const busHandler = ({ detail: notifications }) => {
-                const relevant = notifications.some(n =>
+                const relevant = (notifications || []).some(n =>
                     n.type === "process_state_changed" &&
                     n.payload &&
                     n.payload.repair_id === this.repairId
@@ -65,9 +65,16 @@ class RepairSchedule extends Component {
             this.busService.addEventListener("notification", busHandler);
             this.busService.start();
 
+            // Polling fallback: atualiza a cada 5s quando a aba está visível
+            // garante sincronização mesmo se o bus não disparar
+            this._pollInterval = setInterval(() => {
+                if (!document.hidden) this._loadData();
+            }, 5000);
+
             onWillUnmount(() => {
                 this.busService.removeEventListener("notification", busHandler);
                 this.busService.deleteChannel(busChannel);
+                clearInterval(this._pollInterval);
             });
         }
 
@@ -254,7 +261,21 @@ class RepairSchedule extends Component {
 
     // ── Navegação ─────────────────────────────────────────────────────
 
-    goBackToOs() { this.action.restore(); }
+    goBackToOs() {
+        try {
+            this.action.restore();
+        } catch (_) {
+            // Sem controller anterior (ex: após F5) — navega direto ao form da OS
+            this.action.doAction({
+                type: "ir.actions.act_window",
+                res_model: "repair.order",
+                res_id: this.repairId,
+                view_mode: "form",
+                views: [[false, "form"]],
+                target: "current",
+            });
+        }
+    }
 
     async openProcessLoader() {
         try {
