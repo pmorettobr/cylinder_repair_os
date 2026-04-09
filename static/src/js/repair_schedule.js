@@ -52,19 +52,21 @@ class RepairSchedule extends Component {
         // atualizações do mobile em tempo real
         if (this.repairId) {
             const busChannel = "repair_os_" + this.repairId + "_processes";
-            const busHandler = (payload) => {
-                // Ignora eventos originados no próprio backend (source=backend)
-                // para não duplicar reloads ao usar pelo desktop
-                if (payload && payload.source !== "backend_desktop") {
-                    this._loadData();
-                }
+            // Odoo 16: bus_service usa addEventListener, não subscribe
+            const busHandler = ({ detail: notifications }) => {
+                const relevant = notifications.some(n =>
+                    n.type === "process_state_changed" &&
+                    n.payload &&
+                    n.payload.repair_id === this.repairId
+                );
+                if (relevant) this._loadData();
             };
             this.busService.addChannel(busChannel);
-            this.busService.subscribe("process_state_changed", busHandler);
+            this.busService.addEventListener("notification", busHandler);
             this.busService.start();
 
             onWillUnmount(() => {
-                this.busService.unsubscribe("process_state_changed", busHandler);
+                this.busService.removeEventListener("notification", busHandler);
                 this.busService.deleteChannel(busChannel);
             });
         }
