@@ -262,10 +262,8 @@ class RepairSchedule extends Component {
     // ── Navegação ─────────────────────────────────────────────────────
 
     goBackToOs() {
-        try {
-            this.action.restore();
-        } catch (_) {
-            // Sem controller anterior (ex: após F5) — navega direto ao form da OS
+        // restore() retorna Promise — captura rejeição com .catch()
+        Promise.resolve(this.action.restore()).catch(() => {
             this.action.doAction({
                 type: "ir.actions.act_window",
                 res_model: "repair.order",
@@ -274,7 +272,7 @@ class RepairSchedule extends Component {
                 views: [[false, "form"]],
                 target: "current",
             });
-        }
+        });
     }
 
     async openProcessLoader() {
