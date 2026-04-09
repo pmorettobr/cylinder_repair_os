@@ -2,14 +2,15 @@
 
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-const { Component, useState, onWillStart, onMounted, onPatched } = owl;
+const { Component, useState, onWillStart, onMounted, onPatched, onWillUnmount } = owl;
 
 class RepairSchedule extends Component {
 
     setup() {
-        this.orm    = useService("orm");
-        this.action = useService("action");
-        this.notif  = useService("notification");
+        this.orm        = useService("orm");
+        this.action     = useService("action");
+        this.notif      = useService("notification");
+        this.busService = useService("bus_service");
 
         this.state = useState({
             repairInfo:         {},
@@ -25,10 +26,37 @@ class RepairSchedule extends Component {
             dragOverId:         null,
         });
 
+        // Resolve repair_id: context → localStorage (F5 recovery)
         const ctx = this.props.action.context || {};
+        const LS_KEY = "cyl_repair_schedule_id";
         this.repairId = ctx.active_repair_id || ctx.default_repair_id || ctx.repair_id || false;
 
+        if (this.repairId) {
+            // Salva no localStorage para recuperar após F5
+            try { localStorage.setItem(LS_KEY, String(this.repairId)); } catch (_) {}
+        } else {
+            // Tenta recuperar do localStorage
+            try {
+                const saved = localStorage.getItem(LS_KEY);
+                if (saved) this.repairId = parseInt(saved) || false;
+            } catch (_) {}
+        }
+
         onWillStart(async () => { await this._loadData(); });
+
+        // Bus: escuta atualizações do mobile em tempo real
+        const busHandler = (payload) => {
+            // Só recarrega se for da mesma OS e não for ação local
+            if (payload && payload.repair_id === this.repairId) {
+                this._loadData();
+            }
+        };
+        this.busService.subscribe("process_state_changed", busHandler);
+        this.busService.start();
+
+        onWillUnmount(() => {
+            this.busService.unsubscribe("process_state_changed", busHandler);
+        });
 
         const initResize = () => {
             document.querySelectorAll(".o_repair_proc_table").forEach(t => this._initColResize(t));
