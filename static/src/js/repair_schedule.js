@@ -29,34 +29,45 @@ class RepairSchedule extends Component {
         // Resolve repair_id: context → localStorage (F5 recovery)
         const ctx = this.props.action.context || {};
         const LS_KEY = "cyl_repair_schedule_id";
-        this.repairId = ctx.active_repair_id || ctx.default_repair_id || ctx.repair_id || false;
+        let fromCtx = ctx.active_repair_id || ctx.default_repair_id || ctx.repair_id || false;
 
-        if (this.repairId) {
-            // Salva no localStorage para recuperar após F5
-            try { localStorage.setItem(LS_KEY, String(this.repairId)); } catch (_) {}
+        if (fromCtx) {
+            this.repairId = fromCtx;
+            // Salva para F5
+            try { localStorage.setItem(LS_KEY, String(fromCtx)); } catch (_) {}
         } else {
-            // Tenta recuperar do localStorage
+            // F5: recupera do localStorage
             try {
                 const saved = localStorage.getItem(LS_KEY);
-                if (saved) this.repairId = parseInt(saved) || false;
-            } catch (_) {}
+                const parsed = saved ? parseInt(saved, 10) : NaN;
+                this.repairId = isNaN(parsed) ? false : parsed;
+            } catch (_) {
+                this.repairId = false;
+            }
         }
 
         onWillStart(async () => { await this._loadData(); });
 
-        // Bus: escuta atualizações do mobile em tempo real
-        const busHandler = (payload) => {
-            // Só recarrega se for da mesma OS e não for ação local
-            if (payload && payload.repair_id === this.repairId) {
-                this._loadData();
-            }
-        };
-        this.busService.subscribe("process_state_changed", busHandler);
-        this.busService.start();
+        // Bus: subscreve ao canal específico desta OS para receber
+        // atualizações do mobile em tempo real
+        if (this.repairId) {
+            const busChannel = "repair_os_" + this.repairId + "_processes";
+            const busHandler = (payload) => {
+                // Ignora eventos originados no próprio backend (source=backend)
+                // para não duplicar reloads ao usar pelo desktop
+                if (payload && payload.source !== "backend_desktop") {
+                    this._loadData();
+                }
+            };
+            this.busService.addChannel(busChannel);
+            this.busService.subscribe("process_state_changed", busHandler);
+            this.busService.start();
 
-        onWillUnmount(() => {
-            this.busService.unsubscribe("process_state_changed", busHandler);
-        });
+            onWillUnmount(() => {
+                this.busService.unsubscribe("process_state_changed", busHandler);
+                this.busService.deleteChannel(busChannel);
+            });
+        }
 
         const initResize = () => {
             document.querySelectorAll(".o_repair_proc_table").forEach(t => this._initColResize(t));
