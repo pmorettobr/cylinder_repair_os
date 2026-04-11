@@ -19,25 +19,15 @@
                     </div>
 
                     <group string="Estado dos Processos">
-                        <div class="o_wrap_field_widget" colspan="2">
-                            <div class="d-flex gap-4 flex-wrap py-1">
-                                <field name="state_ready" string="Pronto"
-                                       widget="boolean_toggle"/>
-                                <span class="align-self-center">Pronto</span>
-                                <field name="state_progress" string="Em Andamento"
-                                       widget="boolean_toggle"/>
-                                <span class="align-self-center">Em Andamento</span>
-                                <field name="state_paused" string="Pausado"
-                                       widget="boolean_toggle"/>
-                                <span class="align-self-center">Pausado</span>
-                                <field name="state_done" string="Concluído"
-                                       widget="boolean_toggle"/>
-                                <span class="align-self-center">Concluído</span>
-                                <field name="state_cancel" string="Cancelado"
-                                       widget="boolean_toggle"/>
-                                <span class="align-self-center">Cancelado</span>
-                            </div>
-                        </div>
+                        <group>
+                            <field name="state_ready" string="Pronto"/>
+                            <field name="state_progress" string="Em Andamento"/>
+                            <field name="state_paused" string="Pausado"/>
+                        </group>
+                        <group>
+                            <field name="state_done" string="Concluído"/>
+                            <field name="state_cancel" string="Cancelado"/>
+                        </group>
                     </group>
 
                     <group string="Filtros Opcionais">
