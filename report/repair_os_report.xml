@@ -2,7 +2,9 @@
 <odoo>
 
 <template id="report_os_document">
-    <t t-call="web.external_layout">
+    <t t-call="web.html_container">
+        <t t-foreach="docs" t-as="doc">
+            <t t-call="web.external_layout">
         <div class="page">
 
             <!-- Cabeçalho da OS -->
@@ -126,6 +128,8 @@
             </t>
 
         </div>
+            </t>
+        </t>
     </t>
 </template>
 
