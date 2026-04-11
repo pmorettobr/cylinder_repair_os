@@ -67,21 +67,29 @@ class RepairMachineReportWizard(models.TransientModel):
         date_from_str = str(self.date_from)
         date_to_str   = str(self.date_to)
 
+        # Se OS selecionada: ignora filtro de data, traz todos os processos da OS
+        if self.os_id:
+            domain = [('repair_id', '=', self.os_id.id)]
+            if self.machine_id:
+                domain.append(('machine_id', '=', self.machine_id.id))
+            if not self.include_done:
+                domain.append(('state', '!=', 'cancel'))
+            return self.env['repair.os.process'].search(
+                domain, order='machine_id, date_planned, date_start_orig'
+            )
+
+        # Sem OS: filtra por período (date_planned OU date_start_orig no período)
         domain = [
             '|',
-            # date_planned dentro do período
             '&',
             ('date_planned', '>=', date_from_str),
             ('date_planned', '<=', date_to_str),
-            # date_start_orig dentro do período
             '&',
             ('date_start_orig', '>=', '%s 00:00:00' % date_from_str),
             ('date_start_orig', '<=', '%s 23:59:59' % date_to_str),
         ]
         if self.machine_id:
             domain = [('machine_id', '=', self.machine_id.id)] + domain
-        if self.os_id:
-            domain = [('repair_id', '=', self.os_id.id)] + domain
         if not self.include_done:
             domain.append(('state', '!=', 'cancel'))
 
