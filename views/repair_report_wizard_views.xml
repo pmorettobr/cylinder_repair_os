@@ -8,37 +8,42 @@
             <form string="Relatórios de OS">
                 <sheet>
 
-                    <!-- Seção 1: Programação por Máquina -->
-                    <div class="o_repair_wizard_header mb-3">
+                    <!-- Secao 1: Programacao por Maquina -->
+                    <div class="mb-3">
                         <h4 style="color:#4f46e5;margin-bottom:4px;">
                             <i class="fa fa-industry me-2"/>Programação por Máquina
                         </h4>
                         <p class="text-muted" style="font-size:12px;margin:0;">
-                            Processos com Data Programada ou Data de Início na data selecionada.
-                            Impresso em paisagem.
+                            Processos com Data Programada ou Data de Início dentro do período.
+                            Impresso em paisagem. OS é opcional — filtra só processos daquela OS.
                         </p>
                     </div>
+
                     <group>
-                        <group>
-                            <field name="report_date"
-                                   string="Data"
+                        <group string="Período">
+                            <field name="date_from"
+                                   string="De"
                                    widget="date"
                                    required="1"/>
+                            <field name="date_to"
+                                   string="Até"
+                                   widget="date"
+                                   required="1"/>
+                        </group>
+                        <group string="Filtros Opcionais">
                             <field name="machine_id"
                                    string="Máquina"
-                                   placeholder="Deixe vazio para todas"/>
-                        </group>
-                        <group>
+                                   placeholder="Todas as máquinas"/>
                             <field name="os_id"
                                    string="Nº OS"
-                                   placeholder="Opcional — filtra por OS"
+                                   placeholder="Todas as OS"
                                    domain="[('os_state', 'not in', ['cancel'])]"/>
                             <field name="include_done"
                                    string="Incluir Concluídos?"/>
                         </group>
                     </group>
 
-                    <div class="mt-2 mb-4">
+                    <div class="mt-1 mb-4">
                         <button name="action_print_report"
                                 string="Gerar Programação por Máquina (PDF)"
                                 type="object"
@@ -47,17 +52,18 @@
 
                     <hr/>
 
-                    <!-- Seção 2: Impressão da OS completa -->
-                    <div class="o_repair_wizard_header mb-3 mt-3">
+                    <!-- Secao 2: Impressao da OS completa -->
+                    <div class="mb-3 mt-3">
                         <h4 style="color:#059669;margin-bottom:4px;">
                             <i class="fa fa-file-text me-2"/>Impressão de OS Completa
                         </h4>
                         <p class="text-muted" style="font-size:12px;margin:0;">
-                            Imprime todos os processos da OS selecionada acima, concluídos ou não.
+                            Imprime todos os processos da OS selecionada acima,
+                            concluídos ou não. Data e Máquina são ignorados.
                         </p>
                     </div>
 
-                    <div class="mt-2">
+                    <div class="mt-1">
                         <button name="action_print_os"
                                 string="Imprimir OS Completa (PDF)"
                                 type="object"
