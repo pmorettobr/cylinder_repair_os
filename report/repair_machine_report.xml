@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-<!-- Formato paisagem para relatório de máquinas -->
 <record id="paperformat_machine_report_landscape" model="report.paperformat">
-    <field name="name">Paisagem A4 — Máquinas</field>
+    <field name="name">Paisagem A4 Máquinas</field>
     <field name="default" eval="False"/>
     <field name="format">A4</field>
     <field name="orientation">Landscape</field>
@@ -19,96 +18,118 @@
     <t t-call="web.html_container">
         <t t-foreach="docs" t-as="doc">
             <t t-call="web.external_layout">
-        <div class="page" style="font-size:11px">
+                <div class="page" style="font-size:11px;">
 
-            <!-- Cabeçalho -->
-            <div class="row mb-3">
-                <div class="col-12">
-                    <h3 style="margin:0;color:#4f46e5">Programação por Máquina</h3>
-                    <div style="font-size:12px;color:#666;margin-top:4px">
-                        Período:
-                        <strong><t t-esc="doc.date_from.strftime('%d/%m/%Y') if doc.date_from else ''"/></strong>
-                        até
-                        <strong><t t-esc="doc.date_to.strftime('%d/%m/%Y') if doc.date_to else ''"/></strong>
-                        <t t-if="doc.machine_id">
-                            · Máquina: <strong><t t-esc="doc.machine_id.name"/></strong>
-                        </t>
-                        <t t-else="">
-                            · Todas as máquinas
-                        </t>
-                        <t t-if="doc.os_id">
-                            · OS: <strong><t t-esc="doc.os_id.os_number"/></strong>
-                        </t>
+                    <!-- Título e filtros aplicados -->
+                    <div style="margin-bottom:8px;">
+                        <h3 style="margin:0;color:#4f46e5;">Programação de Produção</h3>
+                        <div style="font-size:11px;color:#666;margin-top:3px;">
+                            <t t-if="doc.os_id">
+                                OS: <strong><t t-esc="doc.os_id.os_number"/></strong> ·
+                            </t>
+                            <t t-if="doc.machine_id">
+                                Máquina: <strong><t t-esc="doc.machine_id.name"/></strong> ·
+                            </t>
+                            Estados:
+                            <strong>
+                                <t t-set="state_labels" t-value="[]"/>
+                                <t t-if="doc.state_ready">Pronto </t>
+                                <t t-if="doc.state_progress">Em Andamento </t>
+                                <t t-if="doc.state_paused">Pausado </t>
+                                <t t-if="doc.state_done">Concluído </t>
+                                <t t-if="doc.state_cancel">Cancelado </t>
+                            </strong>
+                            <t t-if="doc.use_date_filter and doc.date_from and doc.date_to">
+                                · Período: <strong>
+                                    <t t-esc="doc.date_from.strftime('%d/%m/%Y')"/>
+                                </strong> até <strong>
+                                    <t t-esc="doc.date_to.strftime('%d/%m/%Y')"/>
+                                </strong>
+                            </t>
+                        </div>
                     </div>
+
+                    <hr style="margin:6px 0;"/>
+
+                    <!-- Agrupa processos por OS -->
+                    <t t-foreach="os_groups" t-as="og">
+
+                        <!-- Cabeçalho da OS fora da tabela -->
+                        <div style="margin:10px 0 4px;padding:4px 8px;background:#eff6ff;border-left:4px solid #4f46e5;border-radius:3px;">
+                            <strong style="font-size:12px;">
+                                OS <t t-esc="og['os_number']"/>
+                            </strong>
+                            <t t-if="og['partner']">
+                                <span style="color:#555;margin-left:12px;">
+                                    Cliente: <strong><t t-esc="og['partner']"/></strong>
+                                </span>
+                            </t>
+                            <t t-if="og['product']">
+                                <span style="color:#555;margin-left:12px;">
+                                    Produto: <t t-esc="og['product']"/>
+                                </span>
+                            </t>
+                        </div>
+
+                        <!-- Tabela de processos -->
+                        <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;">
+                            <thead>
+                                <tr style="background:#f3f4f6;border-bottom:2px solid #d1d5db;">
+                                    <th style="width:4%;padding:4px 6px;text-align:center;border:1px solid #d1d5db;">Seq.</th>
+                                    <th style="width:12%;padding:4px 6px;border:1px solid #d1d5db;">Máquina</th>
+                                    <th style="width:18%;padding:4px 6px;border:1px solid #d1d5db;">Operação</th>
+                                    <th style="width:7%;padding:4px 6px;text-align:center;border:1px solid #d1d5db;">Previsto</th>
+                                    <th style="width:10%;padding:4px 6px;border:1px solid #d1d5db;">Operador</th>
+                                    <th style="width:8%;padding:4px 6px;text-align:center;border:1px solid #d1d5db;">Situação</th>
+                                    <th style="padding:4px 6px;border:1px solid #d1d5db;">OBS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="og['processes']" t-as="proc">
+                                    <tr t-attf-style="background:#{proc.state == 'done' and '#f0fdf4' or proc.state == 'progress' and '#fffbeb' or proc.state == 'paused' and '#eff6ff' or '#fff'};">
+                                        <td style="padding:5px 6px;text-align:center;border:1px solid #e5e7eb;">
+                                            <t t-esc="proc.sequence"/>
+                                        </td>
+                                        <td style="padding:5px 6px;border:1px solid #e5e7eb;">
+                                            <t t-esc="proc.machine_id.name if proc.machine_id else '—'"/>
+                                        </td>
+                                        <td style="padding:5px 6px;border:1px solid #e5e7eb;">
+                                            <t t-esc="proc.name"/>
+                                        </td>
+                                        <td style="padding:5px 6px;text-align:center;border:1px solid #e5e7eb;">
+                                            <t t-if="proc.duration_planned">
+                                                <t t-esc="'%02d:%02d' % (int(proc.duration_planned) // 60, int(proc.duration_planned) % 60)"/>
+                                            </t>
+                                            <t t-else="">—</t>
+                                        </td>
+                                        <td style="padding:5px 6px;border:1px solid #e5e7eb;">
+                                            <t t-esc="proc.operator_id.name if proc.operator_id else '—'"/>
+                                        </td>
+                                        <td style="padding:5px 6px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">
+                                            <t t-esc="dict(proc._fields['state'].selection).get(proc.state, '')"/>
+                                        </td>
+                                        <td style="padding:5px 6px;border:1px solid #e5e7eb;"> </td>
+                                    </tr>
+                                    <t t-if="proc.has_deviation and proc.deviation_notes">
+                                        <tr style="background:#fff8f0;">
+                                            <td colspan="7" style="padding:3px 10px;border:1px solid #e5e7eb;color:#b45309;font-size:10px;">
+                                                ⚠ Desvio: <t t-esc="proc.deviation_notes"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>
+
+                    </t>
+
+                    <t t-if="not os_groups">
+                        <div style="text-align:center;color:#9ca3af;margin-top:30px;font-size:13px;">
+                            Nenhum processo encontrado para os filtros selecionados.
+                        </div>
+                    </t>
+
                 </div>
-            </div>
-
-            <hr style="margin:8px 0"/>
-
-            <!-- Por máquina -->
-            <t t-foreach="machines" t-as="machine_data">
-                <h5 style="margin:14px 0 4px;background:#f3f4f6;padding:5px 8px;border-left:3px solid #4f46e5;font-size:12px">
-                    <i class="fa fa-industry me-1"/>
-                    <t t-esc="machine_data['label']"/>
-                </h5>
-                <table class="table table-sm table-bordered" style="font-size:11px;margin-bottom:6px">
-                    <thead style="background:#f8f9fa">
-                        <tr>
-                            <th style="width:12%">Nº OS</th>
-                            <th style="width:18%">Componente</th>
-                            <th style="width:18%">Operação</th>
-                            <th style="width:13%">Data Prog.</th>
-                            <th style="width:13%">Data Início</th>
-                            <th style="width:13%">Data Fim</th>
-                            <th style="width:8%">Tempo</th>
-                            <th style="width:5%">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <t t-foreach="machine_data['processes']" t-as="proc">
-                            <tr t-attf-style="#{proc.state == 'done' and 'background:#f0fdf4' or proc.state == 'progress' and 'background:#fffbeb' or ''}">
-                                <td>
-                                    <strong>
-                                        <t t-esc="proc.repair_id.os_number if proc.repair_id else '—'"/>
-                                    </strong>
-                                </td>
-                                <td><t t-esc="proc.component_type_id.name if proc.component_type_id else '—'"/></td>
-                                <td><t t-esc="proc.name"/></td>
-                                <td>
-                                    <t t-if="proc.date_planned">
-                                        <t t-esc="proc.date_planned.strftime('%d/%m %H:%M')"/>
-                                    </t>
-                                    <t t-else="">—</t>
-                                </td>
-                                <td>
-                                    <t t-if="proc.date_start_orig">
-                                        <t t-esc="proc.date_start_orig.strftime('%d/%m %H:%M')"/>
-                                    </t>
-                                    <t t-else="">—</t>
-                                </td>
-                                <td>
-                                    <t t-if="proc.date_finished">
-                                        <t t-esc="proc.date_finished.strftime('%d/%m %H:%M')"/>
-                                    </t>
-                                    <t t-else="">—</t>
-                                </td>
-                                <td class="text-center"><t t-esc="proc.duration_display"/></td>
-                                <td class="text-center" style="font-size:10px">
-                                    <t t-esc="dict(proc._fields['state'].selection).get(proc.state, '')"/>
-                                </td>
-                            </tr>
-                        </t>
-                    </tbody>
-                </table>
-            </t>
-
-            <t t-if="not machines">
-                <div class="text-center text-muted mt-4" style="font-size:13px">
-                    Nenhum processo encontrado para os filtros selecionados.
-                </div>
-            </t>
-
-        </div>
             </t>
         </t>
     </t>
