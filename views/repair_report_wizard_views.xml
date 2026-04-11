@@ -5,13 +5,17 @@
         <field name="name">repair.machine.report.wizard.form</field>
         <field name="model">repair.machine.report.wizard</field>
         <field name="arch" type="xml">
-            <form string="Programação por Máquina">
+            <form string="Relatórios de OS">
                 <sheet>
-                    <div class="o_repair_wizard_header">
-                        <h3>Relatório — Programação por Máquina</h3>
-                        <p class="text-muted">
-                            Gera todos os processos com Data Programada ou
-                            Data de Início na data selecionada.
+
+                    <!-- Seção 1: Programação por Máquina -->
+                    <div class="o_repair_wizard_header mb-3">
+                        <h4 style="color:#4f46e5;margin-bottom:4px;">
+                            <i class="fa fa-industry me-2"/>Programação por Máquina
+                        </h4>
+                        <p class="text-muted" style="font-size:12px;margin:0;">
+                            Processos com Data Programada ou Data de Início na data selecionada.
+                            Impresso em paisagem.
                         </p>
                     </div>
                     <group>
@@ -22,20 +26,49 @@
                                    required="1"/>
                             <field name="machine_id"
                                    string="Máquina"
-                                   placeholder="Deixe vazio para todas as máquinas"/>
+                                   placeholder="Deixe vazio para todas"/>
                         </group>
                         <group>
+                            <field name="os_id"
+                                   string="Nº OS"
+                                   placeholder="Opcional — filtra por OS"
+                                   domain="[('os_state', 'not in', ['cancel'])]"/>
                             <field name="include_done"
-                                   string="Incluir processos Concluídos?"/>
+                                   string="Incluir Concluídos?"/>
                         </group>
                     </group>
+
+                    <div class="mt-2 mb-4">
+                        <button name="action_print_report"
+                                string="Gerar Programação por Máquina (PDF)"
+                                type="object"
+                                class="btn btn-primary"/>
+                    </div>
+
+                    <hr/>
+
+                    <!-- Seção 2: Impressão da OS completa -->
+                    <div class="o_repair_wizard_header mb-3 mt-3">
+                        <h4 style="color:#059669;margin-bottom:4px;">
+                            <i class="fa fa-file-text me-2"/>Impressão de OS Completa
+                        </h4>
+                        <p class="text-muted" style="font-size:12px;margin:0;">
+                            Imprime todos os processos da OS selecionada acima, concluídos ou não.
+                        </p>
+                    </div>
+
+                    <div class="mt-2">
+                        <button name="action_print_os"
+                                string="Imprimir OS Completa (PDF)"
+                                type="object"
+                                class="btn btn-success"/>
+                        <span class="text-muted ms-3" style="font-size:12px;">
+                            Selecione o Nº OS no campo acima antes de imprimir.
+                        </span>
+                    </div>
+
                 </sheet>
                 <footer>
-                    <button name="action_print_report"
-                            string="Gerar Relatório PDF"
-                            type="object"
-                            class="btn-primary"
-                            close="1"/>
                     <button string="Fechar"
                             class="btn-secondary"
                             special="cancel"/>
@@ -45,7 +78,7 @@
     </record>
 
     <record id="action_repair_machine_report_wizard" model="ir.actions.act_window">
-        <field name="name">Programação por Máquina</field>
+        <field name="name">Relatórios</field>
         <field name="res_model">repair.machine.report.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
