@@ -55,9 +55,12 @@ class RepairMachineReportWizard(models.TransientModel):
         self.ensure_one()
         if not self.os_id:
             raise UserError('Selecione um Nº OS para imprimir.')
-        return self.env.ref(
-            'cylinder_repair_os.action_report_os'
-        ).report_action(self.os_id)
+        # report_action precisa de docids como lista de inteiros
+        report = self.env.ref('cylinder_repair_os.action_report_os')
+        return report.with_context(
+            active_ids=[self.os_id.id],
+            active_model='repair.order',
+        ).report_action(self.os_id.ids)
 
     # ── Dados para o relatório por máquina ───────────────────────────
 
