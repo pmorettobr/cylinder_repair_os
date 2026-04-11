@@ -9,22 +9,24 @@ class RepairMachineReport(models.AbstractModel):
         wizard = self.env['repair.machine.report.wizard'].browse(docids)
         processes = wizard._get_processes()
 
-        # Agrupa por máquina
-        machines = {}
+        # Agrupa por OS
+        os_map = {}
+        os_order = []
         for proc in processes:
-            key = proc.machine_id.id or 0
-            label = proc.machine_id.name if proc.machine_id else 'Sem Máquina'
-            if key not in machines:
-                machines[key] = {
-                    'machine': proc.machine_id,
-                    'label': label,
+            key = proc.repair_id.id if proc.repair_id else 0
+            if key not in os_map:
+                os_map[key] = {
+                    'os_number': proc.repair_id.os_number if proc.repair_id else '—',
+                    'partner':   proc.repair_id.partner_id.name if proc.repair_id and proc.repair_id.partner_id else '',
+                    'product':   proc.repair_id.product_name if proc.repair_id else '',
                     'processes': [],
                 }
-            machines[key]['processes'].append(proc)
+                os_order.append(key)
+            os_map[key]['processes'].append(proc)
 
         return {
             'doc_ids':   docids,
             'doc_model': 'repair.machine.report.wizard',
             'docs':      wizard,
-            'machines':  list(machines.values()),
+            'os_groups': [os_map[k] for k in os_order],
         }
