@@ -17,7 +17,6 @@
 
 <template id="report_machine_schedule_document">
     <t t-call="web.external_layout">
-        <!-- Garante que report_date existe como variável Python -->
         <div class="page" style="font-size:11px">
 
             <!-- Cabeçalho -->
