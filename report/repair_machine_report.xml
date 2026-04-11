@@ -18,7 +18,6 @@
 <template id="report_machine_schedule_document">
     <t t-call="web.external_layout">
         <!-- Garante que report_date existe como variável Python -->
-        <t t-set="rdate" t-value="report_date if 'report_date' in dir() else (docs[0].report_date if docs else None)"/>
         <div class="page" style="font-size:11px">
 
             <!-- Cabeçalho -->
@@ -26,12 +25,18 @@
                 <div class="col-12">
                     <h3 style="margin:0;color:#4f46e5">Programação por Máquina</h3>
                     <div style="font-size:12px;color:#666;margin-top:4px">
-                        Data: <strong><t t-esc="rdate.strftime('%d/%m/%Y') if rdate else ''"/></strong>
+                        Período:
+                        <strong><t t-esc="docs.date_from.strftime('%d/%m/%Y') if docs.date_from else ''"/></strong>
+                        até
+                        <strong><t t-esc="docs.date_to.strftime('%d/%m/%Y') if docs.date_to else ''"/></strong>
                         <t t-if="docs.machine_id">
                             · Máquina: <strong><t t-esc="docs.machine_id.name"/></strong>
                         </t>
                         <t t-else="">
                             · Todas as máquinas
+                        </t>
+                        <t t-if="docs.os_id">
+                            · OS: <strong><t t-esc="docs.os_id.os_number"/></strong>
                         </t>
                     </div>
                 </div>
