@@ -8,44 +8,57 @@
             <form string="Relatórios de OS">
                 <sheet>
 
-                    <!-- Secao 1: Programacao por Maquina -->
+                    <!-- Secao 1: Programacao por Estado/Maquina -->
                     <div class="mb-3">
                         <h4 style="color:#4f46e5;margin-bottom:4px;">
                             <i class="fa fa-industry me-2"/>Programação por Máquina
                         </h4>
                         <p class="text-muted" style="font-size:12px;margin:0;">
-                            Processos com Data Programada ou Data de Início dentro do período.
-                            Impresso em paisagem. OS é opcional — filtra só processos daquela OS.
+                            Gera a ordem de produção agrupada por OS. Impresso em paisagem.
                         </p>
                     </div>
 
-                    <group>
-                        <group string="Período">
-                            <field name="date_from"
-                                   string="De"
-                                   widget="date"
-                                   required="1"/>
-                            <field name="date_to"
-                                   string="Até"
-                                   widget="date"
-                                   required="1"/>
+                    <group string="Estado dos Processos">
+                        <div class="o_wrap_field_widget" colspan="2">
+                            <div class="d-flex gap-4 flex-wrap py-1">
+                                <field name="state_ready" string="Pronto"
+                                       widget="boolean_toggle"/>
+                                <span class="align-self-center">Pronto</span>
+                                <field name="state_progress" string="Em Andamento"
+                                       widget="boolean_toggle"/>
+                                <span class="align-self-center">Em Andamento</span>
+                                <field name="state_paused" string="Pausado"
+                                       widget="boolean_toggle"/>
+                                <span class="align-self-center">Pausado</span>
+                                <field name="state_done" string="Concluído"
+                                       widget="boolean_toggle"/>
+                                <span class="align-self-center">Concluído</span>
+                                <field name="state_cancel" string="Cancelado"
+                                       widget="boolean_toggle"/>
+                                <span class="align-self-center">Cancelado</span>
+                            </div>
+                        </div>
+                    </group>
+
+                    <group string="Filtros Opcionais">
+                        <group>
+                            <field name="machine_id" placeholder="Todas as máquinas"/>
+                            <field name="os_id" placeholder="Todas as OS"/>
                         </group>
-                        <group string="Filtros Opcionais">
-                            <field name="machine_id"
-                                   string="Máquina"
-                                   placeholder="Todas as máquinas"/>
-                            <field name="os_id"
-                                   string="Nº OS"
-                                   placeholder="Todas as OS"
-                                   domain="[('os_state', 'not in', ['cancel'])]"/>
-                            <field name="include_done"
-                                   string="Incluir Concluídos?"/>
+                        <group>
+                            <field name="use_date_filter" string="Filtrar por período?"/>
+                            <field name="date_from" string="De"
+                                   attrs="{'invisible': [('use_date_filter','=',False)],
+                                           'required': [('use_date_filter','=',True)]}"/>
+                            <field name="date_to" string="Até"
+                                   attrs="{'invisible': [('use_date_filter','=',False)],
+                                           'required': [('use_date_filter','=',True)]}"/>
                         </group>
                     </group>
 
                     <div class="mt-1 mb-4">
                         <button name="action_print_report"
-                                string="Gerar Programação por Máquina (PDF)"
+                                string="Gerar Programação (PDF)"
                                 type="object"
                                 class="btn btn-primary"/>
                     </div>
@@ -59,25 +72,22 @@
                         </h4>
                         <p class="text-muted" style="font-size:12px;margin:0;">
                             Imprime todos os processos da OS selecionada acima,
-                            concluídos ou não. Data e Máquina são ignorados.
+                            concluídos ou não.
                         </p>
                     </div>
-
                     <div class="mt-1">
                         <button name="action_print_os"
                                 string="Imprimir OS Completa (PDF)"
                                 type="object"
                                 class="btn btn-success"/>
                         <span class="text-muted ms-3" style="font-size:12px;">
-                            Selecione o Nº OS no campo acima antes de imprimir.
+                            Selecione o Nº OS acima antes de imprimir.
                         </span>
                     </div>
 
                 </sheet>
                 <footer>
-                    <button string="Fechar"
-                            class="btn-secondary"
-                            special="cancel"/>
+                    <button string="Fechar" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>
