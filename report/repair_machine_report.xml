@@ -16,7 +16,9 @@
 </record>
 
 <template id="report_machine_schedule_document">
-    <t t-call="web.external_layout">
+    <t t-call="web.html_container">
+        <t t-foreach="docs" t-as="doc">
+            <t t-call="web.external_layout">
         <div class="page" style="font-size:11px">
 
             <!-- Cabeçalho -->
@@ -25,17 +27,17 @@
                     <h3 style="margin:0;color:#4f46e5">Programação por Máquina</h3>
                     <div style="font-size:12px;color:#666;margin-top:4px">
                         Período:
-                        <strong><t t-esc="docs.date_from.strftime('%d/%m/%Y') if docs.date_from else ''"/></strong>
+                        <strong><t t-esc="doc.date_from.strftime('%d/%m/%Y') if doc.date_from else ''"/></strong>
                         até
-                        <strong><t t-esc="docs.date_to.strftime('%d/%m/%Y') if docs.date_to else ''"/></strong>
-                        <t t-if="docs.machine_id">
-                            · Máquina: <strong><t t-esc="docs.machine_id.name"/></strong>
+                        <strong><t t-esc="doc.date_to.strftime('%d/%m/%Y') if doc.date_to else ''"/></strong>
+                        <t t-if="doc.machine_id">
+                            · Máquina: <strong><t t-esc="doc.machine_id.name"/></strong>
                         </t>
                         <t t-else="">
                             · Todas as máquinas
                         </t>
-                        <t t-if="docs.os_id">
-                            · OS: <strong><t t-esc="docs.os_id.os_number"/></strong>
+                        <t t-if="doc.os_id">
+                            · OS: <strong><t t-esc="doc.os_id.os_number"/></strong>
                         </t>
                     </div>
                 </div>
@@ -107,6 +109,8 @@
             </t>
 
         </div>
+            </t>
+        </t>
     </t>
 </template>
 
