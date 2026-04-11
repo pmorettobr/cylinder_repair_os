@@ -34,11 +34,11 @@ class RepairSchedule extends Component {
         if (fromCtx) {
             this.repairId = fromCtx;
             // Salva para F5
-            try { localStorage.setItem(LS_KEY, String(fromCtx)); } catch (_) {}
+            try { sessionStorage.setItem(LS_KEY, String(fromCtx)); } catch (_) {}
         } else {
             // F5: recupera do localStorage
             try {
-                const saved = localStorage.getItem(LS_KEY);
+                const saved = sessionStorage.getItem(LS_KEY);
                 const parsed = saved ? parseInt(saved, 10) : NaN;
                 this.repairId = isNaN(parsed) ? false : parsed;
             } catch (_) {
