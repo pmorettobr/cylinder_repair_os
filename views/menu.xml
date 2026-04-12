@@ -95,11 +95,7 @@
               action="action_repair_process_template"
               sequence="10"/>
 
-    <menuitem id="menu_repair_quality_templates"
-              name="Templates de Qualidade"
-              parent="menu_repair_config"
-              action="action_repair_quality_templates"
-              sequence="20"/>
+
 
     <menuitem id="menu_repair_machines"
               name="Centros de Trabalho"
