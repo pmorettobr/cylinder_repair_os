@@ -2,7 +2,7 @@ from odoo import models
 
 
 class RepairMachineReport(models.AbstractModel):
-    _name = 'report.cylinder_repair_os.report_machine_schedule'
+    _name = 'report.cylinder_repair_os.report_machine_schedule_document'
     _description = 'Relatório Programação por Máquina'
 
     def _get_report_values(self, docids, data=None):
