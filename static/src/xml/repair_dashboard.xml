@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="cylinder_repair_os.RepairDashboard" owl="1">
+
+    <!-- Carrega vis-timeline do CDN -->
+    <link t-if="false" rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.3/vis-timeline-graph2d.min.css"/>
+
+<div class="o_action o_repair_dashboard_action">
+
+    <!-- CABEÇALHO -->
+    <div class="o_repair_dash_header d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-white">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold" style="font-size:1rem;color:#4f46e5;">
+                <i class="fa fa-tachometer me-2"/>Painel de Produção
+            </span>
+            <t t-if="state.loading">
+                <i class="fa fa-spinner fa-spin text-muted ms-2"/>
+            </t>
+        </div>
+
+        <!-- Seletor de view -->
+        <div class="btn-group" role="group">
+            <button t-att-class="'btn btn-sm ' + (state.view === 'dashboard' ? 'btn-primary' : 'btn-outline-secondary')"
+                    title="Dashboard"
+                    t-on-click="() => this.setView('dashboard')">
+                <i class="fa fa-th-large"/>
+            </button>
+            <button t-att-class="'btn btn-sm ' + (state.view === 'timeline' ? 'btn-primary' : 'btn-outline-secondary')"
+                    title="Timeline"
+                    t-on-click="() => this.setView('timeline')">
+                <i class="fa fa-calendar"/>
+            </button>
+        </div>
+    </div>
+
+    <!-- VIEW: DASHBOARD -->
+    <t t-if="state.view === 'dashboard'">
+        <div class="o_repair_dash_body">
+
+            <!-- 4 Cards de resumo -->
+            <div class="o_repair_dash_cards">
+
+                <div class="o_repair_stat_card" style="border-top:3px solid #6366f1;">
+                    <div class="o_repair_stat_value" style="color:#6366f1;">
+                        <t t-esc="state.counts.ready"/>
+                    </div>
+                    <div class="o_repair_stat_label">Prontos</div>
+                    <i class="fa fa-clock-o o_repair_stat_icon" style="color:#6366f1;"/>
+                </div>
+
+                <div class="o_repair_stat_card" style="border-top:3px solid #f59e0b;">
+                    <div class="o_repair_stat_value" style="color:#f59e0b;">
+                        <t t-esc="state.counts.progress"/>
+                    </div>
+                    <div class="o_repair_stat_label">Em Andamento</div>
+                    <i class="fa fa-play-circle o_repair_stat_icon" style="color:#f59e0b;"/>
+                </div>
+
+                <div class="o_repair_stat_card" style="border-top:3px solid #3b82f6;">
+                    <div class="o_repair_stat_value" style="color:#3b82f6;">
+                        <t t-esc="state.counts.paused"/>
+                    </div>
+                    <div class="o_repair_stat_label">Pausados</div>
+                    <i class="fa fa-pause-circle o_repair_stat_icon" style="color:#3b82f6;"/>
+                </div>
+
+                <div class="o_repair_stat_card" style="border-top:3px solid #10b981;">
+                    <div class="o_repair_stat_value" style="color:#10b981;">
+                        <t t-esc="state.counts.done"/>
+                    </div>
+                    <div class="o_repair_stat_label">Concluídos</div>
+                    <i class="fa fa-check-circle o_repair_stat_icon" style="color:#10b981;"/>
+                </div>
+
+            </div>
+
+            <div class="o_repair_dash_main">
+
+                <!-- Grid de Máquinas -->
+                <div class="o_repair_dash_section">
+                    <div class="o_repair_dash_section_title">
+                        <i class="fa fa-industry me-2"/>Máquinas
+                    </div>
+                    <div class="o_repair_machines_grid">
+                        <t t-foreach="state.machines" t-as="m" t-key="m.id">
+                            <div t-att-class="'o_repair_machine_card ' + machineStatusCls(m)">
+                                <div class="o_repair_machine_name">
+                                    <t t-esc="m.name"/>
+                                </div>
+                                <div class="o_repair_machine_status">
+                                    <t t-if="m.current">
+                                        <span class="badge text-bg-warning" style="font-size:10px;">
+                                            Em Andamento
+                                        </span>
+                                        <div class="mt-1" style="font-size:11px;color:#374151;font-weight:600;">
+                                            <t t-esc="m.current.repair_id ? m.current.repair_id[1] : '—'"/>
+                                        </div>
+                                        <div style="font-size:10px;color:#6b7280;">
+                                            <t t-esc="m.current.name"/>
+                                        </div>
+                                        <t t-if="m.current.operator_id">
+                                            <div style="font-size:10px;color:#6b7280;">
+                                                <i class="fa fa-user me-1"/>
+                                                <t t-esc="m.current.operator_id[1]"/>
+                                            </div>
+                                        </t>
+                                    </t>
+                                    <t t-elif="m.queue > 0">
+                                        <span class="badge bg-secondary" style="font-size:10px;">
+                                            <t t-esc="m.queue"/> na fila
+                                        </span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="badge bg-success" style="font-size:10px;">Livre</span>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                        <t t-if="state.machines.length === 0">
+                            <div class="text-muted small">Nenhuma máquina cadastrada.</div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Lista de OSs abertas -->
+                <div class="o_repair_dash_section">
+                    <div class="o_repair_dash_section_title">
+                        <i class="fa fa-list me-2"/>Ordens de Serviço Abertas
+                        <span class="badge bg-light text-secondary border ms-2" style="font-size:11px;">
+                            <t t-esc="state.orders.length"/>
+                        </span>
+                    </div>
+
+                    <t t-if="state.orders.length === 0">
+                        <div class="text-center text-muted py-4">
+                            <i class="fa fa-inbox fa-2x mb-2 d-block"/>
+                            Nenhuma OS aberta no momento.
+                        </div>
+                    </t>
+
+                    <div class="o_repair_os_list">
+                        <t t-foreach="state.orders" t-as="os" t-key="os.id">
+                            <div t-att-class="'o_repair_os_row ' + (os.is_overdue ? 'o_repair_os_overdue' : '')"
+                                 t-on-click="() => this.openSchedule(os.id)"
+                                 style="cursor:pointer;">
+
+                                <div class="o_repair_os_info">
+                                    <span class="fw-bold" style="font-size:13px;color:#1e293b;">
+                                        <t t-esc="os.os_number"/>
+                                    </span>
+                                    <t t-if="os.is_overdue">
+                                        <span class="badge bg-danger ms-2" style="font-size:10px;">
+                                            <i class="fa fa-exclamation-triangle me-1"/>Atrasada
+                                        </span>
+                                    </t>
+                                    <span t-att-class="'badge ms-2 ' + osStateBadge(os.os_state)"
+                                          style="font-size:10px;">
+                                        <t t-esc="osStateLabel(os.os_state)"/>
+                                    </span>
+                                </div>
+
+                                <div class="o_repair_os_client text-muted" style="font-size:12px;">
+                                    <t t-if="os.partner_id">
+                                        <i class="fa fa-user me-1"/>
+                                        <t t-esc="os.partner_id[1]"/>
+                                    </t>
+                                    <t t-if="os.product_name">
+                                        <span class="mx-1">·</span>
+                                        <t t-esc="os.product_name"/>
+                                    </t>
+                                    <t t-if="os.deadline_date">
+                                        <span class="mx-1">·</span>
+                                        <i class="fa fa-calendar-o me-1"/>
+                                        <t t-esc="fmtDate(os.deadline_date)"/>
+                                    </t>
+                                </div>
+
+                                <div class="o_repair_os_progress">
+                                    <div style="flex:1;height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;">
+                                        <div t-attf-style="width:#{os.progress_percent or 0}%;height:100%;background:linear-gradient(90deg,#6366f1,#10b981);border-radius:3px;transition:width .3s;"/>
+                                    </div>
+                                    <span style="font-size:11px;color:#6366f1;font-weight:600;white-space:nowrap;margin-left:8px;">
+                                        <t t-esc="os.process_done_count"/>/<t t-esc="os.process_count"/>
+                                    </span>
+                                </div>
+
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </t>
+
+    <!-- VIEW: TIMELINE -->
+    <t t-if="state.view === 'timeline'">
+        <div class="o_repair_timeline_wrap">
+
+            <!-- Legenda -->
+            <div class="d-flex align-items-center gap-3 px-3 py-2 border-bottom bg-white flex-wrap">
+                <span style="font-size:12px;font-weight:600;color:#374151;">
+                    <i class="fa fa-info-circle me-1"/>Legenda:
+                </span>
+                <span class="badge" style="background:#6366f1;font-size:11px;">Pronto</span>
+                <span class="badge" style="background:#f59e0b;font-size:11px;">Em Andamento</span>
+                <span class="badge" style="background:#3b82f6;font-size:11px;">Pausado</span>
+                <span class="badge" style="background:#10b981;font-size:11px;">Concluído</span>
+                <span class="text-muted ms-auto" style="font-size:11px;">
+                    Ctrl + scroll para zoom · Clique numa barra para abrir a OS
+                </span>
+            </div>
+
+            <div id="repair_timeline_container" class="o_repair_timeline_container">
+                <!-- vis-timeline é renderizado aqui -->
+                <t t-if="state.loading">
+                    <div class="text-center p-5 text-muted">
+                        <i class="fa fa-spinner fa-spin fa-2x"/>
+                    </div>
+                </t>
+            </div>
+
+        </div>
+    </t>
+
+</div>
+</t>
+
+</templates>
