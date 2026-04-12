@@ -55,9 +55,7 @@
                             <field name="name" string="Operação"/>
                             <field name="machine_id" string="Máquina"
                                    options="{'no_create': True}"/>
-                            <field name="quality_template_id" string="Template QC"
-                                   optional="hide"/>
-                            <field name="sequence" string="Ord." optional="show"/>
+                                        <field name="sequence" string="Ord." optional="show"/>
                         </tree>
                     </field>
 
