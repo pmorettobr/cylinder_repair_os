@@ -480,12 +480,12 @@ class RepairSchedule extends Component {
     }
     stateLabel(s) {
         return { ready:"Pronto", progress:"Em Andamento", paused:"Pausado",
-                 done:"Concluído", cancel:"Cancelado" }[s] || (s || "");
+                 done:"Concluído", cancel:"Cancelado", pending_cq:"Aguardando CQ" }[s] || (s || "");
     }
     stateBadge(s) {
         return { ready:"bg-secondary", progress:"text-bg-warning",
                  paused:"text-bg-info", done:"bg-success",
-                 cancel:"bg-secondary" }[s] || "bg-secondary";
+                 cancel:"bg-secondary", pending_cq:"o_badge_pending_cq" }[s] || "bg-secondary";
     }
     cqIcon(rec) {
         // Sem CQ configurado — ícone apagado
