@@ -121,4 +121,11 @@
         </field>
     </record>
 
+
+    <!-- Client Action Dashboard OWL -->
+    <record id="action_repair_dashboard_owl" model="ir.actions.client">
+        <field name="name">Painel de Produção</field>
+        <field name="tag">cylinder_repair_os.dashboard</field>
+    </record>
+
 </odoo>
