@@ -488,16 +488,20 @@ class RepairSchedule extends Component {
                  cancel:"bg-secondary" }[s] || "bg-secondary";
     }
     cqIcon(rec) {
-        if (!rec.requires_cq) return { icon: "fa-circle-o", cls: "text-muted", title: "Sem CQ" };
-        const map = {
-            pending:  { icon: "fa-circle-o", cls: "text-muted",   title: "Sem CQ" },
-            approved: { icon: "fa-check-circle", cls: "text-success", title: "CQ Aprovado" },
-            rejected: { icon: "fa-times-circle", cls: "text-danger",  title: "CQ Reprovado" },
-        };
-        // pending_cq state = aguardando
-        if (rec.state === "pending_cq") {
-            return { icon: "fa-clock-o", cls: "text-warning", title: "Aguardando CQ" };
+        // Sem CQ configurado — ícone apagado
+        if (!rec.requires_cq) {
+            return { icon: "fa-certificate", cls: "o_cq_none", title: "Sem CQ" };
         }
+        // Aguardando inspeção
+        if (rec.state === "pending_cq") {
+            return { icon: "fa-certificate", cls: "o_cq_pending", title: "Aguardando CQ" };
+        }
+        // Resultado registrado
+        const map = {
+            approved: { icon: "fa-certificate", cls: "o_cq_approved", title: "CQ Aprovado" },
+            rejected: { icon: "fa-certificate", cls: "o_cq_rejected", title: "CQ Reprovado" },
+            pending:  { icon: "fa-certificate", cls: "o_cq_none",     title: "Sem CQ" },
+        };
         return map[rec.cq_result] || map.pending;
     }
 
