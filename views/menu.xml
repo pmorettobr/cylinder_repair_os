@@ -38,38 +38,7 @@
               parent="menu_repair_orders"
               action="action_repair_orders_fabrication"
               sequence="30"/>
-
-    <!-- Acompanhamento -->
-    <menuitem id="menu_repair_tracking" active="False"
-              name="Acompanhamento"
-              parent="menu_repair_root"
-              sequence="20"/>
-
-    <menuitem id="menu_repair_tracking_all" active="False"
-              name="Status Geral"
-              parent="menu_repair_tracking"
-              action="action_repair_tracking_all"
-              sequence="10"/>
-
-    <menuitem id="menu_repair_tracking_os" active="False"
-              name="Por OS"
-              parent="menu_repair_tracking"
-              action="action_repair_tracking_by_os"
-              sequence="20"/>
-
-    <menuitem id="menu_repair_tracking_machine" active="False"
-              name="Por Centro de Trabalho"
-              parent="menu_repair_tracking"
-              action="action_repair_tracking_by_machine"
-              sequence="30"/>
-
-    <menuitem id="menu_repair_tracking_partner" active="False"
-              name="Por Cliente"
-              parent="menu_repair_tracking"
-              action="action_repair_tracking_by_partner"
-              sequence="40"/>
-
-    <!-- Relatórios -->
+<!-- Relatórios -->
     <menuitem id="menu_repair_reports"
               name="Relatórios"
               parent="menu_repair_root"
