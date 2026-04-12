@@ -35,8 +35,7 @@
                             <field name="active"/>
                         </group>
                         <group string="Qualidade">
-                            <field name="quality_template_id" string="Template de QC"/>
-                            <field name="block_on_quality_fail" string="Bloquear se Reprovar?"/>
+<field name="requires_cq" string="Requer Inspeção de Qualidade?"/>
                         </group>
                     </group>
                 </sheet>
