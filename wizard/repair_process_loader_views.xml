@@ -56,6 +56,8 @@
                             <field name="machine_id" string="Máquina"
                                    options="{'no_create': True}"/>
                                         <field name="sequence" string="Ord." optional="show"/>
+                            <field name="requires_cq" string="Requer CQ?" optional="show"/>
+                            <field name="template_id" invisible="1"/>
                         </tree>
                     </field>
 
