@@ -1165,3 +1165,9 @@ tr.o_repair_drag_over { background: rgba(79,70,229,0.06) !important; }
     0%, 100% { opacity: 1; }
     50%       { opacity: 0.5; }
 }
+
+/* Badge Aguardando CQ */
+.o_badge_pending_cq {
+    background-color: #f59e0b !important;
+    color: #fff !important;
+}
