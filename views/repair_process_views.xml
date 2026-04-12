@@ -95,7 +95,6 @@
 
                     <!-- Desvio -->
                     <group string="Desvio">
-                        <field name="requires_cq" string="Requer CQ?"/>
                         <field name="has_deviation" string="Registrar Desvio?"
                                widget="boolean_toggle"/>
                         <field name="deviation_notes" string="Descrição do Desvio"
@@ -146,7 +145,6 @@
                        decoration-info="state == 'paused'"
                        decoration-muted="state in ('ready', 'cancel')"
                        readonly="1"/>
-<field name="requires_cq" string="Requer CQ?"/>
                         <field name="has_deviation" string="Desvio" widget="boolean"
                        readonly="1" optional="show"/>
             </tree>
@@ -198,7 +196,6 @@
                     <notebook>
                         <page string="Desvio / Anexo" name="deviation">
                             <group>
-                                <field name="requires_cq" string="Requer CQ?"/>
                         <field name="has_deviation" string="Registrar Desvio?"
                                        widget="boolean_toggle"/>
                                 <field name="deviation_notes" string="Descrição"
@@ -275,7 +272,6 @@
                     </div>
 
                     <group>
-                        <field name="requires_cq" string="Requer CQ?"/>
                         <field name="has_deviation"
                                string="Registrar Desvio?"
                                widget="boolean_toggle"/>
@@ -323,7 +319,6 @@
                 <!-- Campos invisíveis necessários para lógica -->
                 <field name="component_type_id" invisible="1"/>
                 <field name="state" invisible="1"/>
-                <field name="requires_cq" string="Requer CQ?"/>
                         <field name="has_deviation" invisible="1"/>
                 <field name="deviation_tooltip" invisible="1"/>
                 <field name="deviation_notes" invisible="1"/>
@@ -505,7 +500,6 @@
 
                             <!-- Campos invisíveis -->
                             <field name="state" invisible="1"/>
-                            <field name="requires_cq" string="Requer CQ?"/>
                         <field name="has_deviation" invisible="1"/>
                             <field name="deviation_tooltip" invisible="1"/>
                             <field name="duration_acc" invisible="1" sum="Tempo Total (s)"/>
