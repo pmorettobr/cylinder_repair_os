@@ -37,16 +37,10 @@ class RepairProcessTemplate(models.Model):
     service_description = fields.Text(string='Descrição Detalhada')
     notes = fields.Char(string='Observação')
 
-    # Vínculo com template de qualidade padrão para este processo
-    quality_template_id = fields.Many2one(
-        comodel_name='repair.quality.template',
-        string='Template de Qualidade',
-        help='Checklist de qualidade aplicado automaticamente ao concluir este processo.',
-    )
-    block_on_quality_fail = fields.Boolean(
-        string='Bloquear se Reprovar?',
+    requires_cq = fields.Boolean(
+        string='Requer Inspeção de Qualidade?',
         default=False,
-        help='Se marcado, o processo não pode ser concluído enquanto houver itens reprovados.',
+        help='Se marcado, ao concluir o processo vai para Aguardando CQ.',
     )
     duration_planned = fields.Float(
         string='Tempo Previsto (min)',
