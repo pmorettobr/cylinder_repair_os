@@ -1154,3 +1154,14 @@ tr.o_repair_drag_over { background: rgba(79,70,229,0.06) !important; }
     overflow: hidden;
 }
 .vis-item .vis-item-overflow { overflow: visible; }
+
+/* CQ icon states */
+.o_cq_none     { color: #d1d5db; font-size: 16px; cursor: default; }
+.o_cq_pending  { color: #f59e0b; font-size: 16px; cursor: pointer; animation: o_cq_pulse 1.5s infinite; }
+.o_cq_approved { color: #10b981; font-size: 16px; cursor: pointer; }
+.o_cq_rejected { color: #ef4444; font-size: 16px; cursor: pointer; }
+
+@keyframes o_cq_pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.5; }
+}
