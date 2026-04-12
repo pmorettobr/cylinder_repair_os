@@ -6,18 +6,16 @@ class RepairProcessLoaderLine(models.TransientModel):
     _description = 'Linha do Carregador de Processos'
     _order = 'component_type_id, sequence'
 
-    wizard_id = fields.Many2one('repair.process.loader', ondelete='cascade')
-    sequence = fields.Integer(default=10)
-    selected = fields.Boolean(string='✓', default=True)
-    template_id = fields.Many2one('repair.process.template', string='Template')
+    wizard_id         = fields.Many2one('repair.process.loader', ondelete='cascade')
+    sequence          = fields.Integer(default=10)
+    selected          = fields.Boolean(string='✓', default=True)
+    template_id       = fields.Many2one('repair.process.template', string='Template')
     component_type_id = fields.Many2one('repair.component.type', string='Componente')
-    name = fields.Char(string='Operação', required=True)
+    name              = fields.Char(string='Operação', required=True)
     service_description = fields.Text(string='Descrição Detalhada')
-    machine_id = fields.Many2one('repair.machine', string='Máquina')
-    quality_template_id = fields.Many2one(
-        'repair.quality.template', string='Template QC')
-    block_on_quality_fail = fields.Boolean(string='Bloquear se Reprovar?')
-    duration_planned = fields.Float(string='Tempo Previsto (min)', default=0.0)
+    machine_id        = fields.Many2one('repair.machine', string='Máquina')
+    duration_planned  = fields.Float(string='Tempo Previsto (min)', default=0.0)
+    requires_cq       = fields.Boolean(string='Requer Inspeção de Qualidade?', default=False)
 
 
 class RepairProcessLoader(models.TransientModel):
@@ -25,17 +23,15 @@ class RepairProcessLoader(models.TransientModel):
     _description = 'Carregador de Processos em Lote'
 
     repair_id = fields.Many2one('repair.order', required=True, readonly=True)
-
     filter_component_id = fields.Many2one(
         'repair.component.type',
         string='Filtrar por Componente',
-        help='Deixe vazio para ver todos os processos do catálogo.',
+        help='Deixe vazio para ver todos.',
     )
     line_ids = fields.One2many(
         'repair.process.loader.line', 'wizard_id', string='Processos',
     )
     catalog_empty = fields.Boolean(
-        string='Catálogo vazio',
         compute='_compute_catalog_empty',
     )
 
@@ -57,16 +53,15 @@ class RepairProcessLoader(models.TransientModel):
         lines = []
         for tmpl in templates:
             lines.append((0, 0, {
-                'template_id': tmpl.id,
-                'sequence': tmpl.sequence,
-                'selected': True,
+                'template_id':       tmpl.id,
+                'sequence':          tmpl.sequence,
+                'selected':          True,
                 'component_type_id': tmpl.component_type_id.id,
-                'name': tmpl.name,
+                'name':              tmpl.name,
                 'service_description': tmpl.service_description or False,
-                'machine_id': tmpl.machine_id.id if tmpl.machine_id else False,
-                'duration_planned': tmpl.duration_planned or 0.0,
-                'quality_template_id': tmpl.quality_template_id.id if tmpl.quality_template_id else False,
-                'block_on_quality_fail': tmpl.block_on_quality_fail,
+                'machine_id':        tmpl.machine_id.id if tmpl.machine_id else False,
+                'duration_planned':  tmpl.duration_planned or 0.0,
+                'requires_cq':       tmpl.requires_cq,
             }))
         return lines
 
@@ -108,8 +103,6 @@ class RepairProcessLoader(models.TransientModel):
             return {'type': 'ir.actions.act_window_close'}
 
         repair = self.repair_id
-
-        # Determina a próxima sequência disponível por componente
         existing_seqs = {}
         for proc in repair.process_ids:
             ct = proc.component_type_id.id or 0
@@ -120,21 +113,16 @@ class RepairProcessLoader(models.TransientModel):
             next_seq = existing_seqs.get(ct_id, 0) + 10
             existing_seqs[ct_id] = next_seq
 
-            process_vals = {
-                'repair_id': repair.id,
-                'sequence': next_seq,
-                'name': line.name,
+            self.env['repair.os.process'].create({
+                'repair_id':          repair.id,
+                'sequence':           next_seq,
+                'name':               line.name,
                 'service_description': line.service_description or False,
-                'component_type_id': line.component_type_id.id if line.component_type_id else False,
-                'machine_id': line.machine_id.id if line.machine_id else False,
-                'block_on_quality_fail': line.block_on_quality_fail,
-                'duration_planned': line.duration_planned or 0.0,
-                'state': 'ready',
-            }
-            process = self.env['repair.os.process'].create(process_vals)
-
-            # Carrega checklist de qualidade se houver template
-            if line.quality_template_id:
-                process.action_load_quality_template(line.quality_template_id.id)
+                'component_type_id':  line.component_type_id.id if line.component_type_id else False,
+                'machine_id':         line.machine_id.id if line.machine_id else False,
+                'requires_cq':        line.requires_cq,
+                'duration_planned':   line.duration_planned or 0.0,
+                'state':              'ready',
+            })
 
         return {'type': 'ir.actions.act_window_close'}
