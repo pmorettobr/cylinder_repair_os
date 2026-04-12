@@ -66,7 +66,6 @@
                                 <th style="width:13%">Data Início</th>
                                 <th style="width:13%">Conclusão</th>
                                 <th style="width:9%">Tempo</th>
-                                <th style="width:6%">QC</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -99,10 +98,7 @@
                                     <td class="text-center">
                                         <t t-esc="proc.duration_display"/>
                                     </td>
-                                    <td class="text-center">
-                                        <t t-esc="dict(proc._fields['quality_result'].selection).get(proc.quality_result, '—')"/>
-                                    </td>
-                                </tr>
+</tr>
                                 <!-- Linha de desvio se houver -->
                                 <t t-if="proc.has_deviation and proc.deviation_notes">
                                     <tr style="background:#fff8f0">
