@@ -2,7 +2,6 @@ from . import repair_machine
 from . import repair_component_type
 from . import repair_sub_component
 from . import repair_process_template
-from . import repair_quality_template
 from . import repair_order_extension
 from . import repair_os_process
 from . import repair_machine_operator
