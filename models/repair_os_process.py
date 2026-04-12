@@ -6,21 +6,22 @@ from datetime import datetime, date
 class RepairOsProcess(models.Model):
     """
     Processo de Reparo / Fabricação vinculado a uma OS.
-    Model próprio — sem dependência de mrp.workorder.
 
     Estados:
-      ready    → Pronto para iniciar
-      progress → Em andamento (cronômetro rodando)
-      paused   → Pausado (cronômetro acumulado, aguardando retomada)
-      done     → Concluído
-      cancel   → Cancelado
+      ready       → Pronto para iniciar
+      progress    → Em andamento (cronômetro rodando)
+      paused      → Pausado (cronômetro acumulado)
+      pending_cq  → Aguardando inspeção de qualidade
+      done        → Concluído e aprovado
+      cancel      → Cancelado
     """
     _name = 'repair.os.process'
     _description = 'Processo da OS'
     _order = 'repair_id, component_type_id, sequence, id'
     _inherit = ['mail.thread']
 
-    # ── Vínculo com a OS ──────────────────────────────────────────────────────
+    # ── Vínculo com a OS ──────────────────────────────────────────────
+
     repair_id = fields.Many2one(
         comodel_name='repair.order',
         string='Ordem de Serviço',
@@ -29,76 +30,62 @@ class RepairOsProcess(models.Model):
         index=True,
     )
 
-    # ── Sequência de execução ─────────────────────────────────────────────────
-    sequence = fields.Integer(
-        string='Seq.',
-        default=10,
-        help='Ordem de execução dentro do componente. '
-             'Processo de seq. maior só pode iniciar após o anterior estar Concluído.',
-    )
+    # ── Sequência e identificação ─────────────────────────────────────
 
-    # ── Componente e Operação ─────────────────────────────────────────────────
+    sequence = fields.Integer(string='Seq.', default=10)
     component_type_id = fields.Many2one(
         comodel_name='repair.component.type',
         string='Componente',
         index=True,
     )
-    name = fields.Char(
-        string='Operação',
-        required=True,
-    )
+    name = fields.Char(string='Operação', required=True)
     service_description = fields.Text(string='Descrição Detalhada')
 
-    # ── Máquina ───────────────────────────────────────────────────────────────
+    # ── Máquina e Operador ────────────────────────────────────────────
+
     machine_id = fields.Many2one(
         comodel_name='repair.machine',
         string='Máquina',
         index=True,
     )
+    operator_id = fields.Many2one(
+        'repair.machine.operator',
+        string='Operador',
+        domain="[('machine_id', '=', machine_id)]",
+        ondelete='set null',
+    )
 
-    # ── Datas ─────────────────────────────────────────────────────────────────
-    date_planned = fields.Date(
-        string='Data Programada',
-        help='Data prevista para início deste processo.',
-    )
-    date_start = fields.Datetime(
-        string='Data Início',
-        readonly=True,
-        copy=False,
-    )
+    # ── Datas ─────────────────────────────────────────────────────────
+
+    date_planned = fields.Date(string='Data Programada')
+    date_start = fields.Datetime(string='Data Início', readonly=True, copy=False)
     date_start_orig = fields.Datetime(
-        string='Início Original',
-        readonly=True,
-        copy=False,
+        string='Início Original', readonly=True, copy=False,
         help='Data do primeiro início — não muda com pausas.',
     )
-    date_finished = fields.Datetime(
-        string='Data Conclusão',
-        readonly=True,
-        copy=False,
-    )
+    date_finished = fields.Datetime(string='Data Conclusão', readonly=True, copy=False)
 
-    # ── Cronômetro ────────────────────────────────────────────────────────────
+    # ── Cronômetro ────────────────────────────────────────────────────
+
     duration_acc = fields.Float(
-        string='Duração Acumulada (min)',
-        default=0.0,
-        copy=False,
-        help='Tempo acumulado de todas as sessões de trabalho em minutos.',
+        string='Duração Acumulada (min)', default=0.0, copy=False,
+        help='Tempo acumulado de todas as sessões em minutos.',
     )
+    duration_planned = fields.Float(string='Tempo Previsto (min)', default=0.0)
     duration_display = fields.Char(
-        string='Tempo',
-        compute='_compute_duration_display',
-        store=False,
+        string='Tempo', compute='_compute_duration_display', store=False,
     )
 
-    # ── Estado ────────────────────────────────────────────────────────────────
+    # ── Estado ────────────────────────────────────────────────────────
+
     state = fields.Selection(
         selection=[
-            ('ready', 'Pronto'),
-            ('progress', 'Em Andamento'),
-            ('paused', 'Pausado'),
-            ('done', 'Concluído'),
-            ('cancel', 'Cancelado'),
+            ('ready',      'Pronto'),
+            ('progress',   'Em Andamento'),
+            ('paused',     'Pausado'),
+            ('pending_cq', 'Aguardando CQ'),
+            ('done',       'Concluído'),
+            ('cancel',     'Cancelado'),
         ],
         string='Situação',
         default='ready',
@@ -107,60 +94,46 @@ class RepairOsProcess(models.Model):
         index=True,
     )
 
-    # ── Operador e Tempo Previsto ─────────────────────────────────────────
+    # ── Controle de Qualidade ─────────────────────────────────────────
 
-    operator_id = fields.Many2one(
-        'repair.machine.operator',
-        string='Operador',
-        domain="[('machine_id', '=', machine_id)]",
-        ondelete='set null',
-        help='Operador responsável por este processo.',
-    )
-    duration_planned = fields.Float(
-        string='Tempo Previsto (min)',
-        default=0.0,
-        help='Tempo previsto para execução do processo em minutos.',
-    )
-    component_name = fields.Char(
-        string='Componente',
-        compute='_compute_component_name',
-        store=False,
-    )
-
-    @api.depends('component_type_id')
-    def _compute_component_name(self):
-        for rec in self:
-            rec.component_name = rec.component_type_id.name or ''
-
-    # ── Desvio ────────────────────────────────────────────────────────────────
-    has_deviation = fields.Boolean(
-        string='Desvio?',
+    requires_cq = fields.Boolean(
+        string='Requer Inspeção de Qualidade?',
         default=False,
+        help='Se marcado, ao concluir o processo vai para Aguardando CQ '
+             'antes de ser marcado como Concluído.',
+    )
+    cq_result = fields.Selection(
+        selection=[
+            ('pending',  'Pendente'),
+            ('approved', 'Aprovado'),
+            ('rejected', 'Reprovado'),
+        ],
+        string='Resultado CQ',
+        default='pending',
         tracking=True,
     )
+    cq_rejection_count = fields.Integer(
+        string='Nº de Reprovações',
+        default=0,
+        copy=False,
+        help='Contador de quantas vezes este processo foi reprovado no CQ.',
+    )
+    cq_notes = fields.Text(
+        string='Observações CQ',
+        copy=False,
+        help='Última observação do inspetor de qualidade.',
+    )
+
+    # ── Desvio ────────────────────────────────────────────────────────
+
+    has_deviation = fields.Boolean(string='Desvio?', default=False, tracking=True)
+    deviation_notes = fields.Text(string='Descrição do Desvio')
     deviation_icon = fields.Char(
-        string='Desvio',
-        compute='_compute_deviation_icon',
-        store=False,
+        compute='_compute_deviation_icon', store=False,
     )
     deviation_tooltip = fields.Char(
-        string='Tooltip Desvio',
-        compute='_compute_deviation_icon',
-        store=False,
+        compute='_compute_deviation_icon', store=False,
     )
-
-    @api.depends('has_deviation', 'deviation_notes')
-    def _compute_deviation_icon(self):
-        for rec in self:
-            rec.deviation_icon = '⚠' if rec.has_deviation else '○'
-            if rec.has_deviation and rec.deviation_notes:
-                rec.deviation_tooltip = rec.deviation_notes[:120]
-            elif rec.has_deviation:
-                rec.deviation_tooltip = 'Desvio registrado (sem descrição)'
-            else:
-                rec.deviation_tooltip = 'Sem desvio'
-
-    deviation_notes = fields.Text(string='Descrição do Desvio')
     attachment_ids = fields.Many2many(
         comodel_name='ir.attachment',
         relation='repair_process_attachment_rel',
@@ -169,42 +142,21 @@ class RepairOsProcess(models.Model):
         string='Anexos / Desenhos',
     )
 
-    # ── Controle de Qualidade ─────────────────────────────────────────────────
-    quality_check_ids = fields.One2many(
-        comodel_name='repair.quality.check',
-        inverse_name='process_id',
-        string='Checklist de Qualidade',
-    )
-    quality_result = fields.Selection(
-        selection=[
-            ('pending', 'Pendente'),
-            ('passed', 'Aprovado'),
-            ('failed', 'Reprovado'),
-            ('flagged', 'Concluído com Ressalvas'),
-        ],
-        string='Resultado QC',
-        default='pending',
-        tracking=True,
-    )
-    block_on_quality_fail = fields.Boolean(
-        string='Bloquear se Reprovar?',
-        default=False,
-        help='Se marcado, não permite concluir o processo com itens reprovados.',
-    )
-    has_quality_checks = fields.Boolean(
-        string='Tem Checklist?',
-        compute='_compute_has_quality',
-        store=False,
-    )
+    # ── Labels computados ─────────────────────────────────────────────
 
-    # ── Label de operação completa ────────────────────────────────────────────
+    component_name = fields.Char(
+        compute='_compute_component_name', store=False,
+    )
     operation_label = fields.Char(
-        string='Operação Completa',
-        compute='_compute_operation_label',
-        store=True,
+        compute='_compute_operation_label', store=True,
     )
 
-    # ── Computes ──────────────────────────────────────────────────────────────
+    # ── Computes ──────────────────────────────────────────────────────
+
+    @api.depends('component_type_id')
+    def _compute_component_name(self):
+        for rec in self:
+            rec.component_name = rec.component_type_id.name or ''
 
     @api.depends('component_type_id.name', 'name')
     def _compute_operation_label(self):
@@ -230,85 +182,56 @@ class RepairOsProcess(models.Model):
             s = total_sec % 60
             rec.duration_display = '%02d:%02d:%02d' % (h, m, s)
 
-    def _compute_has_quality(self):
+    @api.depends('has_deviation', 'deviation_notes')
+    def _compute_deviation_icon(self):
         for rec in self:
-            rec.has_quality_checks = bool(rec.quality_check_ids)
+            rec.deviation_icon = '⚠' if rec.has_deviation else '○'
+            if rec.has_deviation and rec.deviation_notes:
+                rec.deviation_tooltip = rec.deviation_notes[:120]
+            elif rec.has_deviation:
+                rec.deviation_tooltip = 'Desvio registrado (sem descrição)'
+            else:
+                rec.deviation_tooltip = 'Sem desvio'
 
-    # ── Validações ────────────────────────────────────────────────────────────
-
-    def _validate_date_planned(self):
-        """Valida que date_planned não está em branco nem é retroativa ao dia atual."""
-        for rec in self:
-            if not rec.date_planned:
-                raise UserError(
-                    'Processo "%s": preencha a Data Programada antes de iniciar.'
-                    % rec.operation_label
-                )
-            today = date.today()
-            if rec.date_planned < today:
-                raise UserError(
-                    'Processo "%s": a Data Programada (%s) não pode ser anterior a hoje (%s).'
-                    % (
-                        rec.operation_label,
-                        rec.date_planned.strftime('%d/%m/%Y'),
-                        today.strftime('%d/%m/%Y'),
-                    )
-                )
+    # ── Validações ────────────────────────────────────────────────────
 
     def _validate_os_started(self):
-        """Valida que a OS está em andamento."""
         for rec in self:
             if rec.repair_id and rec.repair_id.os_state not in ('confirmed', 'in_progress'):
                 raise UserError(
-                    'A Ordem de Serviço "%s" precisa estar CONFIRMADA ou EM ANDAMENTO '
-                    'para iniciar processos.'
+                    'A OS "%s" precisa estar CONFIRMADA ou EM ANDAMENTO para iniciar processos.'
                     % (rec.repair_id.os_number or rec.repair_id.name)
                 )
 
     def _validate_sequence(self):
         """
-        Valida sequência de processos dentro do componente.
-
-        Regra:
-        - Processos com a MESMA sequência rodam em paralelo (sem bloqueio).
-        - Um processo só pode iniciar se TODOS os processos com sequência
-          ESTRITAMENTE MENOR estiverem concluídos (done) ou cancelados.
-        - Se o Centro de Trabalho tem bypass_sequence=True, pula a validação.
+        Bloqueia início se houver processo anterior (seq menor) não concluído.
+        pending_cq conta como concluído para efeito de sequência.
         """
         for rec in self:
             if not rec.component_type_id:
                 continue
-            # Bypass de sequência ativo no centro de trabalho
             if rec.machine_id and rec.machine_id.bypass_sequence:
                 continue
-            # Busca processos com sequência ESTRITAMENTE menor que a atual
-            # que ainda não estejam concluídos ou cancelados
             prev = self.search([
                 ('repair_id', '=', rec.repair_id.id),
                 ('component_type_id', '=', rec.component_type_id.id),
                 ('sequence', '<', rec.sequence),
                 ('id', '!=', rec.id),
-                ('state', 'not in', ('done', 'cancel')),
+                ('state', 'not in', ('done', 'pending_cq', 'cancel')),
             ], limit=1, order='sequence desc')
             if prev:
                 raise UserError(
                     'Processo "%s" (seq. %d): o processo anterior "%s" '
-                    '(seq. %d) ainda não foi concluído. '
-                    'Processos com a mesma sequência podem ser iniciados em paralelo.'
-                    % (
-                        rec.operation_label,
-                        rec.sequence,
-                        prev.operation_label,
-                        prev.sequence,
-                    )
+                    '(seq. %d) ainda não foi concluído.'
+                    % (rec.operation_label, rec.sequence,
+                       prev.operation_label, prev.sequence)
                 )
 
     def _validate_machine_available(self):
-        """Valida que a máquina não está ocupada em outro processo."""
         for rec in self:
             if not rec.machine_id:
                 continue
-            # Se allow_parallel está ativo no centro, ignora verificação de ocupação
             if rec.machine_id.allow_parallel:
                 continue
             busy = self.search([
@@ -319,15 +242,13 @@ class RepairOsProcess(models.Model):
             if busy:
                 raise UserError(
                     '⚠ %s em uso na OS %s — Operação: %s.\n'
-                    'Aguarde a conclusão do processo em andamento antes de iniciar nesta máquina.'
-                    % (
-                        rec.machine_id.name,
-                        busy.repair_id.os_number or busy.repair_id.name,
-                        busy.operation_label,
-                    )
+                    'Aguarde a conclusão antes de iniciar nesta máquina.'
+                    % (rec.machine_id.name,
+                       busy.repair_id.os_number or busy.repair_id.name,
+                       busy.operation_label)
                 )
 
-    # ── Ações de controle ─────────────────────────────────────────────────────
+    # ── Ações do Operador ─────────────────────────────────────────────
 
     def action_start(self):
         """Iniciar processo — primeiro início ou retomada após pausa."""
@@ -338,10 +259,9 @@ class RepairOsProcess(models.Model):
         now = datetime.now()
         machines = self.env['repair.machine']
         for rec in self:
-            vals = {
-                'state': 'progress',
-                'date_start': now,
-            }
+            if rec.state not in ('ready', 'paused'):
+                continue
+            vals = {'state': 'progress', 'date_start': now}
             if not rec.date_start_orig:
                 vals['date_start_orig'] = now
             rec.write(vals)
@@ -376,62 +296,76 @@ class RepairOsProcess(models.Model):
     def action_finish(self):
         """
         Concluir processo.
-        Se há checklist de qualidade pendente, abre popup de QC antes de concluir.
+        Se requires_cq → vai para pending_cq aguardando inspeção.
+        Caso contrário → vai direto para done.
         """
         for rec in self:
             if rec.state not in ('progress', 'paused'):
-                raise UserError('Apenas processos Em Andamento ou Pausados podem ser concluídos.')
-
-            # Verifica checklist de qualidade
-            if rec.quality_check_ids:
-                pending_required = rec.quality_check_ids.filtered(
-                    lambda c: c.result == 'pending' and c.is_required
+                raise UserError(
+                    'Apenas processos Em Andamento ou Pausados podem ser concluídos.'
                 )
-                failed_required = rec.quality_check_ids.filtered(
-                    lambda c: c.result == 'fail' and c.is_required
-                )
-                if pending_required or failed_required:
-                    if rec.block_on_quality_fail and failed_required:
-                        raise UserError(
-                            'Processo "%s": existem %d item(ns) obrigatório(s) REPROVADO(S) no checklist. '
-                            'Corrija-os antes de concluir.'
-                            % (rec.operation_label, len(failed_required))
-                        )
-                    elif pending_required:
-                        # Redireciona para o popup de QC
-                        return rec._open_quality_popup()
-
-            rec._do_finish()
-        return False
-
-    def _do_finish(self):
-        """Finalização efetiva do processo."""
-        now = datetime.now()
-        for rec in self:
+            # Acumula tempo se estava em andamento
             elapsed = 0.0
             if rec.state == 'progress' and rec.date_start:
-                elapsed = (now - rec.date_start.replace(tzinfo=None)).total_seconds() / 60
+                elapsed = (datetime.now() - rec.date_start.replace(tzinfo=None)).total_seconds() / 60
 
-            # Determina resultado de qualidade
-            if rec.quality_check_ids:
-                failed = rec.quality_check_ids.filtered(lambda c: c.result == 'fail')
-                quality_result = 'flagged' if failed else 'passed'
+            if rec.requires_cq:
+                # Vai para inspeção de qualidade
+                rec.write({
+                    'state': 'pending_cq',
+                    'duration_acc': (rec.duration_acc or 0.0) + elapsed,
+                    'date_start': False,
+                })
+                if rec.machine_id:
+                    rec.machine_id._update_busy_status()
+                rec._notify_process_update('pending_cq')
             else:
-                quality_result = 'pending'
+                # Conclui direto
+                rec._do_finish(elapsed)
+        return False
 
+    def _do_finish(self, elapsed=0.0):
+        """Finalização efetiva — chamada pelo action_finish ou pelo módulo CQ."""
+        now = datetime.now()
+        for rec in self:
+            extra = elapsed
+            # Se ainda estava em andamento (chamada direta do CQ)
+            if rec.state == 'progress' and rec.date_start and not elapsed:
+                extra = (now - rec.date_start.replace(tzinfo=None)).total_seconds() / 60
             rec.write({
                 'state': 'done',
                 'date_finished': now,
-                'duration_acc': (rec.duration_acc or 0.0) + elapsed,
+                'duration_acc': (rec.duration_acc or 0.0) + extra,
                 'date_start': False,
-                'quality_result': quality_result,
+                'cq_result': 'approved' if rec.requires_cq else 'pending',
             })
             if rec.machine_id:
                 rec.machine_id._update_busy_status()
             rec._notify_process_update('done')
 
+    def action_cancel(self):
+        """Cancelar processo."""
+        machines = self.env['repair.machine']
+        for rec in self:
+            if rec.state == 'progress' and rec.date_start:
+                elapsed = (datetime.now() - rec.date_start.replace(tzinfo=None)).total_seconds() / 60
+                rec.duration_acc = (rec.duration_acc or 0.0) + elapsed
+            if rec.machine_id and rec.state in ('progress',):
+                machines |= rec.machine_id
+            rec.write({'state': 'cancel', 'date_start': False})
+        machines._update_busy_status()
+        return False
+
+    def action_reset_to_ready(self):
+        """Volta processo cancelado/pausado para Pronto."""
+        for rec in self:
+            if rec.state in ('cancel', 'paused'):
+                rec.write({'state': 'ready', 'date_start': False})
+
+    # ── Bus ───────────────────────────────────────────────────────────
+
     def _notify_process_update(self, state):
-        """Dispara notificação bus para desktop e mobile com skip_navigation."""
+        """Dispara notificação bus para desktop e mobile."""
         for rec in self:
             channel = 'repair_os_%d_processes' % rec.repair_id.id
             self.env['bus.bus']._sendone(channel, 'process_state_changed', {
@@ -444,56 +378,21 @@ class RepairOsProcess(models.Model):
                 'source': 'backend',
             })
 
-    def action_move_up(self):
-        """Move o processo uma posição acima dentro do mesmo componente."""
+    # ── Popups ────────────────────────────────────────────────────────
+
+    def action_open_deviation_popup(self):
         self.ensure_one()
-        siblings = self.search([
-            ('repair_id', '=', self.repair_id.id),
-            ('component_type_id', '=', self.component_type_id.id),
-            ('id', '!=', self.id),
-            ('sequence', '<=', self.sequence),
-        ], order='sequence desc', limit=1)
-        if siblings:
-            self.sequence, siblings.sequence = siblings.sequence, self.sequence
-
-    def action_move_down(self):
-        """Move o processo uma posição abaixo dentro do mesmo componente."""
-        self.ensure_one()
-        siblings = self.search([
-            ('repair_id', '=', self.repair_id.id),
-            ('component_type_id', '=', self.component_type_id.id),
-            ('id', '!=', self.id),
-            ('sequence', '>=', self.sequence),
-        ], order='sequence asc', limit=1)
-        if siblings:
-            self.sequence, siblings.sequence = siblings.sequence, self.sequence
-
-    def action_cancel(self):
-        """Cancelar processo."""
-        machines = self.env['repair.machine']
-        for rec in self:
-            if rec.state == 'progress':
-                # Acumula tempo antes de cancelar
-                if rec.date_start:
-                    elapsed = (datetime.now() - rec.date_start.replace(tzinfo=None)).total_seconds() / 60
-                    rec.duration_acc = (rec.duration_acc or 0.0) + elapsed
-                if rec.machine_id:
-                    machines |= rec.machine_id
-            rec.state = 'cancel'
-            rec.date_start = False
-        machines._update_busy_status()
-        return False
-
-    def action_reset_to_ready(self):
-        """Volta processo cancelado/pausado para Pronto."""
-        for rec in self:
-            if rec.state in ('cancel', 'paused'):
-                rec.write({'state': 'ready', 'date_start': False})
-
-    # ── Popup de Ações (Iniciar / Pausar / Concluir) ──────────────────────────
+        return {
+            'type': 'ir.actions.act_window',
+            'name': self.operation_label or self.name or 'Desvio',
+            'res_model': 'repair.os.process',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'view_id': self.env.ref('cylinder_repair_os.view_repair_process_deviation_popup').id,
+            'target': 'new',
+        }
 
     def action_open_actions_popup(self):
-        """Abre popup com ações do processo + desvio."""
         self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
@@ -505,10 +404,7 @@ class RepairOsProcess(models.Model):
             'target': 'new',
         }
 
-    # ── Popup de Desvio / Detalhes ────────────────────────────────────────────
-
     def action_open_details_popup(self):
-        """Abre popup de desvio, descrição e anexos."""
         self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
@@ -522,8 +418,6 @@ class RepairOsProcess(models.Model):
         }
 
     def action_open_loader_from_list(self):
-        """Abre o carregador de processos a partir da lista agrupada.
-        Funciona mesmo sem registros selecionados, usando active_repair_id do contexto."""
         ctx = self.env.context
         repair_id = (
             ctx.get('active_repair_id') or
@@ -532,7 +426,6 @@ class RepairOsProcess(models.Model):
             (self[0].repair_id.id if self else False)
         )
         if not repair_id:
-            # Tenta extrair do domínio ativo
             domain = ctx.get('active_domain') or []
             for clause in domain:
                 if isinstance(clause, (list, tuple)) and len(clause) == 3:
@@ -541,73 +434,7 @@ class RepairOsProcess(models.Model):
                         break
         if not repair_id:
             return {'type': 'ir.actions.act_window_close'}
-        repair = self.env['repair.order'].browse(repair_id)
-        return repair.action_open_process_loader()
-
-    def action_open_deviation_popup(self):
-        """Abre popup simples de desvio (ícone na coluna Desvio)."""
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': self.operation_label or self.name or 'Desvio',
-            'res_model': 'repair.os.process',
-            'res_id': self.id,
-            'view_mode': 'form',
-            'view_id': self.env.ref('cylinder_repair_os.view_repair_process_deviation_popup').id,
-            'target': 'new',
-        }
-
-    # ── Popup de Qualidade ────────────────────────────────────────────────────
-
-    def _open_quality_popup(self):
-        """Redireciona para o popup de checklist de qualidade."""
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Controle de Qualidade — %s' % (self.operation_label or self.name),
-            'res_model': 'repair.os.process',
-            'res_id': self.id,
-            'view_mode': 'form',
-            'view_id': self.env.ref('cylinder_repair_os.view_repair_process_quality_popup').id,
-            'target': 'new',
-        }
-
-    def action_open_quality_popup(self):
-        """Abre popup de qualidade manualmente."""
-        self.ensure_one()
-        return self._open_quality_popup()
-
-    def action_finish_with_flag(self):
-        """Conclui processo mesmo com itens reprovados (flag)."""
-        for rec in self:
-            failed = rec.quality_check_ids.filtered(lambda c: c.result == 'fail')
-            if failed:
-                rec.quality_result = 'flagged'
-            rec._do_finish()
-        return False
-
-    # ── Carrega checklist a partir do template ────────────────────────────────
-
-    def action_load_quality_template(self, template_id):
-        """Carrega itens do template de qualidade no processo."""
-        self.ensure_one()
-        template = self.env['repair.quality.template'].browse(template_id)
-        if not template.exists():
-            return
-        # Remove checks pendentes existentes
-        self.quality_check_ids.filtered(lambda c: c.result == 'pending').unlink()
-        # Cria novos a partir do template
-        for line in template.check_ids:
-            self.env['repair.quality.check'].create({
-                'process_id': self.id,
-                'sequence': line.sequence,
-                'name': line.name,
-                'is_required': line.is_required,
-                'result': 'pending',
-            })
-        self.block_on_quality_fail = template.block_on_fail
-
-    # ── Relatório: abre OS de origem ──────────────────────────────────────────
+        return self.env['repair.order'].browse(repair_id).action_open_process_loader()
 
     def action_open_parent_os(self):
         self.ensure_one()
@@ -615,10 +442,33 @@ class RepairOsProcess(models.Model):
             return
         return {
             'type': 'ir.actions.act_window',
-            'name': 'Ordem de Serviço',
             'res_model': 'repair.order',
             'res_id': self.repair_id.id,
             'view_mode': 'form',
             'view_id': self.env.ref('cylinder_repair_os.view_repair_order_os_form').id,
             'target': 'current',
         }
+
+    # ── Reordenação ───────────────────────────────────────────────────
+
+    def action_move_up(self):
+        self.ensure_one()
+        siblings = self.search([
+            ('repair_id', '=', self.repair_id.id),
+            ('component_type_id', '=', self.component_type_id.id),
+            ('id', '!=', self.id),
+            ('sequence', '<=', self.sequence),
+        ], order='sequence desc', limit=1)
+        if siblings:
+            self.sequence, siblings.sequence = siblings.sequence, self.sequence
+
+    def action_move_down(self):
+        self.ensure_one()
+        siblings = self.search([
+            ('repair_id', '=', self.repair_id.id),
+            ('component_type_id', '=', self.component_type_id.id),
+            ('id', '!=', self.id),
+            ('sequence', '>=', self.sequence),
+        ], order='sequence asc', limit=1)
+        if siblings:
+            self.sequence, siblings.sequence = siblings.sequence, self.sequence
