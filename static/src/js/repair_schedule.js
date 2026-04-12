@@ -102,7 +102,8 @@ class RepairSchedule extends Component {
                     ["sequence", "name", "component_type_id", "machine_id",
                      "operator_id", "date_planned", "date_start_orig", "date_start",
                      "duration_acc", "duration_planned", "duration_display", "state",
-                     "has_deviation", "deviation_notes"]
+                     "has_deviation", "deviation_notes",
+                     "requires_cq", "cq_result", "cq_rejection_count"]
                 ),
             ]);
             this.state.repairInfo = repairs[0] || {};
@@ -486,6 +487,20 @@ class RepairSchedule extends Component {
                  paused:"text-bg-info", done:"bg-success",
                  cancel:"bg-secondary" }[s] || "bg-secondary";
     }
+    cqIcon(rec) {
+        if (!rec.requires_cq) return { icon: "fa-circle-o", cls: "text-muted", title: "Sem CQ" };
+        const map = {
+            pending:  { icon: "fa-circle-o", cls: "text-muted",   title: "Sem CQ" },
+            approved: { icon: "fa-check-circle", cls: "text-success", title: "CQ Aprovado" },
+            rejected: { icon: "fa-times-circle", cls: "text-danger",  title: "CQ Reprovado" },
+        };
+        // pending_cq state = aguardando
+        if (rec.state === "pending_cq") {
+            return { icon: "fa-clock-o", cls: "text-warning", title: "Aguardando CQ" };
+        }
+        return map[rec.cq_result] || map.pending;
+    }
+
     rowCls(s, isDragOver) {
         const base = { done:"o_repair_row_done", progress:"o_repair_row_progress",
                        paused:"o_repair_row_paused", cancel:"o_repair_row_cancel" }[s] || "";
