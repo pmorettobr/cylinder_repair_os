@@ -20,3 +20,10 @@ access_repair_users_operator,res.users operator,base.model_res_users,cylinder_re
 access_repair_line_operator,repair.line operator,repair.model_repair_line,cylinder_repair_os.group_repair_operator,1,1,1,1
 access_repair_fee_operator,repair.fee operator,repair.model_repair_fee,cylinder_repair_os.group_repair_operator,1,1,1,1
 access_repair_machine_operator,repair.machine.operator,model_repair_machine_operator,base.group_user,1,1,1,1
+access_repair_machine_cq,repair.machine cq,model_repair_machine,cylinder_repair_os.group_repair_cq,1,0,0,0
+access_repair_component_type_cq,repair.component.type cq,model_repair_component_type,cylinder_repair_os.group_repair_cq,1,0,0,0
+access_repair_os_process_cq,repair.os.process cq,model_repair_os_process,cylinder_repair_os.group_repair_cq,1,1,0,0
+access_repair_order_cq,repair.order cq,repair.model_repair_order,cylinder_repair_os.group_repair_cq,1,0,0,0
+access_repair_partner_cq,res.partner cq,base.model_res_partner,cylinder_repair_os.group_repair_cq,1,0,0,0
+access_repair_users_cq,res.users cq,base.model_res_users,cylinder_repair_os.group_repair_cq,1,0,0,0
+access_repair_machine_operator_cq,repair.machine.operator cq,model_repair_machine_operator,cylinder_repair_os.group_repair_cq,1,0,0,0
