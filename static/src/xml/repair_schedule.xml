@@ -120,6 +120,7 @@
                                 <col style="width:52px"/>
                                 <col style="width:200px"/>
                                 <col style="width:64px"/>
+                                <col style="width:36px"/>
                             </colgroup>
                             <thead class="table-light">
                                 <tr>
@@ -137,6 +138,7 @@
                                     <th class="text-center">CQ</th>
                                     <th></th>
                                     <th></th>
+                                    <th class="text-center" title="Bloqueio/Dependências">🔒</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -312,6 +314,17 @@
                                                     </button>
                                                 </t>
                                             </div>
+                                        </td>
+
+                                        <!-- Cadeado — bloqueio e dependências -->
+                                        <td class="text-center">
+                                            <t t-set="lk" t-value="lockIcon(rec)"/>
+                                            <span t-att-class="lk.cls"
+                                                  style="cursor:pointer;font-size:15px;"
+                                                  t-att-title="lk.title"
+                                                  t-on-click="() => this.onLock(rec.id)">
+                                                <i t-att-class="'fa ' + lk.icon"/>
+                                            </span>
                                         </td>
 
                                     </tr>
