@@ -461,6 +461,11 @@ class RepairOsProcess(models.Model):
 
     # ── Popups ────────────────────────────────────────────────────────
 
+    def action_save_lock(self):
+        """Salva bypass_sequence e dependent_child_ids explicitamente."""
+        self.ensure_one()
+        return {'type': 'ir.actions.act_window_close'}
+
     def action_open_lock_popup(self):
         """Abre popup de configuração de bloqueio/dependências."""
         self.ensure_one()
