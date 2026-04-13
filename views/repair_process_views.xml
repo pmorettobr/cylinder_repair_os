@@ -607,12 +607,11 @@
                                help="Quando ativo, este processo pode iniciar independente da sequência. Ignorado se houver dependências explícitas."/>
                     </group>
 
-                    <group string="Dependências Explícitas">
+                    <group string="Processos que Dependem deste">
                         <p colspan="2" style="font-size:12px;color:#6b7280;margin:0 0 8px 0;">
-                            Selecione os processos que devem ser concluídos antes deste poder iniciar.
-                            Quando preenchido, a sequência numérica é ignorada.
+                            Selecione os processos que só podem iniciar após este ser concluído.
                         </p>
-                        <field name="dependency_ids"
+                        <field name="dependent_child_ids"
                                colspan="2"
                                string=""
                                nolabel="1"
@@ -620,15 +619,15 @@
                                options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
                                context="{'search_default_group_by_component_type_id': 1}">
                             <tree edit="0" create="0">
-                                <field name="component_type_id" string="Componente" optional="show"/>
-                                <field name="sequence" string="Seq." optional="show"/>
+                                <field name="sequence" string="Seq."/>
+                                <field name="component_type_id" string="Componente"/>
                                 <field name="name" string="Operação"/>
                                 <field name="machine_id" string="Centro de Trabalho" optional="hide"/>
                                 <field name="state" string="Situação" widget="badge"
                                        decoration-success="state == 'done'"
                                        decoration-warning="state in ('progress', 'pending_cq')"
                                        decoration-muted="state in ('ready', 'cancel')"
-                                       optional="show"/>
+                                       optional="hide"/>
                             </tree>
                         </field>
                     </group>
@@ -652,16 +651,30 @@
                 <field name="name" string="Operação"/>
                 <field name="component_type_id" string="Componente"/>
                 <field name="machine_id" string="Centro de Trabalho"/>
-                <separator/>
-                <group expand="1" string="Agrupar por">
-                    <filter name="group_by_component_type_id"
-                            string="Componente"
-                            context="{'group_by': 'component_type_id'}"/>
-                    <filter name="group_by_state"
-                            string="Situação"
-                            context="{'group_by': 'state'}"/>
-                </group>
+                <filter name="group_by_component_type_id"
+                        string="Componente"
+                        context="{'group_by': 'component_type_id'}"/>
             </search>
+        </field>
+    </record>
+
+    <!-- Tree view para seleção de dependências no popup -->
+    <record id="view_repair_os_process_dependency_tree" model="ir.ui.view">
+        <field name="name">repair.os.process.dependency.tree</field>
+        <field name="model">repair.os.process</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <tree string="Processos" create="0" edit="0">
+                <field name="sequence" string="Seq."/>
+                <field name="component_type_id" string="Componente"/>
+                <field name="name" string="Operação"/>
+                <field name="machine_id" string="Centro de Trabalho" optional="hide"/>
+                <field name="state" string="Situação" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-warning="state in ('progress', 'pending_cq')"
+                       decoration-muted="state in ('ready', 'cancel')"
+                       optional="hide"/>
+            </tree>
         </field>
     </record>
 
