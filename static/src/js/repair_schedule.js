@@ -104,7 +104,7 @@ class RepairSchedule extends Component {
                      "duration_acc", "duration_planned", "duration_display", "state",
                      "has_deviation", "deviation_notes",
                      "requires_cq", "cq_result", "cq_rejection_count",
-                     "bypass_sequence", "is_blocked", "has_dependents", "dependency_ids"]
+                     "bypass_sequence", "is_blocked", "has_dependents", "dependent_child_ids"]
                 ),
             ]);
             this.state.repairInfo = repairs[0] || {};
