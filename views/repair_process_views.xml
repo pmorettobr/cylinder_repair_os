@@ -617,17 +617,18 @@
                                string=""
                                nolabel="1"
                                domain="[('repair_id', '=', repair_id), ('id', '!=', active_id)]"
-                               options="{'no_create': True, 'no_create_edit': True}"
-                               context="{'default_repair_id': repair_id}">
-                            <tree create="0" delete="1" group_by="component_type_id">
-                                <field name="component_type_id" optional="hide"/>
+                               options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
+                               context="{'search_default_group_by_component_type_id': 1}">
+                            <tree edit="0" create="0">
+                                <field name="component_type_id" string="Componente" optional="show"/>
                                 <field name="sequence" string="Seq." optional="show"/>
                                 <field name="name" string="Operação"/>
-                                <field name="machine_id" string="Máquina" optional="show"/>
+                                <field name="machine_id" string="Centro de Trabalho" optional="hide"/>
                                 <field name="state" string="Situação" widget="badge"
                                        decoration-success="state == 'done'"
                                        decoration-warning="state in ('progress', 'pending_cq')"
-                                       decoration-muted="state in ('ready', 'cancel')"/>
+                                       decoration-muted="state in ('ready', 'cancel')"
+                                       optional="show"/>
                             </tree>
                         </field>
                     </group>
@@ -638,6 +639,29 @@
                     <button string="Fechar" class="btn-primary" special="cancel"/>
                 </footer>
             </form>
+        </field>
+    </record>
+
+
+    <!-- Search view para repair.os.process com groupby componente -->
+    <record id="view_repair_os_process_search" model="ir.ui.view">
+        <field name="name">repair.os.process.search</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <search string="Processos">
+                <field name="name" string="Operação"/>
+                <field name="component_type_id" string="Componente"/>
+                <field name="machine_id" string="Centro de Trabalho"/>
+                <separator/>
+                <group expand="1" string="Agrupar por">
+                    <filter name="group_by_component_type_id"
+                            string="Componente"
+                            context="{'group_by': 'component_type_id'}"/>
+                    <filter name="group_by_state"
+                            string="Situação"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
         </field>
     </record>
 
