@@ -110,7 +110,10 @@
                 </sheet>
                 <footer>
                     <button string="Salvar e Fechar" class="btn-primary"
-                            special="save" close="1"/>
+                    <button string="Salvar"
+                            name="action_save_lock"
+                            type="object"
+                            class="btn-primary"/>
                     <button string="Fechar" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
@@ -285,8 +288,6 @@
                     </div>
                 </sheet>
                 <footer>
-                    <button string="Salvar" class="btn-primary"
-                            special="save" close="1"/>
                     <button string="Fechar" class="btn-secondary"
                             special="cancel"/>
                 </footer>
@@ -617,8 +618,7 @@
                                nolabel="1"
                                domain="[('repair_id', '=', repair_id), ('id', '!=', active_id)]"
                                options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
-                               context="{'search_default_group_by_component_type_id': 1}"
-                               widget="many2many_list">
+                               context="{'search_default_group_by_component_type_id': 1}">
                             <tree string="Processos Dependentes" edit="0" create="0">
                                 <field name="sequence" string="Seq."/>
                                 <field name="component_type_id" string="Componente"/>
