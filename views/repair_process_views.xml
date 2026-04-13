@@ -608,16 +608,28 @@
                     </group>
 
                     <group string="Dependências Explícitas">
-                        <p class="text-muted" style="font-size:12px;margin:0 0 8px;">
+                        <p colspan="2" style="font-size:12px;color:#6b7280;margin:0 0 8px 0;">
                             Selecione os processos que devem ser concluídos antes deste poder iniciar.
                             Quando preenchido, a sequência numérica é ignorada.
                         </p>
                         <field name="dependency_ids"
+                               colspan="2"
                                string=""
-                               widget="many2many_tags"
+                               nolabel="1"
                                domain="[('repair_id', '=', repair_id), ('id', '!=', active_id)]"
-                               options="{'no_create': True}"
-                               context="{'default_repair_id': repair_id}"/>
+                               options="{'no_create': True, 'no_create_edit': True}"
+                               context="{'default_repair_id': repair_id}">
+                            <tree create="0" delete="1" group_by="component_type_id">
+                                <field name="component_type_id" optional="hide"/>
+                                <field name="sequence" string="Seq." optional="show"/>
+                                <field name="name" string="Operação"/>
+                                <field name="machine_id" string="Máquina" optional="show"/>
+                                <field name="state" string="Situação" widget="badge"
+                                       decoration-success="state == 'done'"
+                                       decoration-warning="state in ('progress', 'pending_cq')"
+                                       decoration-muted="state in ('ready', 'cancel')"/>
+                            </tree>
+                        </field>
                     </group>
 
                     <field name="repair_id" invisible="1"/>
