@@ -109,7 +109,6 @@
 
                 </sheet>
                 <footer>
-                    <button string="Salvar e Fechar" class="btn-primary"
                     <button string="Salvar"
                             name="action_save_lock"
                             type="object"
