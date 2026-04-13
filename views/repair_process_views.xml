@@ -617,8 +617,9 @@
                                nolabel="1"
                                domain="[('repair_id', '=', repair_id), ('id', '!=', active_id)]"
                                options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
-                               context="{'search_default_group_by_component_type_id': 1}">
-                            <tree edit="0" create="0">
+                               context="{'search_default_group_by_component_type_id': 1}"
+                               widget="many2many_list">
+                            <tree string="Processos Dependentes" edit="0" create="0">
                                 <field name="sequence" string="Seq."/>
                                 <field name="component_type_id" string="Componente"/>
                                 <field name="name" string="Operação"/>
