@@ -108,18 +108,26 @@ class RepairOsProcess(models.Model):
     bypass_sequence = fields.Boolean(
         string='Ignorar Sequência?',
         default=False,
-        help='Se marcado, este processo pode iniciar independente da sequência numérica. '
-             'Substituído por dependências explícitas se houver.',
+        help='Se marcado, este processo pode iniciar independente da sequência numérica.',
     )
-    dependency_ids = fields.Many2many(
+    # Pai → aponta para os filhos que dependem deste processo
+    dependent_child_ids = fields.Many2many(
         comodel_name='repair.os.process',
         relation='repair_process_dependency_rel',
-        column1='process_id',
-        column2='dependency_process_id',
-        string='Depende de',
+        column1='parent_process_id',
+        column2='child_process_id',
+        string='Processos Dependentes',
         domain="[('repair_id', '=', repair_id), ('id', '!=', id)]",
-        help='Processos que devem ser concluídos antes deste poder iniciar. '
-             'Quando preenchido, ignora a sequência numérica.',
+        help='Processos que só podem iniciar após este ser concluído.',
+    )
+    # Filho → pais que bloqueiam este processo (campo inverso, só leitura)
+    parent_dependency_ids = fields.Many2many(
+        comodel_name='repair.os.process',
+        relation='repair_process_dependency_rel',
+        column1='child_process_id',
+        column2='parent_process_id',
+        string='Depende de',
+        help='Processos que precisam ser concluídos antes deste poder iniciar.',
     )
     is_blocked = fields.Boolean(
         string='Bloqueado?',
@@ -211,13 +219,13 @@ class RepairOsProcess(models.Model):
             s = total_sec % 60
             rec.duration_display = '%02d:%02d:%02d' % (h, m, s)
 
-    @api.depends('dependency_ids', 'dependency_ids.state')
+    @api.depends('parent_dependency_ids', 'parent_dependency_ids.state')
     def _compute_is_blocked(self):
         for rec in self:
-            if rec.dependency_ids:
+            if rec.parent_dependency_ids:
                 rec.is_blocked = any(
                     p.state not in ('done', 'pending_cq', 'cancel')
-                    for p in rec.dependency_ids
+                    for p in rec.parent_dependency_ids
                 )
             else:
                 rec.is_blocked = False
@@ -225,11 +233,7 @@ class RepairOsProcess(models.Model):
     def _compute_has_dependents(self):
         """Verifica se este processo é pai de outros na mesma OS."""
         for rec in self:
-            dependents = self.search([
-                ('repair_id', '=', rec.repair_id.id),
-                ('dependency_ids', 'in', [rec.id]),
-            ], limit=1)
-            rec.has_dependents = bool(dependents)
+            rec.has_dependents = bool(rec.dependent_child_ids)
 
     @api.depends('has_deviation', 'deviation_notes')
     def _compute_deviation_icon(self):
@@ -264,8 +268,8 @@ class RepairOsProcess(models.Model):
         """
         for rec in self:
             # 1. Dependências explícitas têm prioridade
-            if rec.dependency_ids:
-                blocked = rec.dependency_ids.filtered(
+            if rec.parent_dependency_ids:
+                blocked = rec.parent_dependency_ids.filtered(
                     lambda p: p.state not in ('done', 'pending_cq', 'cancel')
                 )
                 if blocked:
