@@ -583,4 +583,50 @@
         <field name="tag">cylinder_repair_os.schedule</field>
     </record>
 
+
+    <!-- Popup de Bloqueio / Dependências -->
+    <record id="view_repair_process_lock_popup" model="ir.ui.view">
+        <field name="name">repair.os.process.lock.popup</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <form string="Bloqueio e Dependências">
+                <sheet>
+                    <div class="o_repair_popup_header mb-3">
+                        <div class="o_repair_popup_title">
+                            <field name="operation_label" readonly="1" class="fw-bold"/>
+                        </div>
+                        <div class="text-muted" style="font-size:12px;">
+                            OS: <field name="repair_id" readonly="1" class="d-inline"/>
+                        </div>
+                    </div>
+
+                    <group string="Controle de Sequência">
+                        <field name="bypass_sequence"
+                               string="Ignorar sequência numérica neste processo?"
+                               widget="boolean_toggle"
+                               help="Quando ativo, este processo pode iniciar independente da sequência. Ignorado se houver dependências explícitas."/>
+                    </group>
+
+                    <group string="Dependências Explícitas">
+                        <p class="text-muted" style="font-size:12px;margin:0 0 8px;">
+                            Selecione os processos que devem ser concluídos antes deste poder iniciar.
+                            Quando preenchido, a sequência numérica é ignorada.
+                        </p>
+                        <field name="dependency_ids"
+                               string=""
+                               widget="many2many_tags"
+                               domain="[('repair_id', '=', repair_id), ('id', '!=', active_id)]"
+                               options="{'no_create': True}"
+                               context="{'default_repair_id': repair_id}"/>
+                    </group>
+
+                    <field name="repair_id" invisible="1"/>
+                </sheet>
+                <footer>
+                    <button string="Fechar" class="btn-primary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
 </odoo>
