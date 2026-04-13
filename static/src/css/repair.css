@@ -1171,3 +1171,10 @@ tr.o_repair_drag_over { background: rgba(79,70,229,0.06) !important; }
     background-color: #f59e0b !important;
     color: #fff !important;
 }
+
+/* Lock icon states */
+.o_lock_normal  { color: #9ca3af; font-size: 15px; cursor: pointer; }
+.o_lock_normal:hover { color: #6366f1; }
+.o_lock_bypass  { color: #10b981; font-size: 15px; cursor: pointer; }
+.o_lock_parent  { color: #3b82f6; font-size: 15px; cursor: pointer; }
+.o_lock_blocked { color: #ef4444; font-size: 15px; cursor: pointer; animation: o_cq_pulse 1.5s infinite; }
