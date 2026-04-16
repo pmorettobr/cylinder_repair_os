@@ -229,15 +229,19 @@ class RepairOrder(models.Model):
 
     def action_done_os(self):
         for rec in self:
-            pending = rec.process_ids.filtered(
-                lambda p: p.state not in ('done', 'cancel')
-            )
-            if pending:
-                raise UserError(
-                    'Existem %d processo(s) não concluídos. '
-                    'Conclua ou cancele todos os processos antes de fechar a OS.'
-                    % len(pending)
+            # Sem processos carregados — aviso mas permite concluir
+            if not rec.process_ids:
+                pass  # JS confirmation handles this case
+            else:
+                pending = rec.process_ids.filtered(
+                    lambda p: p.state not in ('done', 'cancel')
                 )
+                if pending:
+                    raise UserError(
+                        'Existem %d processo(s) não concluídos. '
+                        'Conclua ou cancele todos os processos antes de fechar a OS.'
+                        % len(pending)
+                    )
         self.write({'os_state': 'done'})
 
     def action_cancel_os(self):
@@ -279,7 +283,16 @@ class RepairOrder(models.Model):
         if self.os_state == 'draft':
             self.action_confirm_os()
         self.action_start_os()
-        return False
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'OS Confirmada',
+                'message': 'OS %s confirmada com sucesso.' % (self.os_number or ''),
+                'type': 'success',
+                'sticky': False,
+            }
+        }
 
     def action_open_process_loader_add_more(self):
         """Abre o carregador para adicionar mais processos (já carregados aparecem desmarcados)."""
