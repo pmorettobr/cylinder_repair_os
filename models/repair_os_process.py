@@ -103,42 +103,7 @@ class RepairOsProcess(models.Model):
              'antes de ser marcado como Concluído.',
     )
 
-    # ── Dependências e bloqueio ───────────────────────────────────────
 
-    bypass_sequence = fields.Boolean(
-        string='Ignorar Sequência?',
-        default=False,
-        help='Se marcado, este processo pode iniciar independente da sequência numérica.',
-    )
-    # Pai → aponta para os filhos que dependem deste processo
-    dependent_child_ids = fields.Many2many(
-        comodel_name='repair.os.process',
-        relation='repair_process_dependency_rel',
-        column1='parent_process_id',
-        column2='child_process_id',
-        string='Processos Dependentes',
-        domain="[('repair_id', '=', repair_id), ('id', '!=', id)]",
-        help='Processos que só podem iniciar após este ser concluído.',
-    )
-    # Filho → pais que bloqueiam este processo (campo inverso, só leitura)
-    parent_dependency_ids = fields.Many2many(
-        comodel_name='repair.os.process',
-        relation='repair_process_dependency_rel',
-        column1='child_process_id',
-        column2='parent_process_id',
-        string='Depende de',
-        help='Processos que precisam ser concluídos antes deste poder iniciar.',
-    )
-    is_blocked = fields.Boolean(
-        string='Bloqueado?',
-        compute='_compute_is_blocked',
-        store=False,
-    )
-    has_dependents = fields.Boolean(
-        string='É pai de outros processos?',
-        compute='_compute_has_dependents',
-        store=False,
-    )
     cq_result = fields.Selection(
         selection=[
             ('pending',  'Pendente'),
@@ -219,21 +184,6 @@ class RepairOsProcess(models.Model):
             s = total_sec % 60
             rec.duration_display = '%02d:%02d:%02d' % (h, m, s)
 
-    @api.depends('parent_dependency_ids', 'parent_dependency_ids.state')
-    def _compute_is_blocked(self):
-        for rec in self:
-            if rec.parent_dependency_ids:
-                rec.is_blocked = any(
-                    p.state not in ('done', 'pending_cq', 'cancel')
-                    for p in rec.parent_dependency_ids
-                )
-            else:
-                rec.is_blocked = False
-
-    def _compute_has_dependents(self):
-        """Verifica se este processo é pai de outros na mesma OS."""
-        for rec in self:
-            rec.has_dependents = bool(rec.dependent_child_ids)
 
     @api.depends('has_deviation', 'deviation_notes')
     def _compute_deviation_icon(self):
@@ -261,32 +211,11 @@ class RepairOsProcess(models.Model):
         Valida se o processo pode iniciar.
 
         Prioridade:
-        1. Se tem dependency_ids → verifica só os pais explícitos (ignora seq numérica)
-        2. Se bypass_sequence no processo → ignora sequência numérica
-        3. Se bypass_sequence na máquina → ignora sequência numérica
-        4. Senão → valida sequência numérica dentro do componente
+        1. Se bypass_sequence na máquina → ignora sequência numérica
+        2. Senão → valida sequência numérica dentro do componente
         """
         for rec in self:
-            # 1. Dependências explícitas têm prioridade
-            if rec.parent_dependency_ids:
-                blocked = rec.parent_dependency_ids.filtered(
-                    lambda p: p.state not in ('done', 'pending_cq', 'cancel')
-                )
-                if blocked:
-                    names = ', '.join(
-                        '"%s"' % p.operation_label for p in blocked
-                    )
-                    raise UserError(
-                        'Processo "%s" aguardando conclusão de: %s.'
-                        % (rec.operation_label, names)
-                    )
-                continue
-
-            # 2. Bypass por processo
-            if rec.bypass_sequence:
-                continue
-
-            # 3. Bypass por máquina
+            # 1. Bypass por máquina
             if rec.machine_id and rec.machine_id.bypass_sequence:
                 continue
 
@@ -461,24 +390,7 @@ class RepairOsProcess(models.Model):
 
     # ── Popups ────────────────────────────────────────────────────────
 
-    def action_save_lock(self):
-        """Salva bypass_sequence e dependent_child_ids explicitamente."""
-        self.ensure_one()
-        return {'type': 'ir.actions.act_window_close'}
 
-    def action_open_lock_popup(self):
-        """Abre popup de configuração de bloqueio/dependências."""
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Bloqueio — %s' % (self.operation_label or self.name),
-            'res_model': 'repair.os.process',
-            'res_id': self.id,
-            'view_mode': 'form',
-            'view_id': self.env.ref('cylinder_repair_os.view_repair_process_lock_popup').id,
-            'target': 'new',
-            'context': {'default_repair_id': self.repair_id.id},
-        }
 
     def action_open_deviation_popup(self):
         self.ensure_one()
