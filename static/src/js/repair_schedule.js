@@ -2,6 +2,7 @@
 
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
+import { RepairProcessLoaderModal } from "./repair_process_loader_owl";
 const { Component, useState, onWillStart, onMounted, onPatched, onWillUnmount } = owl;
 
 class RepairSchedule extends Component {
@@ -24,6 +25,7 @@ class RepairSchedule extends Component {
             collapsed:          {},
             dragSrcId:          null,
             dragOverId:         null,
+            showLoader:         false,
         });
 
         // Resolve repair_id: context → localStorage (F5 recovery)
@@ -277,20 +279,13 @@ class RepairSchedule extends Component {
         });
     }
 
-    async openProcessLoader() {
-        try {
-            this.action.doAction({
-                type: "ir.actions.act_window",
-                name: "Carregar Processos",
-                res_model: "repair.process.loader",
-                view_mode: "form",
-                views: [[false, "form"]],
-                target: "new",
-                context: { default_repair_id: this.repairId },
-            }, { onClose: () => this._loadData() });
-        } catch (e) {
-            this.notif.add((e.data && e.data.message) || "Erro ao abrir carregador", { type: "danger" });
-        }
+    openProcessLoader() {
+        this.state.showLoader = true;
+    }
+
+    onLoaderClose(reload) {
+        this.state.showLoader = false;
+        if (reload) this._loadData();
     }
 
     // ── Colapso ───────────────────────────────────────────────────────
@@ -514,4 +509,5 @@ class RepairSchedule extends Component {
 }
 
 RepairSchedule.template = "cylinder_repair_os.RepairSchedule";
+RepairSchedule.loaderModal = RepairProcessLoaderModal;
 registry.category("actions").add("cylinder_repair_os.schedule", RepairSchedule);
