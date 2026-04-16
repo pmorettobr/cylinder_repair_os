@@ -1171,3 +1171,84 @@ tr.o_repair_drag_over { background: rgba(79,70,229,0.06) !important; }
     background-color: #f59e0b !important;
     color: #fff !important;
 }
+
+
+/* === Process Loader OWL Modal === */
+
+.o_loader_overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.o_loader_modal {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    width: 780px;
+    max-width: 95vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.o_loader_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+.o_loader_title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.o_loader_toolbar {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f3f4f6;
+    background: #f8fafc;
+    flex-shrink: 0;
+    gap: 8px;
+}
+.o_loader_search { flex: 1; min-width: 0; }
+
+.o_loader_body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.o_loader_table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.o_loader_group_header td {
+    background: #eff6ff;
+    border-left: 3px solid #4f46e5;
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.o_loader_row:hover { background: #f8fafc; }
+.o_loader_row_selected { background: #eff6ff !important; }
+.o_loader_row_selected:hover { background: #e0e7ff !important; }
+
+.o_loader_footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-top: 1px solid #e5e7eb;
+    background: #f8fafc;
+    flex-shrink: 0;
+}
