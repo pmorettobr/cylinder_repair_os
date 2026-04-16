@@ -45,12 +45,14 @@
                            statusbar_visible="draft,in_progress,done"/>
                     <button name="action_confirm_and_start" string="CONFIRMAR"
                             type="object" class="btn-primary"
+                            confirm="Confirma os dados da OS?"
                             attrs="{'invisible': [('os_state', '!=', 'draft')]}"/>
                     <button name="action_done_os" string="CONCLUIR OS"
                             type="object" class="btn-primary"
+                            confirm="Deseja finalizar esta OS?"
                             attrs="{'invisible': [('os_state', '!=', 'in_progress')]}"/>
                     <button name="action_cancel_os" string="Cancelar"
-                            type="object" class="o_repair_btn_cancel_soft o_repair_btn_cancel_right"
+                            type="object" class="btn-danger"
                             attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
                 </header>
 
@@ -61,39 +63,26 @@
 
                     <!-- Smart Buttons -->
                     <div class="oe_button_box" name="button_box">
-
-                        <!-- Carregar Processos -->
-                        <button name="action_open_process_loader"
-                                type="object"
-                                class="oe_stat_button"
-                                icon="fa-cog"
-                                attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}">
-                            <div class="o_stat_info">
-                                <span class="o_stat_text">Carregar</span>
-                                <span class="o_stat_text">Processos</span>
-                            </div>
-                        </button>
-
-                        <!-- Programação de OS — mostra contagem -->
+                        <!-- Programação — ativo quando OS confirmada -->
                         <button name="action_open_processes_grouped"
                                 type="object"
-                                class="oe_stat_button"
+                                class="oe_stat_button o_repair_prog_btn_active"
                                 icon="fa-list-ul"
-                                attrs="{'invisible': [('process_count', '=', 0)]}">
+                                attrs="{'invisible': [('os_state', 'in', ('draft', 'cancel'))]}">
                             <div class="o_stat_info">
                                 <field name="process_count" class="o_stat_value"/>
                                 <span class="o_stat_text">Programação</span>
                             </div>
                         </button>
 
-                        <!-- Placeholder Programação — desativado sem processos -->
+                        <!-- Programação — desativado em rascunho -->
                         <button name="action_open_processes_grouped"
                                 type="object"
                                 class="oe_stat_button o_repair_stat_disabled"
                                 icon="fa-list-ul"
-                                attrs="{'invisible': [('process_count', '!=', 0)]}">
+                                attrs="{'invisible': [('os_state', '!=', 'draft')]}">
                             <div class="o_stat_info">
-                                <span class="o_stat_value">0</span>
+                                <span class="o_stat_value">—</span>
                                 <span class="o_stat_text">Programação</span>
                             </div>
                         </button>
