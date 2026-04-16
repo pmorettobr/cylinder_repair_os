@@ -298,6 +298,11 @@ class RepairSchedule extends Component {
     }
     cancelEditName() { this.state.editNameId = null; }
 
+    onNameKeydown(id, ev) {
+        if (ev.key === 'Enter')  { this.saveName(id, ev); }
+        if (ev.key === 'Escape') { this.cancelEditName(); }
+    }
+
     async saveName(id, ev) {
         const val = (ev.target.value || "").trim();
         this.state.editNameId = null;
