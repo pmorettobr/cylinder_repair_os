@@ -3,70 +3,11 @@
     <!--
         Oculta menus nativos do Odoo para usuários do módulo Reparo Cilindros.
         Visíveis apenas para Administradores (base.group_system).
+        Apenas menus que existem em qualquer instalação Odoo 16.
     -->
 
-    <!-- Discuss / Mensagens -->
+    <!-- Discuss / Mensagens — sempre existe (mail é dependência base) -->
     <record id="mail.menu_root_discuss" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
-    </record>
-
-    <!-- Website / Link Tracker -->
-    <record id="website.menu_website_configuration" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
-    </record>
-
-    <!-- Link Tracker -->
-    <record id="link_tracker.menu_link_tracker" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
-    </record>
-
-    <!-- Vendas -->
-    <record id="sale.sale_menu_root" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
-    </record>
-
-    <!-- Compras -->
-    <record id="purchase.menu_purchase_root" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
-    </record>
-
-    <!-- Estoque -->
-    <record id="stock.menu_stock_root" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
-    </record>
-
-    <!-- Fabricação -->
-    <record id="mrp.menu_mrp_root" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
-    </record>
-
-    <!-- Contabilidade -->
-    <record id="account.menu_finance" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
-    </record>
-
-    <!-- Projeto -->
-    <record id="project.menu_main_pm" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
-    </record>
-
-    <!-- CRM -->
-    <record id="crm.crm_menu_root" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
-    </record>
-
-    <!-- Funcionários / HR -->
-    <record id="hr.menu_hr_root" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
-    </record>
-
-    <!-- Agenda / Calendário -->
-    <record id="calendar.mail_menu_calendar" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
-    </record>
-
-    <!-- Configurações — visível só para admin -->
-    <record id="base_setup.menu_general_configuration" model="ir.ui.menu" forcecreate="0">
         <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
     </record>
 
