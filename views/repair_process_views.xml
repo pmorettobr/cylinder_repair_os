@@ -109,10 +109,6 @@
 
                 </sheet>
                 <footer>
-                    <button string="Salvar"
-                            name="action_save_lock"
-                            type="object"
-                            class="btn-primary"/>
                     <button string="Fechar" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
