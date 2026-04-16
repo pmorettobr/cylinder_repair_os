@@ -155,10 +155,45 @@
                                             <t t-esc="rec.sequence"/>
                                         </td>
 
-                                        <td><t t-esc="rec.name"/></td>
+                                        <!-- Operação — duplo clique para editar -->
+                                        <td>
+                                            <t t-if="state.editNameId === rec.id">
+                                                <input type="text" class="form-control form-control-sm"
+                                                       t-att-value="state.editNameVal"
+                                                       t-on-input="(ev) => { state.editNameVal = ev.target.value; }"
+                                                       t-on-keydown="(ev) => { if(ev.key==='Enter') this.saveName(rec.id, ev); if(ev.key==='Escape') this.cancelEditName(); }"
+                                                       t-on-blur="(ev) => this.saveName(rec.id, ev)"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span title="Duplo clique para editar"
+                                                      t-on-dblclick="() => this.startEditName(rec.id, rec.name)">
+                                                    <t t-esc="rec.name"/>
+                                                </span>
+                                            </t>
+                                        </td>
 
+                                        <!-- Máquina — clique para editar -->
                                         <td class="text-muted">
-                                            <t t-esc="rec.machine_id ? rec.machine_id[1] : '—'"/>
+                                            <t t-if="state.editMachineId === rec.id">
+                                                <select class="form-select form-select-sm"
+                                                        t-on-change="(ev) => this.saveMachine(rec.id, ev)"
+                                                        t-on-blur="() => this.cancelEditMachine()">
+                                                    <option value="">— Sem máquina —</option>
+                                                    <t t-foreach="state.machines" t-as="mach" t-key="mach.id">
+                                                        <option t-att-value="mach.id"
+                                                                t-att-selected="rec.machine_id and rec.machine_id[0] === mach.id ? 'selected' : ''">
+                                                            <t t-esc="mach.name"/>
+                                                        </option>
+                                                    </t>
+                                                </select>
+                                            </t>
+                                            <t t-else="">
+                                                <span title="Clique para editar máquina"
+                                                      style="cursor:pointer;"
+                                                      t-on-click="() => this.startEditMachine(rec.id)">
+                                                    <t t-esc="rec.machine_id ? rec.machine_id[1] : '—'"/>
+                                                </span>
+                                            </t>
                                         </td>
 
                                         <!-- Operador editável -->
@@ -209,18 +244,37 @@
                                             <t t-esc="fmtDatetime(rec.date_start_orig)"/>
                                         </td>
 
-                                        <!-- Tempo Previsto — timepicker -->
+                                        <!-- Tempo Previsto — timepicker customizado -->
                                         <td>
                                             <t t-if="state.editPlannedId === rec.id">
-                                                <input type="time" class="form-control form-control-sm"
-                                                       t-att-value="_min2hhmm(rec.duration_planned)"
-                                                       t-on-change="(ev) => this.savePlanned(rec.id, ev)"
-                                                       t-on-blur="() => this.cancelEditPlanned()"/>
+                                                <div class="o_repair_timepicker_wrap">
+                                                    <select t-on-change="(ev) => this.setPlannedH(ev.target.value)">
+                                                        <t t-foreach="Array.from({length:25},(_,i)=>i)" t-as="h" t-key="h">
+                                                            <option t-att-value="h"
+                                                                    t-att-selected="h === state.editPlannedVals.h ? 'selected' : ''">
+                                                                <t t-esc="String(h).padStart(2,'0')"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                    <span class="o_tp_sep">:</span>
+                                                    <select t-on-change="(ev) => this.setPlannedM(ev.target.value)">
+                                                        <t t-foreach="Array.from({length:60},(_,i)=>i)" t-as="m" t-key="m">
+                                                            <option t-att-value="m"
+                                                                    t-att-selected="m === state.editPlannedVals.m ? 'selected' : ''">
+                                                                <t t-esc="String(m).padStart(2,'0')"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                    <button class="o_repair_timepicker_ok"
+                                                            t-on-click="() => this.savePlanned(rec.id)">OK</button>
+                                                    <button class="btn btn-sm btn-link text-muted p-0"
+                                                            t-on-click="() => this.cancelEditPlanned()">✕</button>
+                                                </div>
                                             </t>
                                             <t t-else="">
                                                 <span style="cursor:pointer;"
                                                       t-att-class="!rec.duration_planned ? 'text-muted fst-italic' : ''"
-                                                      t-on-click="() => this.startEditPlanned(rec.id)">
+                                                      t-on-click="() => this.startEditPlanned(rec.id, rec.duration_planned)">
                                                     <t t-esc="_min2hhmm(rec.duration_planned)"/>
                                                 </span>
                                             </t>
