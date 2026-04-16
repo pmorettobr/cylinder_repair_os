@@ -1252,3 +1252,40 @@ tr.o_repair_drag_over { background: rgba(79,70,229,0.06) !important; }
     background: #f8fafc;
     flex-shrink: 0;
 }
+
+/* Smart Button Programação verde quando ativo */
+.o_repair_prog_btn_active {
+    color: #059669 !important;
+}
+.o_repair_prog_btn_active .o_stat_value,
+.o_repair_prog_btn_active .o_stat_text {
+    color: #059669 !important;
+}
+
+/* Timepicker customizado */
+.o_repair_timepicker_wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.o_repair_timepicker_wrap select {
+    padding: 1px 4px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 12px;
+    background: #fff;
+}
+.o_repair_timepicker_wrap .o_tp_sep {
+    font-weight: 700;
+    color: #374151;
+}
+.o_repair_timepicker_ok {
+    padding: 1px 8px;
+    font-size: 11px;
+    border-radius: 4px;
+    background: #4f46e5;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+.o_repair_timepicker_ok:hover { background: #4338ca; }
