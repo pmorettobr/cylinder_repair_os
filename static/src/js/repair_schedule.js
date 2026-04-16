@@ -21,6 +21,11 @@ class RepairSchedule extends Component {
             editDateId:         null,
             editOperatorId:     null,
             editPlannedId:      null,
+            editPlannedVals:    { h: 0, m: 0 },
+            editNameId:         null,
+            editNameVal:        "",
+            editMachineId:      null,
+            machines:           [],
             operatorOptions:    [],
             collapsed:          {},
             dragSrcId:          null,
@@ -90,6 +95,17 @@ class RepairSchedule extends Component {
     // ── Dados ─────────────────────────────────────────────────────────
 
     async _loadData() {
+        // Load machines for inline edit
+        if (!this.state.machines.length) {
+            try {
+                const mlist = await this.orm.searchRead(
+                    "repair.machine",
+                    [["active", "=", true]],
+                    ["id", "name"]
+                );
+                this.state.machines = mlist;
+            } catch(e) {}
+        }
         if (!this.repairId) { this.state.loading = false; return; }
         try {
             const [repairs, procs] = await Promise.all([
@@ -244,22 +260,75 @@ class RepairSchedule extends Component {
 
     // ── Edição inline — Tempo Previsto (timepicker) ───────────────────
 
-    startEditPlanned(id) {
+    startEditPlanned(id, currentMinutes) {
+        const h = Math.floor((currentMinutes || 0) / 60);
+        const m = Math.round((currentMinutes || 0) % 60);
         this.state.editPlannedId  = id;
+        this.state.editPlannedVals = { h, m };
         this.state.editDateId     = null;
         this.state.editOperatorId = null;
+        this.state.editNameId     = null;
+        this.state.editMachineId  = null;
     }
     cancelEditPlanned() { this.state.editPlannedId = null; }
+    setPlannedH(val) { this.state.editPlannedVals.h = parseInt(val) || 0; }
+    setPlannedM(val) { this.state.editPlannedVals.m = parseInt(val) || 0; }
 
-    async savePlanned(id, ev) {
-        const raw = ev.target.value || "00:00";
+    async savePlanned(id) {
+        const { h, m } = this.state.editPlannedVals;
+        const minutes = h * 60 + m;
         this.state.editPlannedId = null;
-        const minutes = this._hhmm2min(raw);
         try {
             await this.orm.write("repair.os.process", [id], { duration_planned: minutes });
             await this._loadData();
         } catch (e) {
             this.notif.add((e.data && e.data.message) || "Erro ao salvar tempo previsto", { type: "danger" });
+        }
+    }
+
+    // ── Edição inline — Operação ──────────────────────────────────────
+
+    startEditName(id, currentName) {
+        this.state.editNameId    = id;
+        this.state.editNameVal   = currentName || "";
+        this.state.editDateId    = null;
+        this.state.editOperatorId = null;
+        this.state.editPlannedId = null;
+        this.state.editMachineId = null;
+    }
+    cancelEditName() { this.state.editNameId = null; }
+
+    async saveName(id, ev) {
+        const val = (ev.target.value || "").trim();
+        this.state.editNameId = null;
+        if (!val) return;
+        try {
+            await this.orm.write("repair.os.process", [id], { name: val });
+            await this._loadData();
+        } catch (e) {
+            this.notif.add((e.data && e.data.message) || "Erro ao salvar operação", { type: "danger" });
+        }
+    }
+
+    // ── Edição inline — Máquina ───────────────────────────────────────
+
+    startEditMachine(id) {
+        this.state.editMachineId  = id;
+        this.state.editDateId     = null;
+        this.state.editOperatorId = null;
+        this.state.editPlannedId  = null;
+        this.state.editNameId     = null;
+    }
+    cancelEditMachine() { this.state.editMachineId = null; }
+
+    async saveMachine(id, ev) {
+        const machineId = parseInt(ev.target.value) || false;
+        this.state.editMachineId = null;
+        try {
+            await this.orm.write("repair.os.process", [id], { machine_id: machineId });
+            await this._loadData();
+        } catch (e) {
+            this.notif.add((e.data && e.data.message) || "Erro ao salvar máquina", { type: "danger" });
         }
     }
 
