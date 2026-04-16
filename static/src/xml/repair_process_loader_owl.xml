@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="cylinder_repair_os.RepairProcessLoaderModal" owl="1">
+
+    <!-- Overlay -->
+    <div class="o_loader_overlay" t-on-click.self="onCancel">
+
+        <!-- Modal -->
+        <div class="o_loader_modal">
+
+            <!-- Header -->
+            <div class="o_loader_header">
+                <span class="o_loader_title">
+                    <i class="fa fa-plus-circle me-2"/>Adicionar Processos
+                </span>
+                <button class="btn btn-sm btn-link text-muted p-0"
+                        t-on-click="onCancel">
+                    <i class="fa fa-times fa-lg"/>
+                </button>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="o_loader_toolbar">
+
+                <!-- Busca -->
+                <input type="text"
+                       class="form-control form-control-sm o_loader_search"
+                       placeholder="Buscar por operação ou componente..."
+                       t-att-value="state.search"
+                       t-on-input="(e) => { state.search = e.target.value; }"/>
+
+                <!-- Botões -->
+                <div class="d-flex gap-2 ms-2 flex-shrink-0">
+                    <button class="btn btn-sm btn-outline-secondary"
+                            title="Expandir todos"
+                            t-on-click="expandAll">
+                        <i class="fa fa-expand"/>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary"
+                            title="Recolher todos"
+                            t-on-click="collapseAll">
+                        <i class="fa fa-compress"/>
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary"
+                            t-on-click="selectAll">
+                        ✓ Todos
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary"
+                            t-on-click="deselectAll">
+                        ✗ Nenhum
+                    </button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="o_loader_body">
+
+                <t t-if="state.loading">
+                    <div class="text-center p-5 text-muted">
+                        <i class="fa fa-spinner fa-spin fa-2x"/>
+                        <div class="mt-2">Carregando catálogo...</div>
+                    </div>
+                </t>
+
+                <t t-elif="filteredGroups.length === 0">
+                    <div class="text-center p-5 text-muted">
+                        <i class="fa fa-inbox fa-3x mb-3 d-block"/>
+                        <t t-if="state.search">
+                            Nenhum processo encontrado para "<t t-esc="state.search"/>".
+                        </t>
+                        <t t-else="">
+                            Todos os processos do catálogo já estão carregados na OS.
+                        </t>
+                    </div>
+                </t>
+
+                <t t-else="">
+                    <table class="table table-sm table-hover mb-0 o_loader_table">
+                        <colgroup>
+                            <col style="width:36px"/>
+                            <col style="width:42px"/>
+                            <col/>
+                            <col style="width:130px"/>
+                            <col style="width:70px"/>
+                            <col style="width:24px"/>
+                        </colgroup>
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th></th>
+                                <th class="text-center">Seq.</th>
+                                <th>Operação</th>
+                                <th>Centro de Trabalho</th>
+                                <th class="text-center">Previsto</th>
+                                <th class="text-center" title="Requer CQ">CQ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="filteredGroups" t-as="group" t-key="group.id">
+
+                                <!-- Cabeçalho do componente -->
+                                <tr class="o_loader_group_header"
+                                    t-on-click="() => this.toggleGroup(group.id)"
+                                    style="cursor:pointer;">
+                                    <td colspan="6">
+                                        <span class="me-2" style="font-size:11px;">
+                                            <t t-if="state.collapsed[group.id]">▶</t>
+                                            <t t-else="">▼</t>
+                                        </span>
+                                        <strong style="font-size:12px;text-transform:uppercase;letter-spacing:.4px;">
+                                            <t t-esc="group.name"/>
+                                        </strong>
+                                        <span class="badge bg-secondary ms-2" style="font-size:10px;">
+                                            <t t-esc="group.templates.length"/>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- Linhas do grupo -->
+                                <t t-if="!state.collapsed[group.id]">
+                                    <t t-foreach="group.templates" t-as="tmpl" t-key="tmpl.id">
+                                        <tr t-att-class="'o_loader_row ' + (isSelected(tmpl.id) ? 'o_loader_row_selected' : '')"
+                                            t-on-click="() => this.toggleSelect(tmpl.id)"
+                                            style="cursor:pointer;">
+
+                                            <!-- Checkbox -->
+                                            <td class="text-center">
+                                                <input type="checkbox"
+                                                       class="form-check-input"
+                                                       t-att-checked="isSelected(tmpl.id)"
+                                                       t-on-click.stop="() => this.toggleSelect(tmpl.id)"/>
+                                            </td>
+
+                                            <!-- Seq -->
+                                            <td class="text-center text-muted">
+                                                <t t-esc="tmpl.sequence"/>
+                                            </td>
+
+                                            <!-- Operação -->
+                                            <td><t t-esc="tmpl.name"/></td>
+
+                                            <!-- Centro de Trabalho -->
+                                            <td class="text-muted">
+                                                <t t-if="tmpl.machine_id">
+                                                    <t t-esc="tmpl.machine_id[1]"/>
+                                                </t>
+                                                <t t-else="">—</t>
+                                            </td>
+
+                                            <!-- Previsto -->
+                                            <td class="text-center text-muted">
+                                                <t t-esc="fmtTime(tmpl.duration_planned)"/>
+                                            </td>
+
+                                            <!-- CQ -->
+                                            <td class="text-center">
+                                                <t t-if="tmpl.requires_cq">
+                                                    <i class="fa fa-certificate text-warning" title="Requer CQ"/>
+                                                </t>
+                                            </td>
+
+                                        </tr>
+                                    </t>
+                                </t>
+
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="o_loader_footer">
+                <span class="text-muted small">
+                    <t t-esc="selectedCount"/> processo(s) selecionado(s)
+                </span>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-secondary btn-sm"
+                            t-on-click="onCancel">Cancelar</button>
+                    <button class="btn btn-primary btn-sm"
+                            t-att-disabled="selectedCount === 0 ? 'disabled' : ''"
+                            t-on-click="onConfirm">
+                        <i class="fa fa-check me-1"/>
+                        Carregar (<t t-esc="selectedCount"/>)
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</t>
+
+</templates>
