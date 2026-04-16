@@ -161,7 +161,7 @@
                                                 <input type="text" class="form-control form-control-sm"
                                                        t-att-value="state.editNameVal"
                                                        t-on-input="(ev) => { state.editNameVal = ev.target.value; }"
-                                                       t-on-keydown="(ev) => { if(ev.key==='Enter') this.saveName(rec.id, ev); if(ev.key==='Escape') this.cancelEditName(); }"
+                                                       t-on-keydown="(ev) => this.onNameKeydown(rec.id, ev)"
                                                        t-on-blur="(ev) => this.saveName(rec.id, ev)"/>
                                             </t>
                                             <t t-else="">
