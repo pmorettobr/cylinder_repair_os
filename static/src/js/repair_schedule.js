@@ -578,5 +578,5 @@ class RepairSchedule extends Component {
 }
 
 RepairSchedule.template = "cylinder_repair_os.RepairSchedule";
-RepairSchedule.loaderModal = RepairProcessLoaderModal;
+RepairSchedule.components = { RepairProcessLoaderModal };
 registry.category("actions").add("cylinder_repair_os.schedule", RepairSchedule);
