@@ -130,6 +130,14 @@ class RepairOsProcess(models.Model):
 
     has_deviation = fields.Boolean(string='Desvio?', default=False, tracking=True)
     deviation_notes = fields.Text(string='Descrição do Desvio')
+    deviation_action = fields.Selection(
+        selection=[
+            ('pause',  'Pausar operação — manter estado e continuar depois'),
+            ('cancel', 'Cancelar operação — registrar e recriar como Pronto'),
+        ],
+        string='Ação após Desvio',
+        default='pause',
+    )
     deviation_icon = fields.Char(
         compute='_compute_deviation_icon', store=False,
     )
@@ -391,6 +399,33 @@ class RepairOsProcess(models.Model):
     # ── Popups ────────────────────────────────────────────────────────
 
 
+
+    def action_confirm_deviation(self):
+        """Confirma registro de desvio e executa ação escolhida."""
+        self.ensure_one()
+        if not self.has_deviation:
+            return {'type': 'ir.actions.act_window_close'}
+
+        if self.deviation_action == 'pause':
+            if self.state == 'progress':
+                self.action_pause()
+        elif self.deviation_action == 'cancel':
+            self.action_cancel()
+            self.env['repair.os.process'].create({
+                'repair_id':           self.repair_id.id,
+                'sequence':            self.sequence,
+                'component_type_id':   self.component_type_id.id if self.component_type_id else False,
+                'name':                self.name,
+                'service_description': self.service_description or False,
+                'machine_id':          self.machine_id.id if self.machine_id else False,
+                'operator_id':         self.operator_id.id if self.operator_id else False,
+                'date_planned':        self.date_planned or False,
+                'duration_planned':    self.duration_planned or 0.0,
+                'requires_cq':         self.requires_cq,
+                'state':               'ready',
+            })
+
+        return {'type': 'ir.actions.act_window_close'}
 
     def action_open_deviation_popup(self):
         self.ensure_one()
