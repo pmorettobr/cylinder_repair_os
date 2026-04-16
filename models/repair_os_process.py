@@ -132,8 +132,8 @@ class RepairOsProcess(models.Model):
     deviation_notes = fields.Text(string='Descrição do Desvio')
     deviation_action = fields.Selection(
         selection=[
-            ('pause',  'Pausar operação — manter estado e continuar depois'),
-            ('cancel', 'Cancelar operação — registrar e recriar como Pronto'),
+            ('pause',  'Pausar'),
+            ('cancel', 'Cancelar e recriar como Pronto'),
         ],
         string='Ação após Desvio',
         default='pause',
