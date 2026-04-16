@@ -324,6 +324,13 @@
         </div>
 
     </t>
+    <!-- OWL Process Loader Modal -->
+    <t t-if="state.showLoader">
+        <t t-component="constructor.loaderModal"
+           repairId="repairId"
+           onClose.bind="onLoaderClose"/>
+    </t>
+
 </div>
 </t>
 
