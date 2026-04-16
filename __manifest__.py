@@ -45,6 +45,8 @@ Funcionalidades:
             'cylinder_repair_os/static/src/js/timer.js',
             'cylinder_repair_os/static/src/xml/repair_schedule.xml',
             'cylinder_repair_os/static/src/js/repair_schedule.js',
+            'cylinder_repair_os/static/src/xml/repair_process_loader_owl.xml',
+            'cylinder_repair_os/static/src/js/repair_process_loader_owl.js',
             'cylinder_repair_os/static/src/xml/repair_dashboard.xml',
             'cylinder_repair_os/static/src/js/repair_dashboard.js',
         ],
