@@ -380,9 +380,9 @@
     </t>
     <!-- OWL Process Loader Modal -->
     <t t-if="state.showLoader">
-        <t t-component="constructor.loaderModal"
+        <RepairProcessLoaderModal
            repairId="repairId"
-           onClose.bind="onLoaderClose"/>
+           onClose="(r) => this.onLoaderClose(r)"/>
     </t>
 
 </div>
