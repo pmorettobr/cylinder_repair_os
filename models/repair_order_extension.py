@@ -311,6 +311,81 @@ class RepairOrder(models.Model):
             'target': 'self',
         }
 
+    def action_get_catalog_for_owl(self):
+        """Retorna templates do catálogo filtrados — exclui processos já carregados
+        (exceto cancelados). Usado pelo wizard OWL de seleção."""
+        self.ensure_one()
+
+        # IDs de processos já na OS que NÃO estão cancelados
+        # formato: (template_id ou name+component) para comparação
+        active_processes = self.env['repair.os.process'].search([
+            ('repair_id', '=', self.id),
+            ('state', '!=', 'cancel'),
+        ])
+
+        # Chave de exclusão: (component_type_id, name)
+        excluded = set()
+        for proc in active_processes:
+            ct = proc.component_type_id.id or 0
+            excluded.add((ct, proc.name))
+
+        # Busca todos os templates ativos
+        templates = self.env['repair.process.template'].search(
+            [('active', '=', True)],
+            order='component_type_id, sequence'
+        )
+
+        result = []
+        for tmpl in templates:
+            ct_id = tmpl.component_type_id.id or 0
+            key = (ct_id, tmpl.name)
+            if key in excluded:
+                continue
+            result.append({
+                'id':                   tmpl.id,
+                'sequence':             tmpl.sequence,
+                'component_type_id':    [ct_id, tmpl.component_type_id.name] if tmpl.component_type_id else [0, ''],
+                'name':                 tmpl.name,
+                'machine_id':           [tmpl.machine_id.id, tmpl.machine_id.name] if tmpl.machine_id else False,
+                'duration_planned':     tmpl.duration_planned or 0.0,
+                'requires_cq':          tmpl.requires_cq,
+            })
+
+        return result
+
+    def action_load_from_catalog(self, template_ids):
+        """Carrega processos do catálogo na OS. Chamado pelo wizard OWL."""
+        self.ensure_one()
+        if not template_ids:
+            return False
+
+        templates = self.env['repair.process.template'].browse(template_ids)
+
+        # Calcula próxima sequência por componente
+        existing_seqs = {}
+        for proc in self.process_ids:
+            ct = proc.component_type_id.id or 0
+            existing_seqs[ct] = max(existing_seqs.get(ct, 0), proc.sequence)
+
+        for tmpl in templates:
+            ct_id = tmpl.component_type_id.id or 0
+            next_seq = existing_seqs.get(ct_id, 0) + 10
+            existing_seqs[ct_id] = next_seq
+
+            self.env['repair.os.process'].create({
+                'repair_id':           self.id,
+                'sequence':            next_seq,
+                'name':                tmpl.name,
+                'service_description': tmpl.service_description or False,
+                'component_type_id':   tmpl.component_type_id.id if tmpl.component_type_id else False,
+                'machine_id':          tmpl.machine_id.id if tmpl.machine_id else False,
+                'requires_cq':         tmpl.requires_cq,
+                'duration_planned':    tmpl.duration_planned or 0.0,
+                'state':               'ready',
+            })
+
+        return True
+
     def action_open_process_loader(self):
         self.ensure_one()
         return {
