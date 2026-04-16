@@ -54,9 +54,7 @@
                             <field name="allow_parallel" string="Permite Paralelo"
                                    widget="boolean_toggle"
                                    help="Centro aceita múltiplos processos simultâneos."/>
-                            <field name="bypass_sequence" string="Libera Sequência"
-                                   widget="boolean_toggle"
-                                   help="Processos neste centro ignoram validação de sequência."/>
+
                         </group>
                     </group>
 
