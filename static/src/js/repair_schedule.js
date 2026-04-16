@@ -104,7 +104,7 @@ class RepairSchedule extends Component {
                      "duration_acc", "duration_planned", "duration_display", "state",
                      "has_deviation", "deviation_notes",
                      "requires_cq", "cq_result", "cq_rejection_count",
-                     "bypass_sequence", "is_blocked", "has_dependents", "dependent_child_ids"]
+                     ]
                 ),
             ]);
             this.state.repairInfo = repairs[0] || {};
@@ -488,27 +488,6 @@ class RepairSchedule extends Component {
                  paused:"text-bg-info", done:"bg-success",
                  cancel:"bg-secondary", pending_cq:"o_badge_pending_cq" }[s] || "bg-secondary";
     }
-    onLock(id) {
-        return this._run("action_open_lock_popup", id);
-    }
-
-    lockIcon(rec) {
-        // Bloqueado por dependência não concluída
-        if (rec.is_blocked) {
-            return { icon: "fa-lock", cls: "o_lock_blocked", title: "Bloqueado — aguardando processo pai" };
-        }
-        // É pai de outros processos
-        if (rec.has_dependents) {
-            return { icon: "fa-link", cls: "o_lock_parent", title: "Outros processos dependem deste" };
-        }
-        // Bypass ativo (por processo ou máquina)
-        if (rec.bypass_sequence) {
-            return { icon: "fa-unlock", cls: "o_lock_bypass", title: "Sequência ignorada (bypass ativo)" };
-        }
-        // Normal
-        return { icon: "fa-lock", cls: "o_lock_normal", title: "Sequência normal" };
-    }
-
     cqIcon(rec) {
         // Sem CQ configurado — ícone apagado
         if (!rec.requires_cq) {
