@@ -259,7 +259,7 @@
         <field name="arch" type="xml">
             <form string="Desvio">
                 <sheet>
-                    <!-- Cabeçalho com nome da operação -->
+                    <!-- Cabeçalho -->
                     <div class="o_repair_popup_header">
                         <div class="o_repair_popup_title">
                             <field name="operation_label" readonly="1"/>
@@ -269,20 +269,44 @@
                         </div>
                     </div>
 
+                    <!-- Campos invisíveis para controle de visibilidade -->
+                    <field name="state" invisible="1"/>
+
                     <group>
                         <field name="has_deviation"
                                string="Registrar Desvio?"
                                widget="boolean_toggle"/>
                     </group>
+
                     <div attrs="{'invisible': [('has_deviation', '=', False)]}"
                          style="padding: 0 16px 12px;">
                         <field name="deviation_notes"
                                nolabel="1"
                                placeholder="Descreva o desvio encontrado..."
-                               style="width:100%; min-height:120px; resize:vertical;"/>
+                               style="width:100%; min-height:100px; resize:vertical;"/>
                     </div>
+
+                    <!-- Ação após desvio — só aparece quando há desvio E processo está em andamento -->
+                    <div attrs="{'invisible': ['|', ('has_deviation', '=', False), ('state', 'not in', ['progress', 'paused'])]}"
+                         style="padding: 0 16px 12px;">
+                        <div class="alert alert-warning" style="margin:0;">
+                            <strong>O que deseja fazer com o processo?</strong>
+                        </div>
+                        <group style="margin-top:8px;">
+                            <field name="deviation_action"
+                                   string="Ação"
+                                   widget="radio"
+                                   nolabel="1"/>
+                        </group>
+                    </div>
+
                 </sheet>
                 <footer>
+                    <button string="Confirmar"
+                            name="action_confirm_deviation"
+                            type="object"
+                            class="btn-primary"
+                            attrs="{'invisible': [('has_deviation', '=', False)]}"/>
                     <button string="Fechar" class="btn-secondary"
                             special="cancel"/>
                 </footer>
