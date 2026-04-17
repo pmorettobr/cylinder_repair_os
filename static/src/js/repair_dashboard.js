@@ -86,7 +86,7 @@ class RepairDashboard extends Component {
                 this.orm.searchRead(
                     "repair.order",
                     [["os_state", "not in", ["cancel", "done"]]],
-                    ["os_number", "partner_id", "product_name", "os_state",
+                    ["os_number", "partner_id", "cylinder_id", "os_state",
                      "deadline_date", "progress_percent", "process_count",
                      "process_done_count", "is_overdue"]
                 ),
