@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_repair_process_set_tree" model="ir.ui.view">
+        <field name="name">repair.process.set.tree</field>
+        <field name="model">repair.process.set</field>
+        <field name="arch" type="xml">
+            <tree string="Templates de Processos">
+                <field name="name" string="Nome"/>
+                <field name="line_count" string="Processos"/>
+                <field name="cylinder_count" string="Cilindros"/>
+                <field name="active" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_repair_process_set_form" model="ir.ui.view">
+        <field name="name">repair.process.set.form</field>
+        <field name="model">repair.process.set</field>
+        <field name="arch" type="xml">
+            <form string="Template de Processos">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_repair_cylinders)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-cog"
+                                attrs="{'invisible': [('id', '=', False)]}">
+                            <field name="cylinder_count" widget="statinfo" string="Cilindros"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name" string="Template"/>
+                        <h1><field name="name" placeholder="Nome do template..."/></h1>
+                    </div>
+                    <group>
+                        <field name="notes" string="Observações"
+                               placeholder="Descreva o uso deste template..."/>
+                        <field name="active" string="Ativo"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Processos" name="processes">
+                            <field name="line_ids" nolabel="1">
+                                <tree editable="bottom" create="1">
+                                    <field name="template_id"
+                                           string="Processo do Catálogo"
+                                           options="{'no_create': True}"
+                                           domain="[('active', '=', True)]"/>
+                                    <field name="component_type_id" string="Componente" readonly="1"/>
+                                    <field name="sequence" string="Seq." readonly="1"/>
+                                    <field name="machine_id" string="Centro de Trabalho" readonly="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_repair_process_set_search" model="ir.ui.view">
+        <field name="name">repair.process.set.search</field>
+        <field name="model">repair.process.set</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Nome"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_repair_process_sets" model="ir.actions.act_window">
+        <field name="name">Templates de Processos</field>
+        <field name="res_model">repair.process.set</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_repair_process_set_search"/>
+    </record>
+
+</odoo>
