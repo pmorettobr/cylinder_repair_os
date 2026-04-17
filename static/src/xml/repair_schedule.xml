@@ -252,7 +252,7 @@
                                                         <t t-foreach="Array.from({length:25},(_,i)=>i)" t-as="h" t-key="h">
                                                             <option t-att-value="h"
                                                                     t-att-selected="h === state.editPlannedVals.h ? 'selected' : ''">
-                                                                <t t-esc="String(h).padStart(2,'0')"/>
+                                                                <t t-esc="pad2(h)"/>
                                                             </option>
                                                         </t>
                                                     </select>
@@ -261,7 +261,7 @@
                                                         <t t-foreach="Array.from({length:60},(_,i)=>i)" t-as="m" t-key="m">
                                                             <option t-att-value="m"
                                                                     t-att-selected="m === state.editPlannedVals.m ? 'selected' : ''">
-                                                                <t t-esc="String(m).padStart(2,'0')"/>
+                                                                <t t-esc="pad2(m)"/>
                                                             </option>
                                                         </t>
                                                     </select>
