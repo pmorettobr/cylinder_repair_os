@@ -244,23 +244,18 @@
                                             <t t-esc="fmtDatetime(rec.date_start_orig)"/>
                                         </td>
 
-                                        <!-- Tempo Previsto — input HH:MM -->
+                                        <!-- Tempo Previsto — input HH:MM, salva no blur -->
                                         <td>
                                             <t t-if="state.editPlannedId === rec.id">
-                                                <div class="o_repair_timepicker_wrap">
-                                                    <input type="text"
-                                                           class="form-control form-control-sm"
-                                                           style="width:72px;"
-                                                           placeholder="HH:MM"
-                                                           maxlength="5"
-                                                           t-att-value="state.editPlannedText"
-                                                           t-on-input="(ev) => { state.editPlannedText = ev.target.value; }"
-                                                           t-on-keydown="(ev) => this.onPlannedKeydown(rec.id, ev)"/>
-                                                    <button class="o_repair_timepicker_ok"
-                                                            t-on-click="() => this.savePlannedText(rec.id)">OK</button>
-                                                    <button class="btn btn-sm btn-link text-muted p-0"
-                                                            t-on-click="() => this.cancelEditPlanned()">✕</button>
-                                                </div>
+                                                <input type="text"
+                                                       class="form-control form-control-sm"
+                                                       style="width:72px;"
+                                                       placeholder="HH:MM"
+                                                       maxlength="5"
+                                                       t-att-value="state.editPlannedText"
+                                                       t-on-input="(ev) => { state.editPlannedText = ev.target.value; }"
+                                                       t-on-keydown="(ev) => this.onPlannedKeydown(rec.id, ev)"
+                                                       t-on-blur="(ev) => this.savePlannedText(rec.id)"/>
                                             </t>
                                             <t t-else="">
                                                 <span style="cursor:pointer;"
