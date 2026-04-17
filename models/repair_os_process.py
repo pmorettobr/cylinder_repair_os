@@ -98,7 +98,7 @@ class RepairOsProcess(models.Model):
 
     requires_cq = fields.Boolean(
         string='Requer Inspeção de Qualidade?',
-        default=False,
+        default=True,
         help='Se marcado, ao concluir o processo vai para Aguardando CQ '
              'antes de ser marcado como Concluído.',
     )
