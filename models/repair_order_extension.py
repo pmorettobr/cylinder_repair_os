@@ -18,6 +18,18 @@ class RepairOrder(models.Model):
     )
 
     # ── Número da OS do cliente — campo principal ─────────────────────────────
+    cylinder_id = fields.Many2one(
+        comodel_name='repair.cylinder',
+        string='Cilindro',
+        ondelete='set null',
+        help='Cilindro em reparo. Ao selecionar, carrega o template de processos vinculado.',
+    )
+    process_set_id = fields.Many2one(
+        comodel_name='repair.process.set',
+        string='Template de Processos',
+        ondelete='set null',
+    )
+
     os_number = fields.Char(
         string='Nº OS',
         required=True,
@@ -229,10 +241,7 @@ class RepairOrder(models.Model):
 
     def action_done_os(self):
         for rec in self:
-            # Sem processos carregados — aviso mas permite concluir
-            if not rec.process_ids:
-                pass  # JS confirmation handles this case
-            else:
+            if rec.process_ids:
                 pending = rec.process_ids.filtered(
                     lambda p: p.state not in ('done', 'cancel')
                 )
@@ -242,6 +251,11 @@ class RepairOrder(models.Model):
                         'Conclua ou cancele todos os processos antes de fechar a OS.'
                         % len(pending)
                     )
+        self.write({'os_state': 'done'})
+
+    def action_done_os_empty(self):
+        """Conclui OS mesmo sem processos carregados."""
+        self.ensure_one()
         self.write({'os_state': 'done'})
 
     def action_cancel_os(self):
@@ -276,6 +290,43 @@ class RepairOrder(models.Model):
         }
 
     # ── Carregador de processos em lote ───────────────────────────────────────
+
+    @api.onchange('cylinder_id')
+    def _onchange_cylinder_id(self):
+        """Ao selecionar cilindro, preenche o template automaticamente."""
+        if self.cylinder_id and self.cylinder_id.process_set_id:
+            self.process_set_id = self.cylinder_id.process_set_id
+
+    def action_load_from_set(self):
+        """Carrega processos do template na OS. Chamado pela tela de OS."""
+        self.ensure_one()
+        if not self.process_set_id:
+            return False
+
+        # Coleta IDs dos templates do set
+        template_ids = self.process_set_id.line_ids.mapped('template_id').ids
+        if not template_ids:
+            return False
+
+        # Limpa processos existentes não cancelados
+        self.process_ids.filtered(
+            lambda p: p.state not in ('cancel',)
+        ).unlink()
+
+        # Carrega novos processos
+        self.action_load_from_catalog(template_ids)
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Template Carregado',
+                'message': '%d processo(s) carregado(s) do template "%s".' % (
+                    len(template_ids), self.process_set_id.name
+                ),
+                'type': 'success',
+                'sticky': False,
+            }
+        }
 
     def action_confirm_and_start(self):
         """Confirma e inicia a OS em um único clique."""
