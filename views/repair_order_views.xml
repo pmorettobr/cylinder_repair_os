@@ -50,8 +50,12 @@
                     <button name="action_done_os" string="CONCLUIR OS"
                             type="object" class="btn-primary"
                             confirm="Deseja finalizar esta OS?"
-                            attrs="{'invisible': [('os_state', '!=', 'in_progress')]}"/>
-                    <button name="action_cancel_os" string="Cancelar"
+                            attrs="{'invisible': ['|', ('os_state', '!=', 'in_progress'), ('process_count', '=', 0)]}"/>
+                    <button name="action_done_os_empty" string="CONCLUIR OS"
+                            type="object" class="btn-primary"
+                            confirm="A OS não possui operações carregadas. Deseja finalizar mesmo assim?"
+                            attrs="{'invisible': ['|', ('os_state', '!=', 'in_progress'), ('process_count', '!=', 0)]}"/>
+                    <button name="action_cancel_os" string="CANCELAR"
                             type="object" class="btn-danger"
                             attrs="{'invisible': [('os_state', 'in', ('done', 'cancel'))]}"/>
                 </header>
@@ -88,6 +92,32 @@
                         </button>
 
                     </div>
+
+                    <!-- Cilindro e Template -->
+                    <group>
+                        <group string="Produto">
+                            <field name="cylinder_id"
+                                   string="Cilindro"
+                                   options="{'no_create': False, 'no_create_edit': False}"
+                                   placeholder="Selecionar ou criar cilindro..."/>
+                            <field name="product_id"
+                                   string="Produto"
+                                   options="{'no_create': False}"
+                                   attrs="{'invisible': [('cylinder_id', '!=', False)]}"/>
+                        </group>
+                        <group string="Template de Processos">
+                            <field name="process_set_id"
+                                   string="Template"
+                                   options="{'no_create': False}"/>
+                            <button name="action_load_from_set"
+                                    string="Carregar Template"
+                                    type="object"
+                                    class="btn-sm btn-outline-primary"
+                                    icon="fa-download"
+                                    attrs="{'invisible': [('process_set_id', '=', False)]}"
+                                    confirm="Deseja substituir os processos atuais pelos do template selecionado?"/>
+                        </group>
+                    </group>
 
                     <!-- Nº OS grande + badge Tipo alinhados -->
                     <div class="o_repair_title_block">
