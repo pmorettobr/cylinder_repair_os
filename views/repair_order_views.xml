@@ -129,17 +129,9 @@
                                    placeholder="Selecionar ou criar..."/>
                             <field name="process_set_id"
                                    string="Template de Produto"
-                                   options="{'no_create': False}"/>
-                            <button name="action_load_from_set"
-                                    string="↓ Carregar Template na Programação"
-                                    type="object"
-                                    class="btn-sm btn-outline-primary mt-1"
-                                    attrs="{'invisible': ['|', ('process_set_id', '=', False), ('os_state', 'not in', ['confirmed', 'in_progress'])]}"
-                                    confirm="Deseja substituir os processos atuais pelos do template selecionado?"/>
-                            <div attrs="{'invisible': ['|', ('process_set_id', '=', False), ('os_state', '!=', 'draft')]}"
-                                 class="text-muted" style="font-size:11px;padding:2px 0;">
-                                ⚠ Confirme a OS para carregar o template.
-                            </div>
+                                   options="{'no_create': False}"
+                                   attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"
+                                   help="Ao confirmar a OS, os processos do template são carregados automaticamente."/>
                             <field name="order_type" string="Tipo de Ordem"
                                    widget="selection"
                                    attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"/>
