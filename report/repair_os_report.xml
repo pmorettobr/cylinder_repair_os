@@ -21,7 +21,7 @@
                             <td style="width:120px;color:#666">Cliente:</td>
                             <td><strong><span t-field="doc.partner_id"/></strong></td>
                             <td style="width:120px;color:#666">Produto / Cilindro:</td>
-                            <td><t t-esc="doc.product_name or '—'"/></td>
+                            <td><t t-esc="doc.cylinder_id.name or '—'"/></td>
                         </tr>
                         <tr>
                             <td style="color:#666">Nº Série / TAG:</td>
