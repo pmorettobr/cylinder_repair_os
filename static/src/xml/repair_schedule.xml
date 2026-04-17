@@ -244,29 +244,20 @@
                                             <t t-esc="fmtDatetime(rec.date_start_orig)"/>
                                         </td>
 
-                                        <!-- Tempo Previsto — timepicker customizado -->
+                                        <!-- Tempo Previsto — input HH:MM -->
                                         <td>
                                             <t t-if="state.editPlannedId === rec.id">
                                                 <div class="o_repair_timepicker_wrap">
-                                                    <select t-on-change="(ev) => this.setPlannedH(ev.target.value)">
-                                                        <t t-foreach="Array.from({length:25},(_,i)=>i)" t-as="h" t-key="h">
-                                                            <option t-att-value="h"
-                                                                    t-att-selected="h === state.editPlannedVals.h ? 'selected' : ''">
-                                                                <t t-esc="pad2(h)"/>
-                                                            </option>
-                                                        </t>
-                                                    </select>
-                                                    <span class="o_tp_sep">:</span>
-                                                    <select t-on-change="(ev) => this.setPlannedM(ev.target.value)">
-                                                        <t t-foreach="Array.from({length:60},(_,i)=>i)" t-as="m" t-key="m">
-                                                            <option t-att-value="m"
-                                                                    t-att-selected="m === state.editPlannedVals.m ? 'selected' : ''">
-                                                                <t t-esc="pad2(m)"/>
-                                                            </option>
-                                                        </t>
-                                                    </select>
+                                                    <input type="text"
+                                                           class="form-control form-control-sm"
+                                                           style="width:72px;"
+                                                           placeholder="HH:MM"
+                                                           maxlength="5"
+                                                           t-att-value="state.editPlannedText"
+                                                           t-on-input="(ev) => { state.editPlannedText = ev.target.value; }"
+                                                           t-on-keydown="(ev) => this.onPlannedKeydown(rec.id, ev)"/>
                                                     <button class="o_repair_timepicker_ok"
-                                                            t-on-click="() => this.savePlanned(rec.id)">OK</button>
+                                                            t-on-click="() => this.savePlannedText(rec.id)">OK</button>
                                                     <button class="btn btn-sm btn-link text-muted p-0"
                                                             t-on-click="() => this.cancelEditPlanned()">✕</button>
                                                 </div>
