@@ -21,7 +21,7 @@ class RepairSchedule extends Component {
             editDateId:         null,
             editOperatorId:     null,
             editPlannedId:      null,
-            editPlannedVals:    { h: 0, m: 0 },
+            editPlannedText:    '',
             editNameId:         null,
             editNameVal:        "",
             editMachineId:      null,
@@ -261,23 +261,24 @@ class RepairSchedule extends Component {
     // ── Edição inline — Tempo Previsto (timepicker) ───────────────────
 
     startEditPlanned(id, currentMinutes) {
-        const h = Math.floor((currentMinutes || 0) / 60);
-        const m = Math.round((currentMinutes || 0) % 60);
-        this.state.editPlannedId  = id;
-        this.state.editPlannedVals = { h, m };
-        this.state.editDateId     = null;
-        this.state.editOperatorId = null;
-        this.state.editNameId     = null;
-        this.state.editMachineId  = null;
+        this.state.editPlannedId   = id;
+        this.state.editPlannedText = this._min2hhmm(currentMinutes || 0);
+        this.state.editDateId      = null;
+        this.state.editOperatorId  = null;
+        this.state.editNameId      = null;
+        this.state.editMachineId   = null;
     }
     cancelEditPlanned() { this.state.editPlannedId = null; }
-    setPlannedH(val) { this.state.editPlannedVals.h = parseInt(val) || 0; }
-    setPlannedM(val) { this.state.editPlannedVals.m = parseInt(val) || 0; }
 
-    async savePlanned(id) {
-        const { h, m } = this.state.editPlannedVals;
-        const minutes = h * 60 + m;
+    onPlannedKeydown(id, ev) {
+        if (ev.key === 'Enter')  { this.savePlannedText(id); }
+        if (ev.key === 'Escape') { this.cancelEditPlanned(); }
+    }
+
+    async savePlannedText(id) {
+        const raw = this.state.editPlannedText || '00:00';
         this.state.editPlannedId = null;
+        const minutes = this._hhmm2min(raw);
         try {
             await this.orm.write("repair.os.process", [id], { duration_planned: minutes });
             await this._loadData();
