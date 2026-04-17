@@ -27,3 +27,10 @@ access_repair_order_cq,repair.order cq,repair.model_repair_order,cylinder_repair
 access_repair_partner_cq,res.partner cq,base.model_res_partner,cylinder_repair_os.group_repair_cq,1,0,0,0
 access_repair_users_cq,res.users cq,base.model_res_users,cylinder_repair_os.group_repair_cq,1,0,0,0
 access_repair_machine_operator_cq,repair.machine.operator cq,model_repair_machine_operator,cylinder_repair_os.group_repair_cq,1,0,0,0
+access_repair_cylinder_operator,repair.cylinder operator,model_repair_cylinder,cylinder_repair_os.group_repair_operator,1,0,0,0
+access_repair_cylinder_supervisor,repair.cylinder supervisor,model_repair_cylinder,cylinder_repair_os.group_repair_supervisor,1,1,1,1
+access_repair_cylinder_cq,repair.cylinder cq,model_repair_cylinder,cylinder_repair_os.group_repair_cq,1,0,0,0
+access_repair_process_set_operator,repair.process.set operator,model_repair_process_set,cylinder_repair_os.group_repair_operator,1,0,0,0
+access_repair_process_set_supervisor,repair.process.set supervisor,model_repair_process_set,cylinder_repair_os.group_repair_supervisor,1,1,1,1
+access_repair_process_set_line_operator,repair.process.set.line operator,model_repair_process_set_line,cylinder_repair_os.group_repair_operator,1,0,0,0
+access_repair_process_set_line_supervisor,repair.process.set.line supervisor,model_repair_process_set_line,cylinder_repair_os.group_repair_supervisor,1,1,1,1
