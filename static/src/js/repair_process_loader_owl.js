@@ -13,12 +13,10 @@ class RepairProcessLoaderModal extends Component {
         this.state = useState({
             loading:      true,
             search:       "",
-            collapsed:    {},   // component_id → bool
-            selectedIds:  [],   // template ids selected
-            groups:       [],   // [{id, name, templates:[]}]
+            collapsed:    {},
+            selectedIds:  [],
+            groups:       [],
         });
-
-        this.repairId = this.props.repairId;
 
         onWillStart(async () => { await this._loadCatalog(); });
     }
@@ -27,11 +25,20 @@ class RepairProcessLoaderModal extends Component {
 
     async _loadCatalog() {
         try {
-            const templates = await this.orm.call(
-                "repair.order",
-                "action_get_catalog_for_owl",
-                [[this.repairId]]
-            );
+            let templates;
+            if (this.props.mode === 'set') {
+                templates = await this.orm.call(
+                    "repair.process.set",
+                    "action_get_catalog_for_set",
+                    [[this.props.setId]]
+                );
+            } else {
+                templates = await this.orm.call(
+                    "repair.order",
+                    "action_get_catalog_for_owl",
+                    [[this.props.repairId]]
+                );
+            }
 
             // Agrupa por componente
             const map = new Map();
@@ -113,12 +120,20 @@ class RepairProcessLoaderModal extends Component {
             return;
         }
         try {
-            await this.orm.call(
-                "repair.order",
-                "action_load_from_catalog",
-                [[this.repairId], this.state.selectedIds]
-            );
-            this.props.onClose(true); // true = reload
+            if (this.props.mode === 'set') {
+                await this.orm.call(
+                    "repair.process.set",
+                    "action_load_from_catalog_to_set",
+                    [[this.props.setId], this.state.selectedIds]
+                );
+            } else {
+                await this.orm.call(
+                    "repair.order",
+                    "action_load_from_catalog",
+                    [[this.props.repairId], this.state.selectedIds]
+                );
+            }
+            this.props.onClose(true);
         } catch (e) {
             this.notif.add(
                 (e.data && e.data.message) || "Erro ao carregar processos",
@@ -141,7 +156,9 @@ class RepairProcessLoaderModal extends Component {
 
 RepairProcessLoaderModal.template = "cylinder_repair_os.RepairProcessLoaderModal";
 RepairProcessLoaderModal.props = {
-    repairId: Number,
+    repairId: { type: Number, optional: true },
+    setId:    { type: Number, optional: true },
+    mode:     { type: String, optional: true },  // 'os' (default) or 'set'
     onClose:  Function,
 };
 
