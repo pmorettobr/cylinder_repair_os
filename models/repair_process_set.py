@@ -70,3 +70,8 @@ class RepairProcessSetLine(models.Model):
         string='Centro de Trabalho',
         store=True,
     )
+    requires_cq = fields.Boolean(
+        related='template_id.requires_cq',
+        string='Requer CQ?',
+        store=True,
+    )
