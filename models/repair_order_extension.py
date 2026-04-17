@@ -350,16 +350,7 @@ class RepairOrder(models.Model):
         if self.os_state == 'draft':
             self.action_confirm_os()
         self.action_start_os()
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'OS Confirmada',
-                'message': 'OS %s confirmada com sucesso.' % (self.os_number or ''),
-                'type': 'success',
-                'sticky': False,
-            }
-        }
+        return False
 
     def action_open_process_loader_add_more(self):
         """Abre o carregador para adicionar mais processos (já carregados aparecem desmarcados)."""
