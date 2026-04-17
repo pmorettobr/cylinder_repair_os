@@ -5,7 +5,7 @@
         <field name="name">repair.process.set.tree</field>
         <field name="model">repair.process.set</field>
         <field name="arch" type="xml">
-            <tree string="Templates de Processos">
+            <tree string="Templates de Produto">
                 <field name="name" string="Nome"/>
                 <field name="line_count" string="Processos"/>
                 <field name="cylinder_count" string="Cilindros"/>
@@ -18,7 +18,7 @@
         <field name="name">repair.process.set.form</field>
         <field name="model">repair.process.set</field>
         <field name="arch" type="xml">
-            <form string="Template de Processos">
+            <form string="Template de Produto">
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="%(action_repair_cylinders)d"
@@ -43,14 +43,19 @@
                     <notebook>
                         <page string="Processos" name="processes">
                             <field name="line_ids" nolabel="1">
-                                <tree editable="bottom" create="1">
+                                <tree editable="bottom" create="1"
+                                      default_order="component_type_id,sequence"
+                                      decoration-muted="template_id == False">
+                                    <field name="component_type_id" string="Componente" readonly="1"/>
                                     <field name="template_id"
-                                           string="Processo do Catálogo"
+                                           string="Operação"
                                            options="{'no_create': True}"
                                            domain="[('active', '=', True)]"/>
-                                    <field name="component_type_id" string="Componente" readonly="1"/>
-                                    <field name="sequence" string="Seq." readonly="1"/>
                                     <field name="machine_id" string="Centro de Trabalho" readonly="1"/>
+                                    <field name="sequence" string="Seq." readonly="1" optional="hide"/>
+                                    <field name="requires_cq" string="Requer CQ?"
+                                           related="template_id.requires_cq"
+                                           readonly="1"/>
                                 </tree>
                             </field>
                         </page>
@@ -71,7 +76,7 @@
     </record>
 
     <record id="action_repair_process_sets" model="ir.actions.act_window">
-        <field name="name">Templates de Processos</field>
+        <field name="name">Templates de Produto</field>
         <field name="res_model">repair.process.set</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_repair_process_set_search"/>
