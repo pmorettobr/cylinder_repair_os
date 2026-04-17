@@ -298,6 +298,8 @@ class RepairSchedule extends Component {
     }
     cancelEditName() { this.state.editNameId = null; }
 
+    pad2(n) { return String(n).padStart(2, '0'); }
+
     onNameKeydown(id, ev) {
         if (ev.key === 'Enter')  { this.saveName(id, ev); }
         if (ev.key === 'Escape') { this.cancelEditName(); }
