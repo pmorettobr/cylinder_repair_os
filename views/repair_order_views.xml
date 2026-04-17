@@ -17,7 +17,7 @@
                        decoration-info="order_type == 'repair'"
                        decoration-warning="order_type == 'fabrication'"/>
                 <field name="partner_id" string="Cliente"/>
-                <field name="product_name" string="Produto / Cilindro"/>
+                <field name="cylinder_id" string="Produto / Cilindro" optional="show"/>
                 <field name="responsible_id" string="Responsável"/>
                 <field name="deadline_date" string="Prazo"/>
                 <field name="os_state" string="Estado" widget="badge"
@@ -93,31 +93,7 @@
 
                     </div>
 
-                    <!-- Cilindro e Template -->
-                    <group>
-                        <group string="Produto">
-                            <field name="cylinder_id"
-                                   string="Cilindro"
-                                   options="{'no_create': False, 'no_create_edit': False}"
-                                   placeholder="Selecionar ou criar cilindro..."/>
-                            <field name="product_id"
-                                   string="Produto"
-                                   options="{'no_create': False}"
-                                   attrs="{'invisible': [('cylinder_id', '!=', False)]}"/>
-                        </group>
-                        <group string="Template de Processos">
-                            <field name="process_set_id"
-                                   string="Template"
-                                   options="{'no_create': False}"/>
-                            <button name="action_load_from_set"
-                                    string="Carregar Template"
-                                    type="object"
-                                    class="btn-sm btn-outline-primary"
-                                    icon="fa-download"
-                                    attrs="{'invisible': [('process_set_id', '=', False)]}"
-                                    confirm="Deseja substituir os processos atuais pelos do template selecionado?"/>
-                        </group>
-                    </group>
+
 
                     <!-- Nº OS grande + badge Tipo alinhados -->
                     <div class="o_repair_title_block">
@@ -149,8 +125,24 @@
                             <field name="order_type" string="Tipo de Ordem"
                                    widget="selection"
                                    attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"/>
-                            <field name="product_name" string="Produto / Cilindro"
-                                   placeholder="Ex: Cilindro Hidráulico CH-1..."/>
+                            <field name="cylinder_id"
+                                   string="Produto / Cilindro"
+                                   options="{'no_create': False, 'no_create_edit': False}"
+                                   placeholder="Selecionar ou criar..."/>
+                            <field name="process_set_id"
+                                   string="Template de Produto"
+                                   options="{'no_create': False}"
+                                   attrs="{'invisible': [('os_state', '=', 'draft')]}"/>
+                            <button name="action_load_from_set"
+                                    string="↓ Carregar Template na Programação"
+                                    type="object"
+                                    class="btn-sm btn-outline-primary mt-1"
+                                    attrs="{'invisible': ['|', ('process_set_id', '=', False), ('os_state', 'not in', ['confirmed', 'in_progress'])]}"
+                                    confirm="Deseja substituir os processos atuais pelos do template selecionado?"/>
+                            <div attrs="{'invisible': ['|', ('process_set_id', '=', False), ('os_state', '!=', 'draft')]}"
+                                 class="text-muted" style="font-size:11px;padding:2px 0;">
+                                ⚠ Confirme a OS para carregar o template.
+                            </div>
                             <field name="responsible_id" string="Responsável"/>
                         </group>
                         <group string="Prazo e Progresso">
@@ -177,7 +169,7 @@
             <search string="Buscar OS">
                 <field name="os_number" string="Nº OS"/>
                 <field name="partner_id" string="Cliente"/>
-                <field name="product_name" string="Produto / Cilindro"/>
+                <field name="cylinder_id" string="Produto / Cilindro" optional="show"/>
                 <field name="responsible_id" string="Responsável"/>
                 <separator/>
                 <filter name="repair" string="Reparo"
