@@ -7,9 +7,9 @@
         <field name="arch" type="xml">
             <tree string="Cilindros">
                 <field name="code" string="Código"/>
-                <field name="name" string="Descrição"/>
+                <field name="name" string="Produto / Cilindro"/>
                 <field name="process_set_id" string="Template"/>
-                <field name="os_count" string="OSs"/>
+                <field name="os_count" string="Ordens de Serviço"/>
                 <field name="active" optional="hide"/>
             </tree>
         </field>
@@ -22,12 +22,13 @@
             <form string="Cilindro">
                 <sheet>
                     <div class="oe_title">
-                        <label for="name" string="Cilindro"/>
-                        <h1><field name="name" placeholder="Descrição do cilindro..."/></h1>
+                        <label for="name" string="Produto / Cilindro"/>
+                        <h1><field name="name" placeholder="Ex: Cilindro Hidráulico CH-500..."/></h1>
                     </div>
                     <group>
                         <group string="Identificação">
                             <field name="code" string="Código"/>
+                            <field name="repair_type" string="Tipo de Ordem"/>
                             <field name="active" string="Ativo"/>
                         </group>
                         <group string="Template de Processos">
@@ -50,14 +51,14 @@
         <field name="model">repair.cylinder</field>
         <field name="arch" type="xml">
             <search>
-                <field name="name" string="Descrição"/>
+                <field name="name" string="Produto / Cilindro"/>
                 <field name="code" string="Código"/>
             </search>
         </field>
     </record>
 
     <record id="action_repair_cylinders" model="ir.actions.act_window">
-        <field name="name">Cilindros</field>
+        <field name="name">Produtos / Cilindros</field>
         <field name="res_model">repair.cylinder</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_repair_cylinder_search"/>
