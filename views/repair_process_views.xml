@@ -501,7 +501,7 @@
                         <span class="ms-3 fw-bold">Cliente:</span>
                         <field name="partner_id" readonly="1" class="ms-1"/>
                         <span class="ms-3 fw-bold">Produto:</span>
-                        <field name="product_name" readonly="1" class="ms-1"/>
+                        <field name="cylinder_id" readonly="1" class="ms-1"/>
                     </div>
 
                     <!-- Lista de processos agrupados -->
