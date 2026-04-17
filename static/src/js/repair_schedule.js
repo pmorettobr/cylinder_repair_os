@@ -112,7 +112,7 @@ class RepairSchedule extends Component {
                 this.orm.searchRead(
                     "repair.order",
                     [["id", "=", this.repairId]],
-                    ["os_number", "product_name", "partner_id", "os_state", "deadline_date"]
+                    ["os_number", "cylinder_id", "partner_id", "os_state", "deadline_date"]
                 ),
                 this.orm.searchRead(
                     "repair.os.process",
@@ -558,9 +558,9 @@ class RepairSchedule extends Component {
                  cancel:"bg-secondary", pending_cq:"o_badge_pending_cq" }[s] || "bg-secondary";
     }
     cqIcon(rec) {
-        // Sem CQ configurado — ícone apagado
+        // CQ desativado — ícone cinza com X
         if (!rec.requires_cq) {
-            return { icon: "fa-certificate", cls: "o_cq_none", title: "Sem CQ" };
+            return { icon: "fa-certificate", cls: "o_cq_disabled", title: "CQ desativado neste processo" };
         }
         // Aguardando inspeção
         if (rec.state === "pending_cq") {
