@@ -122,17 +122,14 @@
                     <group>
                         <group string="Identificação">
                             <field name="partner_id" string="Cliente" required="1"/>
-                            <field name="order_type" string="Tipo de Ordem"
-                                   widget="selection"
-                                   attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"/>
+                            <field name="responsible_id" string="Responsável"/>
                             <field name="cylinder_id"
                                    string="Produto / Cilindro"
                                    options="{'no_create': False, 'no_create_edit': False}"
                                    placeholder="Selecionar ou criar..."/>
                             <field name="process_set_id"
                                    string="Template de Produto"
-                                   options="{'no_create': False}"
-                                   attrs="{'invisible': [('os_state', '=', 'draft')]}"/>
+                                   options="{'no_create': False}"/>
                             <button name="action_load_from_set"
                                     string="↓ Carregar Template na Programação"
                                     type="object"
@@ -143,7 +140,9 @@
                                  class="text-muted" style="font-size:11px;padding:2px 0;">
                                 ⚠ Confirme a OS para carregar o template.
                             </div>
-                            <field name="responsible_id" string="Responsável"/>
+                            <field name="order_type" string="Tipo de Ordem"
+                                   widget="selection"
+                                   attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"/>
                         </group>
                         <group string="Prazo e Progresso">
                             <field name="deadline_date" string="Prazo (Dead Line)"
