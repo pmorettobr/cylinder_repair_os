@@ -51,7 +51,12 @@ class RepairOrder(models.Model):
     )
 
     # ── Identificação do Cilindro ─────────────────────────────────────────────
-    product_name = fields.Char(string='Produto / Cilindro')
+    product_name = fields.Char(
+        string='Produto / Cilindro',
+        compute='_compute_product_name',
+        store=True,
+        readonly=False,
+    )
     serial_code = fields.Char(
         string='Nº de Série / TAG',
         copy=False,
@@ -291,11 +296,22 @@ class RepairOrder(models.Model):
 
     # ── Carregador de processos em lote ───────────────────────────────────────
 
+    @api.depends('cylinder_id')
+    def _compute_product_name(self):
+        for rec in self:
+            if rec.cylinder_id:
+                rec.product_name = rec.cylinder_id.name
+            elif not rec.product_name:
+                rec.product_name = False
+
     @api.onchange('cylinder_id')
     def _onchange_cylinder_id(self):
-        """Ao selecionar cilindro, preenche o template automaticamente."""
-        if self.cylinder_id and self.cylinder_id.process_set_id:
-            self.process_set_id = self.cylinder_id.process_set_id
+        """Ao selecionar cilindro, preenche template e tipo automaticamente."""
+        if self.cylinder_id:
+            if self.cylinder_id.process_set_id:
+                self.process_set_id = self.cylinder_id.process_set_id
+            if self.cylinder_id.repair_type:
+                self.type = self.cylinder_id.repair_type
 
     def action_load_from_set(self):
         """Carrega processos do template na OS. Chamado pela tela de OS."""
