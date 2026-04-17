@@ -25,6 +25,8 @@ Funcionalidades:
         'security/res_groups.xml',
         'security/ir.model.access.csv',
         'data/hide_menus.xml',
+        'views/repair_cylinder_views.xml',
+        'views/repair_process_set_views.xml',
         'views/repair_machine_views.xml',
         'views/repair_machine_operator_views.xml',
         'views/repair_component_views.xml',
