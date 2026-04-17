@@ -166,9 +166,9 @@
                                         <i class="fa fa-user me-1"/>
                                         <t t-esc="os.partner_id[1]"/>
                                     </t>
-                                    <t t-if="os.product_name">
+                                    <t t-if="os.cylinder_id">
                                         <span class="mx-1">·</span>
-                                        <t t-esc="os.product_name"/>
+                                        <t t-esc="os.cylinder_id[1]"/>
                                     </t>
                                     <t t-if="os.deadline_date">
                                         <span class="mx-1">·</span>
