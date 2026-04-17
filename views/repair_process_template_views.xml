@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- TREE — somente Componente, Operação, Máquina -->
+    <!-- TREE — editável inline, agrupado por componente -->
     <record id="view_repair_process_template_tree" model="ir.ui.view">
         <field name="name">repair.process.template.tree</field>
         <field name="model">repair.process.template</field>
         <field name="arch" type="xml">
             <tree string="Catálogo de Processos"
+                  editable="bottom"
                   default_order="component_type_id, sequence">
                 <field name="sequence" widget="handle"/>
                 <field name="component_type_id" string="Componente" required="1"/>
                 <field name="name" string="Operação" required="1"/>
-                <field name="machine_id" string="Máquina"/>
+                <field name="machine_id" string="Centro de Trabalho"
+                       options="{'no_create': True}"/>
+                <field name="duration_planned" string="Tempo (min)" optional="show"/>
+                <field name="requires_cq" string="CQ?" optional="show"/>
                 <field name="active" optional="hide"/>
             </tree>
         </field>
@@ -28,15 +32,18 @@
                         <group string="Classificação">
                             <field name="component_type_id" string="Componente" required="1"/>
                             <field name="name" string="Operação" required="1"/>
-                            <field name="machine_id" string="Máquina Padrão"/>
-                            <field name="duration_planned" string="Tempo Previsto (min)"
-                                   help="Tempo padrão em minutos. Copiado para a OS ao carregar."/>
+                            <field name="machine_id" string="Centro de Trabalho"/>
+                            <field name="duration_planned" string="Tempo Previsto (min)"/>
                             <field name="sequence" string="Ordem de Execução"/>
                             <field name="active"/>
                         </group>
                         <group string="Qualidade">
-<field name="requires_cq" string="Requer Inspeção de Qualidade?"/>
+                            <field name="requires_cq" string="Requer Inspeção de Qualidade?"/>
                         </group>
+                    </group>
+                    <group>
+                        <field name="service_description" string="Descrição Detalhada"
+                               placeholder="Detalhes do processo..."/>
                     </group>
                 </sheet>
             </form>
@@ -51,11 +58,11 @@
             <search string="Buscar Processos">
                 <field name="name" string="Operação"/>
                 <field name="component_type_id" string="Componente"/>
-                <field name="machine_id" string="Máquina"/>
+                <field name="machine_id" string="Centro de Trabalho"/>
                 <group expand="1" string="Agrupar por">
                     <filter name="group_component" string="Componente"
                             context="{'group_by': 'component_type_id'}"/>
-                    <filter name="group_machine" string="Máquina"
+                    <filter name="group_machine" string="Centro de Trabalho"
                             context="{'group_by': 'machine_id'}"/>
                 </group>
             </search>
