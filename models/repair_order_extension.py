@@ -345,11 +345,23 @@ class RepairOrder(models.Model):
         }
 
     def action_confirm_and_start(self):
-        """Confirma e inicia a OS em um único clique."""
+        """Confirma a OS e carrega o template automaticamente se houver."""
         self.ensure_one()
         if self.os_state == 'draft':
             self.action_confirm_os()
         self.action_start_os()
+
+        # Carrega template automaticamente se houver e não houver processos ainda
+        if self.process_set_id:
+            template_ids = self.process_set_id.line_ids.mapped('template_id').ids
+            if template_ids:
+                if self.process_ids:
+                    # Já tem processos — adiciona os do template que não existem ainda
+                    self.action_load_from_catalog(template_ids)
+                else:
+                    # Sem processos — carrega direto
+                    self.action_load_from_catalog(template_ids)
+
         return False
 
     def action_open_process_loader_add_more(self):
