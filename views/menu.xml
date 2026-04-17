@@ -66,6 +66,18 @@
 
 
 
+    <menuitem id="menu_repair_cylinders"
+              name="Cilindros"
+              parent="menu_repair_config"
+              action="cylinder_repair_os.action_repair_cylinders"
+              sequence="5"/>
+
+    <menuitem id="menu_repair_process_sets"
+              name="Templates de Processos"
+              parent="menu_repair_config"
+              action="cylinder_repair_os.action_repair_process_sets"
+              sequence="6"/>
+
     <menuitem id="menu_repair_machines"
               name="Centros de Trabalho"
               parent="menu_repair_config"
