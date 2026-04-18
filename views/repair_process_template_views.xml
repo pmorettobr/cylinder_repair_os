@@ -11,7 +11,8 @@
                   default_order="component_type_id, sequence">
                 <field name="sequence" widget="handle"/>
                 <field name="component_type_id" string="Componente" required="1"/>
-                <field name="name" string="Operação" required="1"/>
+                <field name="name" string="Operação" required="1"
+                       autocomplete="off"/>
                 <field name="machine_id" string="Centro de Trabalho"
                        options="{'no_create': True}"/>
                 <field name="duration_planned" string="Tempo (min)" optional="show"/>
@@ -31,7 +32,8 @@
                     <group>
                         <group string="Classificação">
                             <field name="component_type_id" string="Componente" required="1"/>
-                            <field name="name" string="Operação" required="1"/>
+                            <field name="name" string="Operação" required="1"
+                       autocomplete="off"/>
                             <field name="machine_id" string="Centro de Trabalho"/>
                             <field name="duration_planned" string="Tempo Previsto (min)"/>
                             <field name="sequence" string="Ordem de Execução"/>
