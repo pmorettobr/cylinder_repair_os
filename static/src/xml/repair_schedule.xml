@@ -104,7 +104,7 @@
                                    placeholder="Ex: Bancada 2, Estoque..."
                                    t-on-input="(e) => { state.editLocText = e.target.value; }"
                                    t-on-click.stop="() => {}"
-                                   t-on-keydown.stop="(e) => { if(e.key==='Enter') this.saveLocation(group.id); if(e.key==='Escape') this.cancelLocEdit(); }"/>
+                                   t-on-keydown.stop="(e) => this.onLocKeydown(e, group.id)"/>
                             <select class="form-select form-select-sm o_repair_loc_select"
                                     t-on-change.stop="(e) => { state.editLocStatus = e.target.value; }"
                                     t-on-click.stop="() => {}">
