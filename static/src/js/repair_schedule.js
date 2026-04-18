@@ -507,6 +507,11 @@ class RepairSchedule extends Component {
 
     cancelLocEdit() { this.state.editLocId = null; }
 
+    onLocKeydown(e, compId) {
+        if (e.key === 'Enter')  this.saveLocation(compId);
+        if (e.key === 'Escape') this.cancelLocEdit();
+    }
+
     async saveLocation(compId) {
         const text   = this.state.editLocText;
         const status = this.state.editLocStatus;
