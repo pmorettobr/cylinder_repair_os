@@ -1405,3 +1405,24 @@ tr.o_repair_drag_over { background: rgba(79,70,229,0.06) !important; }
     box-shadow: 0 2px 6px rgba(0,0,0,.08);
     border-color: #6366f1;
 }
+
+/* Cabeçalho de OS na fila de máquinas */
+.o_repair_mq_os_header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px 4px;
+    margin-top: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 12px;
+}
+.o_repair_mq_os_header:hover { background: #f5f3ff; }
+.o_repair_mq_os_header:first-child { margin-top: 0; }
+
+/* Título da seção OS com flex para botões de filtro */
+.o_repair_dash_section_title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
