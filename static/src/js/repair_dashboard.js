@@ -46,12 +46,15 @@ class RepairDashboard extends Component {
         this.notif      = useService("notification");
 
         this.state = useState({
-            view:       "dashboard",   // "dashboard" | "timeline"
-            loading:    true,
-            counts:     { ready:0, progress:0, paused:0, done:0, cancel:0 },
-            machines:   [],
-            orders:     [],
-            processes:  [],
+            view:              "dashboard",   // "dashboard" | "timeline" | "machines"
+            loading:           true,
+            counts:            { ready:0, progress:0, paused:0, done:0, cancel:0 },
+            machines:          [],
+            orders:            [],
+            processes:         [],
+            // Item 12 — Fila por máquina
+            selectedMachineId: null,
+            mqFilterState:     "",   // "" = todos | "ready" | "progress" | "paused"
         });
 
         this._pollInterval = null;
@@ -92,11 +95,11 @@ class RepairDashboard extends Component {
                 ),
                 this.orm.searchRead(
                     "repair.os.process",
-                    [["state", "in", ["ready", "progress", "paused", "done"]]],
+                    [["state", "in", ["ready", "progress", "paused", "pending_cq"]]],
                     ["name", "state", "machine_id", "repair_id",
                      "date_start_orig", "date_start", "date_finished",
                      "duration_acc", "duration_planned", "component_type_id",
-                     "operator_id"],
+                     "operator_id", "has_deviation", "sequence"],
                     { limit: 500 }
                 ),
                 this.orm.searchRead(
@@ -112,7 +115,7 @@ class RepairDashboard extends Component {
                 if (counts[p.state] !== undefined) counts[p.state]++;
             }
 
-            // Grid de máquinas: qual processo está em andamento agora
+            // Grid de máquinas: qual processo está em andamento + fila
             const machineMap = {};
             for (const m of machines) {
                 machineMap[m.id] = { ...m, current: null, queue: 0 };
@@ -123,7 +126,8 @@ class RepairDashboard extends Component {
                 if (!machineMap[mid]) continue;
                 if (p.state === "progress") {
                     machineMap[mid].current = p;
-                } else if (p.state === "ready") {
+                }
+                if (["ready", "progress", "paused", "pending_cq"].includes(p.state)) {
                     machineMap[mid].queue++;
                 }
             }
@@ -160,6 +164,43 @@ class RepairDashboard extends Component {
         };
         this.busService.addEventListener("notification", this._busHandler);
         this.busService.start();
+    }
+
+    // ── Item 12 — Fila por Máquina ────────────────────────────────────
+
+    get machineQueue() {
+        const mid = this.state.selectedMachineId;
+        if (!mid) return [];
+        return this.state.processes
+            .filter(p =>
+                p.machine_id && p.machine_id[0] === mid &&
+                (!this.state.mqFilterState || p.state === this.state.mqFilterState)
+            )
+            .sort((a, b) => {
+                const ca = (a.component_type_id || [0])[0];
+                const cb = (b.component_type_id || [0])[0];
+                if (ca !== cb) return ca - cb;
+                return (a.sequence || 0) - (b.sequence || 0);
+            });
+    }
+
+    selectMachine(id) {
+        this.state.selectedMachineId = id;
+        this.state.mqFilterState     = "";
+    }
+
+    mqStateBadge(s) {
+        return {
+            ready: "bg-secondary", progress: "text-bg-warning",
+            paused: "text-bg-info", pending_cq: "text-bg-secondary",
+        }[s] || "bg-secondary";
+    }
+
+    mqStateLabel(s) {
+        return {
+            ready: "Pronto", progress: "Em Andamento",
+            paused: "Pausado", pending_cq: "Aguardando CQ",
+        }[s] || s;
     }
 
     // ── Navegação ─────────────────────────────────────────────────────
