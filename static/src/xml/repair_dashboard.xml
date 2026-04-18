@@ -259,7 +259,7 @@
                     <option value="pending_cq">Aguardando CQ</option>
                 </select>
                 <select class="form-select form-select-sm" style="width:165px;"
-                        t-on-change="(e) => { state.mqFilterComponent = parseInt(e.target.value) || 0; }">
+                        t-on-change="(e) => this.onMqFilterComponent(e)">
                     <option value="0">Todos os Componentes</option>
                     <t t-foreach="machineQueueComponents" t-as="comp" t-key="comp.id">
                         <option t-att-value="comp.id"><t t-esc="comp.name"/></option>
