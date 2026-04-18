@@ -244,6 +244,10 @@ class RepairDashboard extends Component {
         this.state.mqFilterComponent = 0;
     }
 
+    onMqFilterComponent(e) {
+        this.state.mqFilterComponent = parseInt(e.target.value) || 0;
+    }
+
     mqStateBadge(s) {
         return {
             ready:      "text-bg-secondary",
