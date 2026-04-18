@@ -31,6 +31,11 @@ class RepairSchedule extends Component {
             dragSrcId:          null,
             dragOverId:         null,
             showLoader:         false,
+            // Item 11 — localização de componentes
+            compLocations:      {},   // { [component_type_id]: {id, location_text, location_status} }
+            editLocId:          null, // component_type_id em edição
+            editLocText:        '',
+            editLocStatus:      'available',
         });
 
         // Resolve repair_id: context → localStorage (F5 recovery)
@@ -108,7 +113,7 @@ class RepairSchedule extends Component {
         }
         if (!this.repairId) { this.state.loading = false; return; }
         try {
-            const [repairs, procs] = await Promise.all([
+            const [repairs, procs, comps] = await Promise.all([
                 this.orm.searchRead(
                     "repair.order",
                     [["id", "=", this.repairId]],
@@ -124,9 +129,18 @@ class RepairSchedule extends Component {
                      "requires_cq", "cq_result", "cq_rejection_count",
                      ]
                 ),
+                this.orm.searchRead(
+                    "repair.component.type",
+                    [["active", "=", true]],
+                    ["id", "location_text", "location_status"]
+                ),
             ]);
             this.state.repairInfo = repairs[0] || {};
             this.state.processes  = Array.isArray(procs) ? procs : [];
+            // Monta mapa de localização por component_type_id
+            const locMap = {};
+            for (const c of (comps || [])) locMap[c.id] = c;
+            this.state.compLocations = locMap;
         } catch (e) {
             this.notif.add("Erro ao carregar dados", { type: "danger" });
             this.state.processes = [];
@@ -480,6 +494,47 @@ class RepairSchedule extends Component {
         const total = group.records.length;
         if (!total) return 0;
         return Math.round((group.done / total) * 100);
+    }
+
+    // ── Item 11 — Localização inline no cabeçalho do grupo ───────────
+
+    startEditLoc(compId) {
+        const loc = this.state.compLocations[compId] || {};
+        this.state.editLocId     = compId;
+        this.state.editLocText   = loc.location_text || '';
+        this.state.editLocStatus = loc.location_status || 'available';
+    }
+
+    cancelLocEdit() { this.state.editLocId = null; }
+
+    async saveLocation(compId) {
+        const text   = this.state.editLocText;
+        const status = this.state.editLocStatus;
+        this.state.editLocId = null;
+        try {
+            await this.orm.write("repair.component.type", [compId], {
+                location_text:   text,
+                location_status: status,
+            });
+            // Atualiza localmente sem reload completo
+            this.state.compLocations[compId] = {
+                id: compId, location_text: text, location_status: status,
+            };
+        } catch (e) {
+            this.notif.add((e.data && e.data.message) || "Erro ao salvar localização", { type: "danger" });
+        }
+    }
+
+    locBadgeCls(compId) {
+        const loc = this.state.compLocations[compId];
+        if (!loc || !loc.location_status) return "bg-secondary";
+        return loc.location_status === "available" ? "bg-success" : "bg-danger";
+    }
+
+    locStatusLabel(compId) {
+        const loc = this.state.compLocations[compId];
+        if (!loc || !loc.location_status) return "";
+        return loc.location_status === "available" ? "Disponível" : "Indisponível";
     }
 
     // ── Barra de progresso geral — style string ───────────────────────
