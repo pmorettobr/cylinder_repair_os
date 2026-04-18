@@ -29,16 +29,36 @@ class RepairProcessSet(models.Model):
         for rec in self:
             rec.line_count = len(rec.line_ids)
 
-    def action_open_catalog_modal(self):
-        """Abre o modal OWL de seleção de processos no contexto do template."""
+    def action_open_catalog_for_set_wizard(self):
+        """Abre wizard para adicionar processos do catálogo ao template."""
         self.ensure_one()
+        # Returns wizard action to select processes
+        templates = self.env['repair.process.template'].search(
+            [('active', '=', True)],
+            order='component_type_id, sequence'
+        )
+        # Exclude already in set
+        existing_ids = set(self.line_ids.mapped('template_id').ids)
+
+        wizard = self.env['repair.process.set.wizard'].create({
+            'set_id': self.id,
+        })
+        # Create wizard lines for templates not in set
+        for tmpl in templates:
+            if tmpl.id not in existing_ids:
+                self.env['repair.process.set.wizard.line'].create({
+                    'wizard_id': wizard.id,
+                    'template_id': tmpl.id,
+                    'selected': False,
+                })
+
         return {
-            'type': 'ir.actions.client',
-            'tag': 'reload',
-            'params': {
-                'action': 'open_set_catalog',
-                'set_id': self.id,
-            }
+            'type': 'ir.actions.act_window',
+            'name': 'Adicionar Processos ao Template',
+            'res_model': 'repair.process.set.wizard',
+            'res_id': wizard.id,
+            'view_mode': 'form',
+            'target': 'new',
         }
 
     def action_get_catalog_for_set(self):
@@ -130,3 +150,47 @@ class RepairProcessSetLine(models.Model):
         string='Requer CQ?',
         store=True,
     )
+
+
+class RepairProcessSetWizard(models.TransientModel):
+    """Wizard para seleção de processos do catálogo para um template."""
+    _name = 'repair.process.set.wizard'
+    _description = 'Wizard — Adicionar Processos ao Template'
+
+    set_id   = fields.Many2one('repair.process.set', required=True, ondelete='cascade')
+    line_ids = fields.One2many('repair.process.set.wizard.line', 'wizard_id', string='Processos')
+
+    def action_select_all(self):
+        self.line_ids.write({'selected': True})
+        return {'type': 'ir.actions.act_window', 'res_model': self._name,
+                'res_id': self.id, 'view_mode': 'form', 'target': 'new'}
+
+    def action_deselect_all(self):
+        self.line_ids.write({'selected': False})
+        return {'type': 'ir.actions.act_window', 'res_model': self._name,
+                'res_id': self.id, 'view_mode': 'form', 'target': 'new'}
+
+    def action_confirm(self):
+        self.ensure_one()
+        selected = self.line_ids.filtered(lambda l: l.selected)
+        for line in selected:
+            self.env['repair.process.set.line'].create({
+                'set_id':      self.set_id.id,
+                'template_id': line.template_id.id,
+            })
+        return {'type': 'ir.actions.act_window_close'}
+
+
+class RepairProcessSetWizardLine(models.TransientModel):
+    """Linha do wizard de seleção."""
+    _name = 'repair.process.set.wizard.line'
+    _description = 'Linha do Wizard de Template'
+    _order = 'component_type_id, sequence'
+
+    wizard_id         = fields.Many2one('repair.process.set.wizard', ondelete='cascade')
+    template_id       = fields.Many2one('repair.process.template', string='Processo', required=True)
+    selected          = fields.Boolean(string='✓', default=False)
+    component_type_id = fields.Many2one(related='template_id.component_type_id', string='Componente', store=True)
+    sequence          = fields.Integer(related='template_id.sequence', string='Seq.', store=True)
+    machine_id        = fields.Many2one(related='template_id.machine_id', string='Centro de Trabalho', store=True)
+    requires_cq       = fields.Boolean(related='template_id.requires_cq', string='CQ?', store=True)
