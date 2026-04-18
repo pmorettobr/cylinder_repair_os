@@ -16,6 +16,20 @@ class RepairComponentType(models.Model):
     active = fields.Boolean(default=True)
     notes = fields.Char(string='Observação')
 
+    # ── Item 11 — Localização física do componente ────────────────────
+    location_text = fields.Char(
+        string='Localização',
+        help='Onde a peça está fisicamente. Ex: Estoque, Bancada 2, Torno CNC',
+    )
+    location_status = fields.Selection(
+        selection=[
+            ('available', 'Disponível'),
+            ('unavailable', 'Indisponível'),
+        ],
+        string='Status',
+        default='available',
+    )
+
     def name_get(self):
         result = []
         for rec in self:
