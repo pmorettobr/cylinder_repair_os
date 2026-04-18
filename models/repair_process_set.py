@@ -29,6 +29,61 @@ class RepairProcessSet(models.Model):
         for rec in self:
             rec.line_count = len(rec.line_ids)
 
+    def action_open_catalog_modal(self):
+        """Abre o modal OWL de seleção de processos no contexto do template."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+            'params': {
+                'action': 'open_set_catalog',
+                'set_id': self.id,
+            }
+        }
+
+    def action_get_catalog_for_set(self):
+        """Retorna templates do catálogo excluindo os já no set. Usado pelo modal OWL."""
+        self.ensure_one()
+
+        # IDs de templates já no set
+        existing_template_ids = set(self.line_ids.mapped('template_id').ids)
+
+        templates = self.env['repair.process.template'].search(
+            [('active', '=', True)],
+            order='component_type_id, sequence'
+        )
+
+        result = []
+        for tmpl in templates:
+            if tmpl.id in existing_template_ids:
+                continue
+            ct_id = tmpl.component_type_id.id or 0
+            result.append({
+                'id':               tmpl.id,
+                'sequence':         tmpl.sequence,
+                'component_type_id': [ct_id, tmpl.component_type_id.name] if tmpl.component_type_id else [0, ''],
+                'name':             tmpl.name,
+                'machine_id':       [tmpl.machine_id.id, tmpl.machine_id.name] if tmpl.machine_id else False,
+                'duration_planned': tmpl.duration_planned or 0.0,
+                'requires_cq':      tmpl.requires_cq,
+            })
+        return result
+
+    def action_load_from_catalog_to_set(self, template_ids):
+        """Adiciona templates ao set. Chamado pelo modal OWL."""
+        self.ensure_one()
+        if not template_ids:
+            return False
+
+        existing = set(self.line_ids.mapped('template_id').ids)
+        for tmpl_id in template_ids:
+            if tmpl_id not in existing:
+                self.env['repair.process.set.line'].create({
+                    'set_id':      self.id,
+                    'template_id': tmpl_id,
+                })
+        return True
+
     def _compute_cylinder_count(self):
         for rec in self:
             rec.cylinder_count = self.env['repair.cylinder'].search_count(
