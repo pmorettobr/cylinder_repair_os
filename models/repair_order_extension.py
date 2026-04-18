@@ -311,7 +311,7 @@ class RepairOrder(models.Model):
             if self.cylinder_id.process_set_id:
                 self.process_set_id = self.cylinder_id.process_set_id
             if self.cylinder_id.repair_type:
-                self.type = self.cylinder_id.repair_type
+                self.order_type = self.cylinder_id.repair_type
 
     def action_load_from_set(self):
         """Carrega processos do template na OS. Chamado pela tela de OS."""
