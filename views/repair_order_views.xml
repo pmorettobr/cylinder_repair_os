@@ -129,7 +129,7 @@
                                    placeholder="Selecionar ou criar..."/>
                             <field name="process_set_id"
                                    string="Template de Produto"
-                                   options="{'no_create': False}"
+                                   options="{'no_create': False, 'no_open': True}"
                                    attrs="{'readonly': [('os_state', 'not in', ('draft',))]}"
                                    help="Ao confirmar a OS, os processos do template são carregados automaticamente."/>
                             <field name="order_type" string="Tipo de Ordem"
