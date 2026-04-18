@@ -43,8 +43,8 @@
                     <notebook>
                         <page string="Processos" name="processes">
                             <div class="mb-2">
-                                <button name="action_open_catalog_modal"
-                                        string="+ Adicionar Processos do Catálogo"
+                                <button name="action_open_catalog_for_set_wizard"
+                                        string="Adicionar Processos"
                                         type="object"
                                         class="btn btn-outline-primary btn-sm"
                                         attrs="{'invisible': [('id', '=', False)]}"/>
