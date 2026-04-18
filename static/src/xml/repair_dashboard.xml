@@ -32,6 +32,11 @@
                     t-on-click="() => this.setView('timeline')">
                 <i class="fa fa-calendar"/>
             </button>
+            <button t-att-class="'btn btn-sm ' + (state.view === 'machines' ? 'btn-primary' : 'btn-outline-secondary')"
+                    title="Fila por Máquina"
+                    t-on-click="() => this.setView('machines')">
+                <i class="fa fa-tasks"/>
+            </button>
         </div>
     </div>
 
@@ -222,6 +227,117 @@
                 </t>
             </div>
 
+        </div>
+    </t>
+
+    <!-- VIEW: MACHINES (Fila por Máquina) -->
+    <t t-if="state.view === 'machines'">
+        <div class="o_repair_mq_wrap">
+
+            <!-- Barra de filtros -->
+            <div class="o_repair_mq_filters d-flex align-items-center gap-2 px-3 py-2 border-bottom bg-white flex-wrap">
+                <span style="font-size:12px;font-weight:600;color:#374151;">
+                    <i class="fa fa-filter me-1"/>Filtrar:
+                </span>
+                <select class="form-select form-select-sm" style="width:160px;"
+                        t-on-change="(e) => { state.mqFilterState = e.target.value; }">
+                    <option value="">Todas as Situações</option>
+                    <option value="ready">Pronto</option>
+                    <option value="progress">Em Andamento</option>
+                    <option value="paused">Pausado</option>
+                    <option value="pending_cq">Aguardando CQ</option>
+                </select>
+                <span class="text-muted ms-auto" style="font-size:11px;">
+                    Clique na OS para abrir
+                </span>
+            </div>
+
+            <!-- Master / Detail -->
+            <div class="o_repair_mq_body">
+
+                <!-- Painel esquerdo: lista de máquinas -->
+                <div class="o_repair_mq_left">
+                    <div class="o_repair_mq_left_title">Máquinas</div>
+                    <t t-foreach="state.machines" t-as="m" t-key="m.id">
+                        <div t-att-class="'o_repair_mq_machine_item ' + (state.selectedMachineId === m.id ? 'selected' : '') + ' ' + machineStatusCls(m)"
+                             t-on-click="() => this.selectMachine(m.id)">
+                            <div class="o_repair_mq_machine_name">
+                                <t t-esc="m.name"/>
+                            </div>
+                            <div class="d-flex align-items-center gap-1 mt-1">
+                                <t t-if="m.current">
+                                    <span class="badge text-bg-warning" style="font-size:10px;">Em uso</span>
+                                </t>
+                                <t t-elif="m.queue > 0">
+                                    <span class="badge bg-secondary" style="font-size:10px;"><t t-esc="m.queue"/> na fila</span>
+                                </t>
+                                <t t-else="">
+                                    <span class="badge bg-success" style="font-size:10px;">Ociosa</span>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-if="state.machines.length === 0">
+                        <div class="text-muted p-3" style="font-size:12px;">Nenhuma máquina.</div>
+                    </t>
+                </div>
+
+                <!-- Painel direito: fila da máquina selecionada -->
+                <div class="o_repair_mq_right">
+                    <t t-if="!state.selectedMachineId">
+                        <div class="text-center text-muted p-5">
+                            <i class="fa fa-arrow-left fa-2x mb-3 d-block"/>
+                            Selecione uma máquina
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <t t-if="machineQueue.length === 0">
+                            <div class="text-center text-muted p-5">
+                                <i class="fa fa-inbox fa-2x mb-3 d-block"/>
+                                Nenhum processo na fila.
+                            </div>
+                        </t>
+                        <t t-foreach="machineQueue" t-as="p" t-key="p.id">
+                            <div class="o_repair_mq_item"
+                                 t-on-click="() => this.openOS(p.repair_id[0])"
+                                 style="cursor:pointer;">
+                                <!-- Linha 1: OS + Componente + Operação -->
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="fw-bold" style="font-size:13px;color:#1e293b;">
+                                        <t t-esc="p.repair_id ? p.repair_id[1] : '—'"/>
+                                    </span>
+                                    <t t-if="p.component_type_id">
+                                        <span class="badge bg-light text-secondary border" style="font-size:11px;">
+                                            <t t-esc="p.component_type_id[1]"/>
+                                        </span>
+                                    </t>
+                                    <span style="font-size:12px;color:#374151;">
+                                        <t t-esc="p.name"/>
+                                    </span>
+                                    <t t-if="p.has_deviation">
+                                        <span class="badge bg-warning text-dark ms-auto" style="font-size:10px;">
+                                            <i class="fa fa-exclamation-triangle me-1"/>Desvio
+                                        </span>
+                                    </t>
+                                </div>
+                                <!-- Linha 2: situação + operador -->
+                                <div class="d-flex align-items-center gap-2 mt-1">
+                                    <span t-att-class="'badge ' + mqStateBadge(p.state)" style="font-size:10px;">
+                                        <t t-esc="mqStateLabel(p.state)"/>
+                                    </span>
+                                    <t t-if="p.operator_id">
+                                        <span class="text-muted" style="font-size:11px;">
+                                            <i class="fa fa-user me-1"/>
+                                            <t t-esc="p.operator_id[1]"/>
+                                        </span>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+                </div>
+
+            </div>
         </div>
     </t>
 
