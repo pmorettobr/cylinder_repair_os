@@ -55,6 +55,10 @@ class RepairDashboard extends Component {
             // Item 12 — Fila por máquina
             selectedMachineId: null,
             mqFilterState:     "",   // "" = todos | "ready" | "progress" | "paused"
+            mqFilterComponent: 0,    // 0 = todos
+            compLocations:     {},   // { [component_type_id]: {location_text, location_status} }
+            // Dashboard principal — filtro por prazo
+            dateFilter:        "all", // "all" | "today" | "week" | "month"
         });
 
         this._pollInterval = null;
@@ -85,7 +89,7 @@ class RepairDashboard extends Component {
 
     async _loadData() {
         try {
-            const [orders, processes, machines] = await Promise.all([
+            const [orders, processes, machines, comps] = await Promise.all([
                 this.orm.searchRead(
                     "repair.order",
                     [["os_state", "not in", ["cancel", "done"]]],
@@ -106,6 +110,11 @@ class RepairDashboard extends Component {
                     "repair.machine",
                     [["active", "=", true]],
                     ["name", "code"]
+                ),
+                this.orm.searchRead(
+                    "repair.component.type",
+                    [["active", "=", true]],
+                    ["id", "location_text", "location_status"]
                 ),
             ]);
 
@@ -136,6 +145,10 @@ class RepairDashboard extends Component {
             this.state.machines  = Object.values(machineMap);
             this.state.orders    = orders;
             this.state.processes = processes;
+            // Localização dos componentes
+            const locMap = {};
+            for (const c of (comps || [])) locMap[c.id] = c;
+            this.state.compLocations = locMap;
             this.state.loading   = false;
 
             // Atualiza timeline se estiver visível
@@ -168,12 +181,27 @@ class RepairDashboard extends Component {
 
     // ── Item 12 — Fila por Máquina ────────────────────────────────────
 
+    get filteredOrders() {
+        const f = this.state.dateFilter;
+        if (f === 'all') return this.state.orders;
+        const now = new Date();
+        return this.state.orders.filter(os => {
+            if (!os.deadline_date) return true;
+            const d = new Date(os.deadline_date + 'T23:59:59');
+            if (f === 'today') { const e = new Date(now); e.setHours(23,59,59,999); return d <= e; }
+            if (f === 'week')  { const e = new Date(now); e.setDate(e.getDate()+7); e.setHours(23,59,59,999); return d <= e; }
+            if (f === 'month') { const e = new Date(now); e.setDate(e.getDate()+30); e.setHours(23,59,59,999); return d <= e; }
+            return true;
+        });
+    }
+
     get machineQueue() {
         const mid = this.state.selectedMachineId;
         if (!mid) return [];
         return this.state.processes
             .filter(p =>
                 p.machine_id && p.machine_id[0] === mid &&
+                p.state !== 'cancel' && p.state !== 'done' &&
                 (!this.state.mqFilterState || p.state === this.state.mqFilterState)
             )
             .sort((a, b) => {
@@ -184,23 +212,60 @@ class RepairDashboard extends Component {
             });
     }
 
+    get machineQueueGrouped() {
+        const map = new Map();
+        for (const p of this.machineQueue) {
+            if (this.state.mqFilterComponent &&
+                (!p.component_type_id || p.component_type_id[0] !== this.state.mqFilterComponent)) continue;
+            const osId   = p.repair_id ? p.repair_id[0] : 0;
+            const osName = p.repair_id ? p.repair_id[1] : '—';
+            if (!map.has(osId)) map.set(osId, { id: osId, name: osName, items: [] });
+            map.get(osId).items.push(p);
+        }
+        return [...map.values()];
+    }
+
+    get machineQueueComponents() {
+        const mid = this.state.selectedMachineId;
+        if (!mid) return [];
+        const comps = new Map();
+        for (const p of this.state.processes) {
+            if (p.machine_id && p.machine_id[0] === mid && p.component_type_id) {
+                const [id, name] = p.component_type_id;
+                if (!comps.has(id)) comps.set(id, name);
+            }
+        }
+        return [...comps.entries()].map(([id, name]) => ({id, name}));
+    }
+
     selectMachine(id) {
         this.state.selectedMachineId = id;
         this.state.mqFilterState     = "";
+        this.state.mqFilterComponent = 0;
     }
 
     mqStateBadge(s) {
         return {
-            ready: "bg-secondary", progress: "text-bg-warning",
-            paused: "text-bg-info", pending_cq: "text-bg-secondary",
-        }[s] || "bg-secondary";
+            ready:      "text-bg-secondary",
+            progress:   "text-bg-warning",
+            paused:     "text-bg-info",
+            pending_cq: "text-bg-primary",
+        }[s] || "text-bg-secondary";
     }
 
     mqStateLabel(s) {
-        return {
-            ready: "Pronto", progress: "Em Andamento",
-            paused: "Pausado", pending_cq: "Aguardando CQ",
-        }[s] || s;
+        return { ready:"Pronto", progress:"Em Andamento", paused:"Pausado", pending_cq:"Aguardando CQ" }[s] || s;
+    }
+
+    locText(compId) {
+        const loc = this.state.compLocations[compId];
+        return loc && loc.location_text ? loc.location_text : '';
+    }
+
+    locCls(compId) {
+        const loc = this.state.compLocations[compId];
+        if (!loc || !loc.location_text) return 'text-muted';
+        return loc.location_status === 'available' ? 'text-success' : 'text-danger';
     }
 
     // ── Navegação ─────────────────────────────────────────────────────
