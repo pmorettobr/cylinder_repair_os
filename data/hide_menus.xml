@@ -1,14 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo noupdate="1">
     <!--
-        Oculta menus nativos do Odoo para usuários do módulo Reparo Cilindros.
-        Visíveis apenas para Administradores (base.group_system).
-        Apenas menus que existem em qualquer instalação Odoo 16.
+        Oculta menus sempre presentes (não dependem de módulos opcionais).
+        Menus condicionais são tratados pelo post_init_hook em hooks.py.
+        noupdate="1" evita sobrescrever em atualizações futuras.
     -->
 
-    <!-- Discuss / Mensagens — sempre existe (mail é dependência base) -->
+    <!-- Mensagens / Discuss -->
     <record id="mail.menu_root_discuss" model="ir.ui.menu" forcecreate="0">
-        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
+        <field name="groups_id" eval="[(6, 0, [ref('base.group_system')])]"/>
+    </record>
+
+    <!-- Painéis -->
+    <record id="board.menu_board_my_dash" model="ir.ui.menu" forcecreate="0">
+        <field name="groups_id" eval="[(6, 0, [ref('base.group_system')])]"/>
+    </record>
+
+    <!-- Aplicativos -->
+    <record id="base.menu_module_top" model="ir.ui.menu" forcecreate="0">
+        <field name="groups_id" eval="[(6, 0, [ref('base.group_system')])]"/>
     </record>
 
 </odoo>
