@@ -36,3 +36,6 @@ access_repair_process_set_line_operator,repair.process.set.line operator,model_r
 access_repair_process_set_line_supervisor,repair.process.set.line supervisor,model_repair_process_set_line,cylinder_repair_os.group_repair_supervisor,1,1,1,1
 access_repair_process_set_wizard_supervisor,repair.process.set.wizard supervisor,model_repair_process_set_wizard,cylinder_repair_os.group_repair_supervisor,1,1,1,1
 access_repair_process_set_wizard_line_supervisor,repair.process.set.wizard.line supervisor,model_repair_process_set_wizard_line,cylinder_repair_os.group_repair_supervisor,1,1,1,1
+access_ir_actions_client_operator,ir.actions.client operator,base.model_ir_actions_client,cylinder_repair_os.group_repair_operator,1,0,0,0
+access_ir_actions_client_cq,ir.actions.client cq,base.model_ir_actions_client,cylinder_repair_os.group_repair_cq,1,0,0,0
+access_ir_actions_client_supervisor,ir.actions.client supervisor,base.model_ir_actions_client,cylinder_repair_os.group_repair_supervisor,1,0,0,0
