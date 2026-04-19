@@ -19,31 +19,25 @@
                     </div>
 
                     <group string="Estado dos Processos">
-                        <group>
-                            <field name="state_ready" string="Pronto"/>
-                            <field name="state_progress" string="Em Andamento"/>
-                            <field name="state_paused" string="Pausado"/>
-                        </group>
-                        <group>
-                            <field name="state_done" string="Concluído"/>
-                            <field name="state_cancel" string="Cancelado"/>
-                        </group>
+                        <div colspan="2" style="display:flex; flex-wrap:wrap; gap:16px 32px; padding:4px 0 8px;">
+                            <field name="state_ready"   string="Pronto"        widget="boolean" nolabel="0" class="o_field_boolean"/>
+                            <field name="state_progress" string="Em Andamento" widget="boolean" nolabel="0" class="o_field_boolean"/>
+                            <field name="state_paused"  string="Pausado"       widget="boolean" nolabel="0" class="o_field_boolean"/>
+                            <field name="state_done"    string="Concluído"     widget="boolean" nolabel="0" class="o_field_boolean"/>
+                            <field name="state_cancel"  string="Cancelado"     widget="boolean" nolabel="0" class="o_field_boolean"/>
+                        </div>
                     </group>
 
                     <group string="Filtros Opcionais">
-                        <group>
-                            <field name="machine_id" placeholder="Todas as máquinas"/>
-                            <field name="os_id" placeholder="Todas as OS"/>
-                        </group>
-                        <group>
-                            <field name="use_date_filter" string="Filtrar por período?"/>
-                            <field name="date_from" string="De"
-                                   attrs="{'invisible': [('use_date_filter','=',False)],
-                                           'required': [('use_date_filter','=',True)]}"/>
-                            <field name="date_to" string="Até"
-                                   attrs="{'invisible': [('use_date_filter','=',False)],
-                                           'required': [('use_date_filter','=',True)]}"/>
-                        </group>
+                        <field name="machine_id" placeholder="Todas as máquinas" string="Máquina"/>
+                        <field name="os_id" placeholder="Todas as OS" string="Nº OS"/>
+                        <field name="use_date_filter" string="Filtrar por período?"/>
+                        <field name="date_from" string="De"
+                               attrs="{'invisible': [('use_date_filter','=',False)],
+                                       'required': [('use_date_filter','=',True)]}"/>
+                        <field name="date_to" string="Até"
+                               attrs="{'invisible': [('use_date_filter','=',False)],
+                                       'required': [('use_date_filter','=',True)]}"/>
                     </group>
 
                     <div class="mt-1 mb-4">
