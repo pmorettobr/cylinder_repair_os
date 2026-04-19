@@ -272,32 +272,34 @@
                     <!-- Campos invisíveis para controle de visibilidade -->
                     <field name="state" invisible="1"/>
 
-                    <group>
+                    <div style="padding: 0 16px 8px;">
                         <field name="has_deviation"
                                string="Registrar Desvio?"
-                               widget="boolean_toggle"/>
-                    </group>
+                               widget="boolean_toggle"
+                               nolabel="0"/>
+                    </div>
 
                     <div attrs="{'invisible': [('has_deviation', '=', False)]}"
-                         style="padding: 0 16px 12px;">
+                         style="padding: 0 16px 8px;">
                         <field name="deviation_notes"
                                nolabel="1"
                                placeholder="Descreva o desvio encontrado..."
-                               style="width:100%; min-height:100px; resize:vertical;"/>
+                               style="width:100%; min-height:60px; max-height:120px; resize:vertical;"/>
                     </div>
 
                     <!-- Ação após desvio — só aparece quando há desvio E processo está em andamento -->
                     <div attrs="{'invisible': ['|', ('has_deviation', '=', False), ('state', 'not in', ['progress', 'paused'])]}"
-                         style="padding: 0 16px 12px;">
-                        <div class="alert alert-warning" style="margin:0;">
-                            <strong>O que deseja fazer com o processo?</strong>
+                         style="padding: 0 16px 8px;">
+                        <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:8px 12px; margin-bottom:8px;">
+                            <span style="font-size:12px; font-weight:600; color:#92400e;">
+                                O que deseja fazer com o processo?
+                            </span>
                         </div>
-                        <group style="margin-top:8px;">
-                            <field name="deviation_action"
-                                   string="Ação"
-                                   widget="radio"
-                                   nolabel="1"/>
-                        </group>
+                        <field name="deviation_action"
+                               string=""
+                               widget="radio"
+                               nolabel="1"
+                               options="{'horizontal': true}"/>
                     </div>
 
                 </sheet>
