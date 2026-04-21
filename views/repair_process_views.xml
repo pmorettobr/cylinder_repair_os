@@ -1,6 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- Popup de Motivo de Pausa -->
+    <record id="view_repair_process_pause_popup" model="ir.ui.view">
+        <field name="name">repair.os.process.pause.popup</field>
+        <field name="model">repair.os.process</field>
+        <field name="arch" type="xml">
+            <form string="Pausar Processo">
+                <sheet>
+                    <div class="o_repair_popup_header">
+                        <div class="o_repair_popup_title">
+                            <field name="operation_label" readonly="1"/>
+                        </div>
+                        <div class="o_repair_popup_meta">
+                            <span>OS: </span>
+                            <field name="repair_id" readonly="1" class="d-inline"/>
+                        </div>
+                    </div>
+
+                    <group string="Motivo da Pausa">
+                        <field name="pause_reason"
+                               string="Motivo"
+                               required="1"
+                               widget="radio"
+                               options="{'horizontal': false}"/>
+                        <field name="pause_notes"
+                               string="Observação"
+                               placeholder="Detalhe opcional..."
+                               attrs="{'invisible': [('pause_reason', '=', False)]}"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Confirmar Pausa"
+                            name="action_do_pause"
+                            type="object"
+                            class="btn-warning"/>
+                    <button string="Cancelar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
     <!-- Popup de Ações (Iniciar / Pausar / Concluir) -->
     <record id="view_repair_process_actions_popup" model="ir.ui.view">
         <field name="name">repair.os.process.actions.popup</field>
@@ -272,34 +314,32 @@
                     <!-- Campos invisíveis para controle de visibilidade -->
                     <field name="state" invisible="1"/>
 
-                    <div style="padding: 0 16px 8px;">
+                    <group>
                         <field name="has_deviation"
                                string="Registrar Desvio?"
-                               widget="boolean_toggle"
-                               nolabel="0"/>
-                    </div>
+                               widget="boolean_toggle"/>
+                    </group>
 
                     <div attrs="{'invisible': [('has_deviation', '=', False)]}"
-                         style="padding: 0 16px 8px;">
+                         style="padding: 0 16px 12px;">
                         <field name="deviation_notes"
                                nolabel="1"
                                placeholder="Descreva o desvio encontrado..."
-                               style="width:100%; min-height:60px; max-height:120px; resize:vertical;"/>
+                               style="width:100%; min-height:100px; resize:vertical;"/>
                     </div>
 
                     <!-- Ação após desvio — só aparece quando há desvio E processo está em andamento -->
                     <div attrs="{'invisible': ['|', ('has_deviation', '=', False), ('state', 'not in', ['progress', 'paused'])]}"
-                         style="padding: 0 16px 8px;">
-                        <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:8px 12px; margin-bottom:8px;">
-                            <span style="font-size:12px; font-weight:600; color:#92400e;">
-                                O que deseja fazer com o processo?
-                            </span>
+                         style="padding: 0 16px 12px;">
+                        <div class="alert alert-warning" style="margin:0;">
+                            <strong>O que deseja fazer com o processo?</strong>
                         </div>
-                        <field name="deviation_action"
-                               string=""
-                               widget="radio"
-                               nolabel="1"
-                               options="{'horizontal': true}"/>
+                        <group style="margin-top:8px;">
+                            <field name="deviation_action"
+                                   string="Ação"
+                                   widget="radio"
+                                   nolabel="1"/>
+                        </group>
                     </div>
 
                 </sheet>
