@@ -29,6 +29,19 @@
                                placeholder="Detalhe opcional..."
                                attrs="{'invisible': [('pause_reason', '=', False)]}"/>
                     </group>
+
+                    <!-- Histórico de pausas anteriores -->
+                    <group string="Pausas Anteriores"
+                           attrs="{'invisible': [('pause_count', '=', 0)]}">
+                        <field name="pause_count" invisible="1"/>
+                        <field name="pause_history_ids" nolabel="1" readonly="1">
+                            <tree string="Histórico" create="0" delete="0" editable="0">
+                                <field name="date" string="Data/Hora"/>
+                                <field name="reason" string="Motivo"/>
+                                <field name="notes" string="Observação"/>
+                            </tree>
+                        </field>
+                    </group>
                 </sheet>
                 <footer>
                     <button string="Confirmar Pausa"
@@ -311,35 +324,35 @@
                         </div>
                     </div>
 
-                    <!-- Campos invisíveis para controle de visibilidade -->
-                    <field name="state" invisible="1"/>
+                    <!-- Campos invisíveis para controle de visibilidade -->\n                    <field name="state" invisible="1"/>
 
-                    <group>
+                    <div style="padding: 0 16px 8px;">
                         <field name="has_deviation"
                                string="Registrar Desvio?"
                                widget="boolean_toggle"/>
-                    </group>
+                    </div>
 
                     <div attrs="{'invisible': [('has_deviation', '=', False)]}"
-                         style="padding: 0 16px 12px;">
+                         style="padding: 0 16px 8px;">
                         <field name="deviation_notes"
                                nolabel="1"
                                placeholder="Descreva o desvio encontrado..."
-                               style="width:100%; min-height:100px; resize:vertical;"/>
+                               style="width:100%; min-height:60px; max-height:120px; resize:vertical;"/>
                     </div>
 
                     <!-- Ação após desvio — só aparece quando há desvio E processo está em andamento -->
                     <div attrs="{'invisible': ['|', ('has_deviation', '=', False), ('state', 'not in', ['progress', 'paused'])]}"
-                         style="padding: 0 16px 12px;">
-                        <div class="alert alert-warning" style="margin:0;">
-                            <strong>O que deseja fazer com o processo?</strong>
+                         style="padding: 0 16px 8px;">
+                        <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:8px 12px; margin-bottom:8px;">
+                            <span style="font-size:12px; font-weight:600; color:#92400e;">
+                                O que deseja fazer com o processo?
+                            </span>
                         </div>
-                        <group style="margin-top:8px;">
-                            <field name="deviation_action"
-                                   string="Ação"
-                                   widget="radio"
-                                   nolabel="1"/>
-                        </group>
+                        <field name="deviation_action"
+                               string=""
+                               widget="radio"
+                               nolabel="1"
+                               options="{'horizontal': true}"/>
                     </div>
 
                 </sheet>
