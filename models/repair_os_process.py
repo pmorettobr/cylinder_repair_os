@@ -76,6 +76,48 @@ class RepairOsProcess(models.Model):
         string='Tempo', compute='_compute_duration_display', store=False,
     )
 
+    # ── Nível 2 — Pausa enriquecida ───────────────────────────────────
+
+    pause_count = fields.Integer(
+        string='Nº de Pausas', default=0, copy=False,
+        help='Quantidade de vezes que o processo foi pausado.',
+    )
+    pause_reason = fields.Selection(
+        selection=[
+            ('setup',            'Ajuste / Setup'),
+            ('waiting_material', 'Aguardando Material'),
+            ('waiting_operator', 'Aguardando Operador'),
+            ('problem',          'Problema / Falha'),
+            ('other',            'Outro'),
+        ],
+        string='Motivo da Pausa',
+        copy=False,
+        help='Último motivo de pausa registrado.',
+    )
+    pause_notes = fields.Text(
+        string='Observação da Pausa',
+        copy=False,
+        help='Última observação ao pausar.',
+    )
+
+    # ── Nível 1 — Métricas de lead time ──────────────────────────────
+
+    lead_time_minutes = fields.Float(
+        string='Lead Time (min)',
+        compute='_compute_lead_time', store=True, copy=False,
+        help='Tempo total do primeiro início até a conclusão, incluindo pausas.',
+    )
+    wait_time_minutes = fields.Float(
+        string='Tempo de Espera (min)',
+        compute='_compute_lead_time', store=True, copy=False,
+        help='Tempo total em pausa (lead time - tempo efetivo).',
+    )
+    efficiency_pct = fields.Float(
+        string='Eficiência (%)',
+        compute='_compute_lead_time', store=True, copy=False,
+        help='Percentual do lead time que foi tempo efetivo de execução.',
+    )
+
     # ── Estado ────────────────────────────────────────────────────────
 
     state = fields.Selection(
@@ -193,6 +235,20 @@ class RepairOsProcess(models.Model):
             rec.duration_display = '%02d:%02d:%02d' % (h, m, s)
 
 
+    @api.depends('date_start_orig', 'date_finished', 'duration_acc', 'state')
+    def _compute_lead_time(self):
+        for rec in self:
+            if rec.date_start_orig and rec.date_finished:
+                lead = (rec.date_finished - rec.date_start_orig).total_seconds() / 60
+            else:
+                lead = 0.0
+            run = rec.duration_acc or 0.0
+            wait = max(lead - run, 0.0)
+            eff  = round((run / lead * 100), 1) if lead > 0 else 0.0
+            rec.lead_time_minutes = lead
+            rec.wait_time_minutes = wait
+            rec.efficiency_pct    = eff
+
     @api.depends('has_deviation', 'deviation_notes')
     def _compute_deviation_icon(self):
         for rec in self:
@@ -291,25 +347,47 @@ class RepairOsProcess(models.Model):
         return False
 
     def action_pause(self):
-        """Pausar processo — acumula tempo decorrido."""
+        """Abre popup de motivo de pausa."""
+        self.ensure_one()
+        if self.state != 'progress':
+            return False
+        # Limpa motivo anterior para o popup começar limpo
+        self.write({'pause_reason': False, 'pause_notes': False})
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Motivo da Pausa',
+            'res_model': 'repair.os.process',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'view_id': self.env.ref(
+                'cylinder_repair_os.view_repair_process_pause_popup'
+            ).id,
+            'target': 'new',
+        }
+
+    def action_do_pause(self):
+        """Efetiva a pausa — chamado pelo popup após confirmar motivo."""
         machines = self.env['repair.machine']
         for rec in self:
             if rec.state != 'progress':
                 continue
             elapsed = 0.0
             if rec.date_start:
-                elapsed = (datetime.now() - rec.date_start.replace(tzinfo=None)).total_seconds() / 60
+                elapsed = (
+                    datetime.now() - rec.date_start.replace(tzinfo=None)
+                ).total_seconds() / 60
             rec.write({
-                'state': 'paused',
+                'state':        'paused',
                 'duration_acc': (rec.duration_acc or 0.0) + elapsed,
-                'date_start': False,
+                'date_start':   False,
+                'pause_count':  (rec.pause_count or 0) + 1,
             })
             if rec.machine_id:
                 machines |= rec.machine_id
         machines._update_busy_status()
         for rec in self:
             rec._notify_process_update('paused')
-        return False
+        return {'type': 'ir.actions.act_window_close'}
 
     def action_finish(self):
         """
