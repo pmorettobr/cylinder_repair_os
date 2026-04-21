@@ -99,6 +99,10 @@ class RepairOsProcess(models.Model):
         copy=False,
         help='Última observação ao pausar.',
     )
+    pause_history_ids = fields.One2many(
+        'repair.pause.history', 'process_id',
+        string='Histórico de Pausas', readonly=True,
+    )
 
     # ── Nível 1 — Métricas de lead time ──────────────────────────────
 
@@ -382,6 +386,13 @@ class RepairOsProcess(models.Model):
                 'date_start':   False,
                 'pause_count':  (rec.pause_count or 0) + 1,
             })
+            # Registra histórico
+            if rec.pause_reason:
+                self.env['repair.pause.history'].create({
+                    'process_id': rec.id,
+                    'reason':     rec.pause_reason,
+                    'notes':      rec.pause_notes or False,
+                })
             if rec.machine_id:
                 machines |= rec.machine_id
         machines._update_busy_status()
@@ -597,3 +608,27 @@ class RepairOsProcess(models.Model):
         ], order='sequence asc', limit=1)
         if siblings:
             self.sequence, siblings.sequence = siblings.sequence, self.sequence
+
+
+class RepairPauseHistory(models.Model):
+    """Histórico de pausas de um processo."""
+    _name = 'repair.pause.history'
+    _description = 'Histórico de Pausas'
+    _order = 'date desc'
+
+    process_id = fields.Many2one(
+        'repair.os.process', string='Processo',
+        required=True, ondelete='cascade', index=True,
+    )
+    date = fields.Datetime(string='Data', default=fields.Datetime.now, readonly=True)
+    reason = fields.Selection(
+        selection=[
+            ('setup',            'Ajuste / Setup'),
+            ('waiting_material', 'Aguardando Material'),
+            ('waiting_operator', 'Aguardando Operador'),
+            ('problem',          'Problema / Falha'),
+            ('other',            'Outro'),
+        ],
+        string='Motivo', required=True,
+    )
+    notes = fields.Text(string='Observação')
