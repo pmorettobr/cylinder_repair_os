@@ -324,7 +324,7 @@
                         </div>
                     </div>
 
-                    <!-- Campos invisíveis para controle de visibilidade -->\n                    <field name="state" invisible="1"/>
+                    <field name="state" invisible="1"/>
 
                     <div style="padding: 0 16px 8px;">
                         <field name="has_deviation"
@@ -348,11 +348,12 @@
                                 O que deseja fazer com o processo?
                             </span>
                         </div>
-                        <field name="deviation_action"
-                               string=""
-                               widget="radio"
-                               nolabel="1"
-                               options="{'horizontal': true}"/>
+                        <div style="display:flex;gap:32px;align-items:center;padding:4px 0;">
+                            <field name="deviation_action"
+                                   string=""
+                                   widget="radio"
+                                   nolabel="1"/>
+                        </div>
                     </div>
 
                 </sheet>
