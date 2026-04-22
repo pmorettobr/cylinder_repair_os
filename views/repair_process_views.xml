@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <form string="Pausar Processo">
                 <sheet>
+                    <!-- Cabeçalho -->
                     <div class="o_repair_popup_header">
                         <div class="o_repair_popup_title">
                             <field name="operation_label" readonly="1"/>
@@ -18,30 +19,48 @@
                         </div>
                     </div>
 
-                    <group string="Motivo da Pausa">
-                        <field name="pause_reason"
-                               string="Motivo"
-                               required="1"
-                               widget="radio"
-                               options="{'horizontal': false}"/>
+                    <!-- Campos de controle invisíveis -->
+                    <field name="pause_count" invisible="1"/>
+
+                    <!-- Motivo: radio compacto em 2 colunas -->
+                    <div style="padding:12px 16px 4px;">
+                        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">
+                            Motivo da Pausa
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;">
+                            <field name="pause_reason"
+                                   required="1"
+                                   widget="radio"
+                                   nolabel="1"/>
+                        </div>
+                    </div>
+
+                    <!-- Observação — só aparece para "Outro" -->
+                    <div attrs="{'invisible': [('pause_reason', '!=', 'other')]}"
+                         style="padding:0 16px 8px;">
                         <field name="pause_notes"
-                               string="Observação"
-                               placeholder="Detalhe opcional..."
-                               attrs="{'invisible': [('pause_reason', '=', False)]}"/>
-                    </group>
+                               nolabel="1"
+                               placeholder="Descreva o motivo..."
+                               required="1"
+                               style="width:100%;min-height:52px;max-height:80px;resize:vertical;"/>
+                    </div>
 
                     <!-- Histórico de pausas anteriores -->
-                    <group string="Pausas Anteriores"
-                           attrs="{'invisible': [('pause_count', '=', 0)]}">
-                        <field name="pause_count" invisible="1"/>
+                    <div attrs="{'invisible': [('pause_count', '=', 0)]}"
+                         style="padding:0 16px 8px;">
+                        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">
+                            Pausas Anteriores
+                        </div>
                         <field name="pause_history_ids" nolabel="1" readonly="1">
-                            <tree string="Histórico" create="0" delete="0" editable="0">
-                                <field name="date" string="Data/Hora"/>
-                                <field name="reason" string="Motivo"/>
+                            <tree string="Histórico" create="0" delete="0"
+                                  editable="0" decoration-muted="reason != 'other'"
+                                  no_open="1">
+                                <field name="date" string="Data/Hora" width="140"/>
+                                <field name="reason" string="Motivo" width="160"/>
                                 <field name="notes" string="Observação"/>
                             </tree>
                         </field>
-                    </group>
+                    </div>
                 </sheet>
                 <footer>
                     <button string="Confirmar Pausa"
