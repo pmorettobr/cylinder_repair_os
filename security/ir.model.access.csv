@@ -39,5 +39,6 @@ access_repair_process_set_wizard_line_supervisor,repair.process.set.wizard.line 
 access_ir_actions_client_operator,ir.actions.client operator,base.model_ir_actions_client,cylinder_repair_os.group_repair_operator,1,0,0,0
 access_ir_actions_client_cq,ir.actions.client cq,base.model_ir_actions_client,cylinder_repair_os.group_repair_cq,1,0,0,0
 access_ir_actions_client_supervisor,ir.actions.client supervisor,base.model_ir_actions_client,cylinder_repair_os.group_repair_supervisor,1,0,0,0
+access_repair_pause_history_user,repair.pause.history user,model_repair_pause_history,base.group_user,1,1,1,0
 access_repair_pause_history_operator,repair.pause.history operator,model_repair_pause_history,cylinder_repair_os.group_repair_operator,1,1,1,0
 access_repair_pause_history_supervisor,repair.pause.history supervisor,model_repair_pause_history,cylinder_repair_os.group_repair_supervisor,1,1,1,1
