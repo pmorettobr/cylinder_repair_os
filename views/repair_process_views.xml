@@ -45,7 +45,7 @@
                                        nolabel="1"
                                        placeholder="Descreva o motivo..."
                                        attrs="{'required': [('pause_reason', '=', 'other')]}"
-                                       style="width:100%;min-height:100px;resize:vertical;"/>
+                                       style="width:100%;min-height:52px;resize:vertical;"/>
                             </div>
                         </div>
                     </div>
