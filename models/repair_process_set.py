@@ -162,27 +162,16 @@ class RepairProcessSetWizard(models.TransientModel):
     line_ids    = fields.One2many('repair.process.set.wizard.line', 'wizard_id', string='Processos')
 
     def action_search(self):
-        """Filtra a lista — chamado pelo botão Buscar."""
-        self._onchange_search_term()
-        return {
-            'type': 'ir.actions.act_window',
-            'res_model': self._name,
-            'res_id': self.id,
-            'view_mode': 'form',
-            'target': 'new',
-        }
-
-    @api.onchange('search_term')
-    def _onchange_search_term(self):
-        """Reconstrói line_ids filtrando pelo termo buscado."""
+        """Filtra a lista — chamado pelo botão lupa."""
+        self.ensure_one()
         term = (self.search_term or '').strip()
 
-        # Preserva os IDs já selecionados antes de reconstruir
+        # Preserva seleção atual
         selected_tmpl_ids = set(
-            line.template_id.id for line in self.line_ids if line.selected
+            self.line_ids.filtered('selected').mapped('template_id').ids
         )
 
-        # Templates já no set (excluir da lista)
+        # Templates já no set
         existing_in_set = set(self.set_id.line_ids.mapped('template_id').ids)
 
         # Domínio de busca
@@ -197,16 +186,23 @@ class RepairProcessSetWizard(models.TransientModel):
             domain, order='component_type_id, sequence'
         )
 
-        # Reconstrói line_ids mantendo estado de seleção
-        new_lines = []
+        # Remove linhas atuais e recria as filtradas
+        self.line_ids.unlink()
         for tmpl in templates:
             if tmpl.id not in existing_in_set:
-                new_lines.append((0, 0, {
+                self.env['repair.process.set.wizard.line'].create({
+                    'wizard_id':   self.id,
                     'template_id': tmpl.id,
                     'selected':    tmpl.id in selected_tmpl_ids,
-                }))
+                })
 
-        self.line_ids = [(5, 0, 0)] + new_lines
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'new',
+        }
 
     def action_select_all(self):
         self.line_ids.write({'selected': True})
