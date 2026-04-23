@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields, api
 
 
 class RepairProcessSet(models.Model):
@@ -157,8 +157,13 @@ class RepairProcessSetWizard(models.TransientModel):
     _name = 'repair.process.set.wizard'
     _description = 'Wizard — Adicionar Processos ao Template'
 
-    set_id   = fields.Many2one('repair.process.set', required=True, ondelete='cascade')
-    line_ids = fields.One2many('repair.process.set.wizard.line', 'wizard_id', string='Processos')
+    set_id      = fields.Many2one('repair.process.set', required=True, ondelete='cascade')
+    search_term = fields.Char(string='Buscar', default='')
+    line_ids    = fields.One2many('repair.process.set.wizard.line', 'wizard_id', string='Processos')
+
+    @api.onchange('search_term')
+    def _onchange_search_term(self):
+        pass  # dispara re-avaliação do domain na view
 
     def action_select_all(self):
         self.line_ids.write({'selected': True})
