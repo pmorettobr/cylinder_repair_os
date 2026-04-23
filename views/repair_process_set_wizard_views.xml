@@ -22,10 +22,12 @@
                         <div class="ms-2 d-flex gap-1 flex-grow-1" style="max-width:360px;">
                             <field name="search_term"
                                    nolabel="1"
-                                   placeholder="🔍 Componente ou operação..."
+                                   placeholder="Componente ou operação..."
                                    style="flex:1;"/>
                             <button name="action_search" type="object"
-                                    string="Buscar" class="btn btn-sm btn-primary"/>
+                                    icon="fa-search"
+                                    class="btn btn-sm btn-primary"
+                                    title="Buscar"/>
                         </div>
                     </div>
 
