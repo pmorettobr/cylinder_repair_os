@@ -161,6 +161,17 @@ class RepairProcessSetWizard(models.TransientModel):
     search_term = fields.Char(string='Buscar', default='')
     line_ids    = fields.One2many('repair.process.set.wizard.line', 'wizard_id', string='Processos')
 
+    def action_search(self):
+        """Filtra a lista — chamado pelo botão Buscar."""
+        self._onchange_search_term()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'new',
+        }
+
     @api.onchange('search_term')
     def _onchange_search_term(self):
         """Reconstrói line_ids filtrando pelo termo buscado."""
