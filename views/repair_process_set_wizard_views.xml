@@ -27,8 +27,7 @@
                         </div>
                     </div>
 
-                    <field name="line_ids" nolabel="1"
-                           domain="['|', ('component_type_id.name', 'ilike', search_term), ('template_id.name', 'ilike', search_term)]">
+                    <field name="line_ids" nolabel="1">
                         <tree editable="bottom" create="0" delete="0"
                               default_order="component_type_id, sequence"
                               decoration-success="selected == True">
