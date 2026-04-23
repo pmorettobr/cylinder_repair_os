@@ -163,7 +163,39 @@ class RepairProcessSetWizard(models.TransientModel):
 
     @api.onchange('search_term')
     def _onchange_search_term(self):
-        pass  # dispara re-avaliação do domain na view
+        """Reconstrói line_ids filtrando pelo termo buscado."""
+        term = (self.search_term or '').strip()
+
+        # Preserva os IDs já selecionados antes de reconstruir
+        selected_tmpl_ids = set(
+            line.template_id.id for line in self.line_ids if line.selected
+        )
+
+        # Templates já no set (excluir da lista)
+        existing_in_set = set(self.set_id.line_ids.mapped('template_id').ids)
+
+        # Domínio de busca
+        domain = [('active', '=', True)]
+        if term:
+            domain += ['|',
+                ('component_type_id.name', 'ilike', term),
+                ('name', 'ilike', term),
+            ]
+
+        templates = self.env['repair.process.template'].search(
+            domain, order='component_type_id, sequence'
+        )
+
+        # Reconstrói line_ids mantendo estado de seleção
+        new_lines = []
+        for tmpl in templates:
+            if tmpl.id not in existing_in_set:
+                new_lines.append((0, 0, {
+                    'template_id': tmpl.id,
+                    'selected':    tmpl.id in selected_tmpl_ids,
+                }))
+
+        self.line_ids = [(5, 0, 0)] + new_lines
 
     def action_select_all(self):
         self.line_ids.write({'selected': True})
