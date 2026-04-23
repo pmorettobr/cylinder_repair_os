@@ -19,11 +19,13 @@
                                 string="✓ Todos" class="btn btn-sm btn-outline-primary"/>
                         <button name="action_deselect_all" type="object"
                                 string="✗ Nenhum" class="btn btn-sm btn-outline-secondary"/>
-                        <div class="ms-2 flex-grow-1" style="max-width:320px;">
+                        <div class="ms-2 d-flex gap-1 flex-grow-1" style="max-width:360px;">
                             <field name="search_term"
                                    nolabel="1"
-                                   placeholder="🔍 Buscar componente ou operação..."
-                                   class="w-100"/>
+                                   placeholder="🔍 Componente ou operação..."
+                                   style="flex:1;"/>
+                            <button name="action_search" type="object"
+                                    string="Buscar" class="btn btn-sm btn-primary"/>
                         </div>
                     </div>
 
