@@ -6,6 +6,12 @@
         <t t-foreach="docs" t-as="doc">
             <t t-call="web.external_layout">
         <div class="page">
+                    <style>
+                        .header { display: none !important; }
+                        .footer { display: none !important; }
+                        .o_company_logo { display: none !important; }
+                        ul { list-style: none; margin: 0; padding: 0; }
+                    </style>
 
             <!-- Cabeçalho da OS -->
             <div class="row mb-3">
