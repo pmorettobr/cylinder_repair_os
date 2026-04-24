@@ -54,7 +54,7 @@
                     <!-- Agrupa processos por OS — dados pré-calculados pelo AbstractModel -->
                     <t t-foreach="os_groups" t-as="og">
 
-                        <div style="margin:10px 0 4px;padding:4px 8px;background:#eff6ff;border-left:4px solid #4f46e5;border-radius:3px;">
+                        <div style="margin:10px 0 4px;padding:4px 8px;background:#eff6ff;border-left:4px solid #4f46e5;border-radius:3px;text-align:left;">
                             <strong style="font-size:12px;">
                                 OS <t t-esc="og['os_number']"/>
                             </strong>
@@ -73,8 +73,7 @@
                         <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;">
                             <thead>
                                 <tr style="background:#f3f4f6;border-bottom:2px solid #d1d5db;">
-                                    <th style="width:4%;padding:4px 6px;text-align:center;border:1px solid #d1d5db;">Seq.</th>
-                                    <th style="width:12%;padding:4px 6px;border:1px solid #d1d5db;">Máquina</th>
+                                    <th style="width:16%;padding:4px 6px;border:1px solid #d1d5db;">Máquina</th>
                                     <th style="width:18%;padding:4px 6px;border:1px solid #d1d5db;">Operação</th>
                                     <th style="width:7%;padding:4px 6px;text-align:center;border:1px solid #d1d5db;">Previsto</th>
                                     <th style="width:10%;padding:4px 6px;border:1px solid #d1d5db;">Operador</th>
@@ -85,9 +84,6 @@
                             <tbody>
                                 <t t-foreach="og['processes']" t-as="proc">
                                     <tr t-attf-style="background:#{proc['state'] == 'done' and '#f0fdf4' or proc['state'] == 'progress' and '#fffbeb' or proc['state'] == 'paused' and '#eff6ff' or proc['state'] == 'pending_cq' and '#fef3c7' or '#fff'};">
-                                        <td style="padding:5px 6px;text-align:center;border:1px solid #e5e7eb;">
-                                            <t t-esc="proc['sequence']"/>
-                                        </td>
                                         <td style="padding:5px 6px;border:1px solid #e5e7eb;">
                                             <t t-esc="proc['machine']"/>
                                         </td>
