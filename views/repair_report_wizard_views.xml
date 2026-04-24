@@ -8,7 +8,7 @@
             <form string="Relatórios de OS">
                 <sheet>
 
-                    <!-- Secao 1: Programacao por Estado/Maquina -->
+                    <!-- Seção 1: Programação por Máquina -->
                     <div class="mb-3">
                         <h4 style="color:#4f46e5;margin-bottom:4px;">
                             <i class="fa fa-industry me-2"/>Programação por Máquina
@@ -19,54 +19,64 @@
                     </div>
 
                     <group string="Estado dos Processos">
-                        <div colspan="2" style="display:flex; flex-wrap:wrap; gap:16px 32px; padding:4px 0 8px;">
-                            <field name="state_ready"   string="Pronto"        widget="boolean" nolabel="0" class="o_field_boolean"/>
-                            <field name="state_progress" string="Em Andamento" widget="boolean" nolabel="0" class="o_field_boolean"/>
-                            <field name="state_paused"  string="Pausado"       widget="boolean" nolabel="0" class="o_field_boolean"/>
-                            <field name="state_done"    string="Concluído"     widget="boolean" nolabel="0" class="o_field_boolean"/>
-                            <field name="state_cancel"  string="Cancelado"     widget="boolean" nolabel="0" class="o_field_boolean"/>
-                        </div>
+                        <group>
+                            <field name="state_ready"      string="Pronto"/>
+                            <field name="state_progress"   string="Em Andamento"/>
+                            <field name="state_paused"     string="Pausado"/>
+                        </group>
+                        <group>
+                            <field name="state_pending_cq" string="Aguardando CQ"/>
+                            <field name="state_done"       string="Concluído"/>
+                            <field name="state_cancel"     string="Cancelado"/>
+                        </group>
                     </group>
 
                     <group string="Filtros Opcionais">
-                        <field name="machine_id" placeholder="Todas as máquinas" string="Máquina"/>
-                        <field name="os_id" placeholder="Todas as OS" string="Nº OS"/>
+                        <field name="machine_id" placeholder="Todas as máquinas"
+                               string="Máquina" options="{'no_open': True}"/>
+                        <field name="os_id" placeholder="Todas as OS"
+                               string="Nº OS" options="{'no_open': True}"/>
                         <field name="use_date_filter" string="Filtrar por período?"/>
                         <field name="date_from" string="De"
                                attrs="{'invisible': [('use_date_filter','=',False)],
-                                       'required': [('use_date_filter','=',True)]}"/>
+                                       'required':  [('use_date_filter','=',True)]}"/>
                         <field name="date_to" string="Até"
                                attrs="{'invisible': [('use_date_filter','=',False)],
-                                       'required': [('use_date_filter','=',True)]}"/>
+                                       'required':  [('use_date_filter','=',True)]}"/>
                     </group>
 
-                    <div class="mt-1 mb-4">
+                    <div class="mt-1 mb-4 d-flex gap-2">
                         <button name="action_print_report"
                                 string="Gerar Programação (PDF)"
                                 type="object"
                                 class="btn btn-primary"/>
+                        <button name="action_export_xls"
+                                string="Exportar XLS"
+                                type="object"
+                                class="btn btn-outline-secondary"/>
                     </div>
 
                     <hr/>
 
-                    <!-- Secao 2: Impressao da OS completa -->
+                    <!-- Seção 2: Impressão de OS Completa -->
                     <div class="mb-3 mt-3">
                         <h4 style="color:#059669;margin-bottom:4px;">
                             <i class="fa fa-file-text me-2"/>Impressão de OS Completa
                         </h4>
                         <p class="text-muted" style="font-size:12px;margin:0;">
-                            Imprime todos os processos da OS selecionada acima,
-                            concluídos ou não.
+                            Imprime todos os processos da OS selecionada, concluídos ou não.
                         </p>
                     </div>
+                    <group>
+                        <field name="os_id_print" string="Nº OS"
+                               placeholder="Selecione a OS..."
+                               options="{'no_open': True}"/>
+                    </group>
                     <div class="mt-1">
                         <button name="action_print_os"
                                 string="Imprimir OS Completa (PDF)"
                                 type="object"
                                 class="btn btn-success"/>
-                        <span class="text-muted ms-3" style="font-size:12px;">
-                            Selecione o Nº OS acima antes de imprimir.
-                        </span>
                     </div>
 
                 </sheet>
