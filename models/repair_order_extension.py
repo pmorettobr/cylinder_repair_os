@@ -194,10 +194,22 @@ class RepairOrder(models.Model):
         result = []
         for rec in self:
             name = rec.os_number or rec.name or '(sem número)'
-            if rec.product_name:
-                name = '%s — %s' % (name, rec.product_name)
+            if rec.cylinder_id:
+                name = '%s — %s' % (name, rec.cylinder_id.name)
             result.append((rec.id, name))
         return result
+
+    @api.model
+    def _name_search(self, name='', args=None, operator='ilike', limit=100, name_get_uid=None):
+        args = args or []
+        if name:
+            domain = ['|',
+                ('os_number', operator, name),
+                ('partner_id.name', operator, name),
+            ]
+        else:
+            domain = []
+        return self._search(domain + args, limit=limit, access_rights_uid=name_get_uid)
 
     # ── Ações de estado ───────────────────────────────────────────────────────
 
