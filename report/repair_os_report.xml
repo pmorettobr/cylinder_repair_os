@@ -24,8 +24,6 @@
                             <td><t t-esc="doc.cylinder_id.name or '—'"/></td>
                         </tr>
                         <tr>
-                            <td style="color:#666">Nº Série / TAG:</td>
-                            <td><t t-esc="doc.serial_code or '—'"/></td>
                             <td style="color:#666">Prazo:</td>
                             <td>
                                 <t t-if="doc.deadline_date">
@@ -33,6 +31,7 @@
                                 </t>
                                 <t t-else="">—</t>
                             </td>
+                            <td></td><td></td>
                         </tr>
                         <tr>
                             <td style="color:#666">Responsável:</td>
@@ -52,46 +51,30 @@
             <t t-foreach="doc.process_ids.mapped('component_type_id')" t-as="comp">
                 <t t-set="procs" t-value="doc.process_ids.filtered(lambda p: p.component_type_id == comp)"/>
                 <t t-if="procs">
-                    <h5 style="margin:12px 0 4px;background:#f3f4f6;padding:4px 8px;border-left:3px solid #4f46e5;font-size:12px">
+                    <h5 style="margin:12px 0 4px;padding:4px 8px;border-left:3px solid #4f46e5;font-size:12px;text-align:left;">
                         <t t-esc="comp.name if comp else 'Sem Componente'"/>
                     </h5>
                     <table class="table table-sm table-bordered" style="font-size:11px;margin-bottom:4px">
                         <thead style="background:#f8f9fa">
                             <tr>
-                                <th style="width:4%">Seq.</th>
-                                <th style="width:18%">Operação</th>
+                                <th style="width:22%">Operação</th>
                                 <th style="width:14%">Máquina</th>
                                 <th style="width:10%">Status</th>
-                                <th style="width:13%">Data Prog.</th>
-                                <th style="width:13%">Data Início</th>
-                                <th style="width:13%">Conclusão</th>
-                                <th style="width:9%">Tempo</th>
+                                <th style="width:14%">Data Início</th>
+                                <th style="width:10%">Tempo</th>
                             </tr>
                         </thead>
                         <tbody>
                             <t t-foreach="procs" t-as="proc">
                                 <tr t-attf-style="#{proc.state == 'done' and 'background:#f0fdf4' or proc.state == 'progress' and 'background:#fffbeb' or ''}">
-                                    <td class="text-center"><t t-esc="proc.sequence"/></td>
                                     <td><t t-esc="proc.name"/></td>
                                     <td><t t-esc="proc.machine_id.name if proc.machine_id else '—'"/></td>
                                     <td>
                                         <t t-esc="dict(proc._fields['state'].selection).get(proc.state, '')"/>
                                     </td>
                                     <td>
-                                        <t t-if="proc.date_planned">
-                                            <t t-esc="proc.date_planned.strftime('%d/%m %H:%M')"/>
-                                        </t>
-                                        <t t-else="">—</t>
-                                    </td>
-                                    <td>
                                         <t t-if="proc.date_start_orig">
                                             <t t-esc="proc.date_start_orig.strftime('%d/%m %H:%M')"/>
-                                        </t>
-                                        <t t-else="">—</t>
-                                    </td>
-                                    <td>
-                                        <t t-if="proc.date_finished">
-                                            <t t-esc="proc.date_finished.strftime('%d/%m %H:%M')"/>
                                         </t>
                                         <t t-else="">—</t>
                                     </td>
