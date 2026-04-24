@@ -50,57 +50,61 @@
 
             </div>
 
-            <hr style="margin:8px 0"/>
+            <hr style="margin:6px 0;border-color:#d1d5db;"/>
 
-            <!-- Processos agrupados por componente -->
-            <t t-set="components_seen" t-value="[]"/>
-            <t t-foreach="doc.process_ids.mapped('component_type_id')" t-as="comp">
-                <t t-set="procs" t-value="doc.process_ids.filtered(lambda p: p.component_type_id == comp)"/>
-                <t t-if="procs">
-                    <h5 style="margin:12px 0 4px;padding:4px 8px;border-left:3px solid #4f46e5;font-size:12px;text-align:left;">
-                        <t t-esc="comp.name if comp else 'Sem Componente'"/>
-                    </h5>
-                    <table class="table table-sm table-bordered" style="font-size:11px;margin-bottom:4px">
-                        <thead style="background:#f8f9fa">
-                            <tr>
-                                <th style="width:22%">Operação</th>
-                                <th style="width:14%">Máquina</th>
-                                <th style="width:10%">Status</th>
-                                <th style="width:14%">Data Início</th>
-                                <th style="width:10%">Tempo</th>
+            <!-- Tabela única com agrupamento por componente -->
+            <table style="width:100%;border-collapse:collapse;font-size:10.5px;">
+                <colgroup>
+                    <col style="width:28%"/>
+                    <col style="width:16%"/>
+                    <col style="width:13%"/>
+                    <col style="width:15%"/>
+                    <col style="width:10%"/>
+                </colgroup>
+                <thead>
+                    <tr style="background:#f3f4f6;border-bottom:1.5px solid #9ca3af;">
+                        <th style="padding:4px 6px;text-align:left;font-weight:700;">Operação</th>
+                        <th style="padding:4px 6px;text-align:left;font-weight:700;">Máquina</th>
+                        <th style="padding:4px 6px;text-align:left;font-weight:700;">Status</th>
+                        <th style="padding:4px 6px;text-align:left;font-weight:700;">Data Início</th>
+                        <th style="padding:4px 6px;text-align:left;font-weight:700;">Tempo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-set="state_map" t-value="{'ready':'Pronto','progress':'Em Andamento','paused':'Pausado','pending_cq':'Aguardando CQ','done':'Concluído','cancel':'Cancelado'}"/>
+                    <t t-foreach="doc.process_ids.mapped('component_type_id')" t-as="comp">
+                        <t t-set="procs" t-value="doc.process_ids.filtered(lambda p: p.component_type_id == comp).sorted('sequence')"/>
+                        <t t-if="procs">
+                            <!-- Linha de cabeçalho do componente -->
+                            <tr style="background:#eff6ff;border-top:1px solid #bfdbfe;border-bottom:1px solid #bfdbfe;">
+                                <td colspan="5" style="padding:3px 6px;font-weight:700;font-size:10.5px;color:#1e40af;border-left:3px solid #4f46e5;">
+                                    <t t-esc="comp.name if comp else 'Sem Componente'"/>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
+                            <!-- Processos do componente -->
                             <t t-foreach="procs" t-as="proc">
-                                <tr t-attf-style="#{proc.state == 'done' and 'background:#f0fdf4' or proc.state == 'progress' and 'background:#fffbeb' or ''}">
-                                    <td><t t-esc="proc.name"/></td>
-                                    <td><t t-esc="proc.machine_id.name if proc.machine_id else '—'"/></td>
-                                    <td>
-                                        <t t-esc="dict(proc._fields['state'].selection).get(proc.state, '')"/>
-                                    </td>
-                                    <td>
-                                        <t t-if="proc.date_start_orig">
-                                            <t t-esc="proc.date_start_orig.strftime('%d/%m %H:%M')"/>
-                                        </t>
+                                <tr t-attf-style="border-bottom:1px solid #e5e7eb;background:#{proc.state == 'done' and '#f0fdf4' or proc.state == 'progress' and '#fffbeb' or proc.state == 'pending_cq' and '#fef3c7' or '#fff'};">
+                                    <td style="padding:4px 6px;"><t t-esc="proc.name"/></td>
+                                    <td style="padding:4px 6px;"><t t-esc="proc.machine_id.name if proc.machine_id else '—'"/></td>
+                                    <td style="padding:4px 6px;"><t t-esc="state_map.get(proc.state, proc.state)"/></td>
+                                    <td style="padding:4px 6px;">
+                                        <t t-if="proc.date_start_orig"><t t-esc="proc.date_start_orig.strftime('%d/%m %H:%M')"/></t>
                                         <t t-else="">—</t>
                                     </td>
-                                    <td class="text-center">
-                                        <t t-esc="proc.duration_display"/>
-                                    </td>
-</tr>
-                                <!-- Linha de desvio se houver -->
+                                    <td style="padding:4px 6px;"><t t-esc="proc.duration_display"/></td>
+                                </tr>
                                 <t t-if="proc.has_deviation and proc.deviation_notes">
-                                    <tr style="background:#fff8f0">
-                                        <td colspan="9" style="color:#b45309;font-size:10px;padding-left:16px">
+                                    <tr style="background:#fff8f0;border-bottom:1px solid #e5e7eb;">
+                                        <td colspan="5" style="padding:3px 6px 3px 16px;color:#b45309;font-size:10px;">
                                             ⚠ Desvio: <t t-esc="proc.deviation_notes"/>
                                         </td>
                                     </tr>
                                 </t>
                             </t>
-                        </tbody>
-                    </table>
-                </t>
-            </t>
+                        </t>
+                    </t>
+                </tbody>
+            </table>
 
         </div>
             </t>
