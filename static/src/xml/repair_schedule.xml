@@ -105,12 +105,16 @@
                                    t-on-input="(e) => { state.editLocText = e.target.value; }"
                                    t-on-click.stop="() => {}"
                                    t-on-keydown.stop="(e) => this.onLocKeydown(e, group.id)"/>
+                            
+                            <!-- Badge de disponivel e indisponiel PAULO
                             <select class="form-select form-select-sm o_repair_loc_select"
                                     t-on-change.stop="(e) => { state.editLocStatus = e.target.value; }"
                                     t-on-click.stop="() => {}">
                                 <option value="available" t-att-selected="state.editLocStatus === 'available'">Disponível</option>
                                 <option value="unavailable" t-att-selected="state.editLocStatus === 'unavailable'">Indisponível</option>
                             </select>
+                            -->
+                            
                             <button class="btn btn-sm btn-success py-0 px-2"
                                     t-on-click.stop="() => this.saveLocation(group.id)">✓</button>
                             <button class="btn btn-sm btn-link text-muted py-0 px-1"
@@ -122,10 +126,12 @@
                                 <span style="font-size:11px;color:#374151;">
                                     <t t-esc="state.compLocations[group.id].location_text"/>
                                 </span>
+                                <!-- remove staus localizacao PAULO
                                 <span t-att-class="'badge ' + locBadgeCls(group.id)"
                                       style="font-size:10px;">
                                     <t t-esc="locStatusLabel(group.id)"/>
                                 </span>
+                                -->
                             </t>
                             <t t-else="">
                                 <span class="text-muted" style="font-size:11px;font-style:italic;">sem localização</span>
