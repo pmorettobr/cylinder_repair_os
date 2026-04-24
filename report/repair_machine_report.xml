@@ -51,10 +51,9 @@
 
                     <hr style="margin:6px 0;"/>
 
-                    <!-- Agrupa processos por OS -->
+                    <!-- Agrupa processos por OS — dados pré-calculados pelo AbstractModel -->
                     <t t-foreach="os_groups" t-as="og">
 
-                        <!-- Cabeçalho da OS fora da tabela -->
                         <div style="margin:10px 0 4px;padding:4px 8px;background:#eff6ff;border-left:4px solid #4f46e5;border-radius:3px;">
                             <strong style="font-size:12px;">
                                 OS <t t-esc="og['os_number']"/>
@@ -71,7 +70,6 @@
                             </t>
                         </div>
 
-                        <!-- Tabela de processos -->
                         <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;">
                             <thead>
                                 <tr style="background:#f3f4f6;border-bottom:2px solid #d1d5db;">
@@ -86,34 +84,31 @@
                             </thead>
                             <tbody>
                                 <t t-foreach="og['processes']" t-as="proc">
-                                    <tr t-attf-style="background:#{proc.state == 'done' and '#f0fdf4' or proc.state == 'progress' and '#fffbeb' or proc.state == 'paused' and '#eff6ff' or '#fff'};">
+                                    <tr t-attf-style="background:#{proc['state'] == 'done' and '#f0fdf4' or proc['state'] == 'progress' and '#fffbeb' or proc['state'] == 'paused' and '#eff6ff' or proc['state'] == 'pending_cq' and '#fef3c7' or '#fff'};">
                                         <td style="padding:5px 6px;text-align:center;border:1px solid #e5e7eb;">
-                                            <t t-esc="proc.sequence"/>
+                                            <t t-esc="proc['sequence']"/>
                                         </td>
                                         <td style="padding:5px 6px;border:1px solid #e5e7eb;">
-                                            <t t-esc="proc.machine_id.name if proc.machine_id else '—'"/>
+                                            <t t-esc="proc['machine']"/>
                                         </td>
                                         <td style="padding:5px 6px;border:1px solid #e5e7eb;">
-                                            <t t-esc="proc.name"/>
+                                            <t t-esc="proc['name']"/>
                                         </td>
                                         <td style="padding:5px 6px;text-align:center;border:1px solid #e5e7eb;">
-                                            <t t-if="proc.duration_planned">
-                                                <t t-esc="'%02d:%02d' % (int(proc.duration_planned) // 60, int(proc.duration_planned) % 60)"/>
-                                            </t>
-                                            <t t-else="">—</t>
+                                            <t t-esc="proc['duration_display'] if proc['duration_planned'] else '—'"/>
                                         </td>
                                         <td style="padding:5px 6px;border:1px solid #e5e7eb;">
-                                            <t t-esc="proc.operator_id.name if proc.operator_id else '—'"/>
+                                            <t t-esc="proc['operator']"/>
                                         </td>
                                         <td style="padding:5px 6px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">
-                                            <t t-esc="dict(proc._fields['state'].selection).get(proc.state, '')"/>
+                                            <t t-esc="proc['state_label']"/>
                                         </td>
                                         <td style="padding:5px 6px;border:1px solid #e5e7eb;"> </td>
                                     </tr>
-                                    <t t-if="proc.has_deviation and proc.deviation_notes">
+                                    <t t-if="proc['has_deviation'] and proc['deviation_notes']">
                                         <tr style="background:#fff8f0;">
                                             <td colspan="7" style="padding:3px 10px;border:1px solid #e5e7eb;color:#b45309;font-size:10px;">
-                                                ⚠ Desvio: <t t-esc="proc.deviation_notes"/>
+                                                ⚠ Desvio: <t t-esc="proc['deviation_notes']"/>
                                             </td>
                                         </tr>
                                     </t>
