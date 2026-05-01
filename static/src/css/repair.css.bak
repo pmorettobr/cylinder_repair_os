@@ -77,11 +77,6 @@
 
 .o_repair_kanban .o_kanban_group {
     background: #f8fafc;
-    padding: 4px 6px !important;
-}
-
-.o_repair_kanban .o_kanban_record {
-    margin-bottom: 8px !important;
 }
 
 .o_repair_card {

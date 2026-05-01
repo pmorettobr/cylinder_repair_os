@@ -279,17 +279,11 @@ class RepairOsProcess(models.Model):
         Valida se o processo pode iniciar.
 
         Prioridade:
-        1. Se allow_parallel na máquina → ignora sequência e disponibilidade
-           (máquina suporta execução simultânea em qualquer OS/componente/situação)
-        2. Se bypass_sequence na máquina → ignora sequência numérica
-        3. Senão → valida sequência numérica dentro do componente
+        1. Se bypass_sequence na máquina → ignora sequência numérica
+        2. Senão → valida sequência numérica dentro do componente
         """
         for rec in self:
-            # 1. Máquina com paralelo liberado — sem restrição alguma
-            if rec.machine_id and rec.machine_id.allow_parallel:
-                continue
-
-            # 2. Bypass por máquina
+            # 1. Bypass por máquina
             if rec.machine_id and rec.machine_id.bypass_sequence:
                 continue
 

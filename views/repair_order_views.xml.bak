@@ -180,15 +180,15 @@
                         domain="[('os_state','=','confirmed')]"/>
                 <filter name="in_progress" string="Em Andamento"
                         domain="[('os_state','=','in_progress')]"/>
-                <filter name="paused" string="Pausada"
-                        domain="[('os_state','=','paused')]"/>
-                <filter name="pending_cq" string="Aguardando CQ"
-                        domain="[('os_state','=','pending_cq')]"/>
                 <filter name="done" string="Concluída"
                         domain="[('os_state','=','done')]"/>
                 <separator/>
                 <filter name="overdue" string="Atrasadas"
                         domain="[('deadline_date', '&lt;', context_today().strftime('%Y-%m-%d')), ('os_state', 'not in', ['done', 'cancel'])]"/>
+                <filter name="near_deadline" string="Prazo ≤ 7 dias"
+                        domain="[('deadline_date', '&lt;=', (context_today() + datetime.timedelta(days=7)).strftime('%Y-%m-%d')), ('deadline_date', '&gt;=', context_today().strftime('%Y-%m-%d')), ('os_state', 'not in', ['done', 'cancel'])]"/>
+                <filter name="no_deadline" string="Sem Prazo"
+                        domain="[('deadline_date', '=', False), ('os_state', 'not in', ['done', 'cancel'])]"/>
                 <filter name="near_deadline" string="Prazo ≤ 7 dias"
                         domain="[('deadline_date', '&lt;=', (context_today() + datetime.timedelta(days=7)).strftime('%Y-%m-%d')), ('deadline_date', '&gt;=', context_today().strftime('%Y-%m-%d')), ('os_state', 'not in', ['done', 'cancel'])]"/>
                 <group expand="1" string="Agrupar por">
@@ -211,7 +211,7 @@
     <record id="action_repair_orders_os" model="ir.actions.act_window">
         <field name="name">Ordens de Serviço</field>
         <field name="res_model">repair.order</field>
-        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_mode">kanban,tree,form</field>
         <field name="view_ids" eval="[(5,0,0),
             (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_order_os_tree')}),
             (0,0,{'view_mode':'form','view_id':ref('cylinder_repair_os.view_repair_order_os_form')})]"/>
@@ -222,7 +222,7 @@
     <record id="action_repair_orders_repair" model="ir.actions.act_window">
         <field name="name">Reparos</field>
         <field name="res_model">repair.order</field>
-        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_mode">kanban,tree,form</field>
         <field name="view_ids" eval="[(5,0,0),
             (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_order_os_tree')}),
             (0,0,{'view_mode':'form','view_id':ref('cylinder_repair_os.view_repair_order_os_form')})]"/>
@@ -234,7 +234,7 @@
     <record id="action_repair_orders_fabrication" model="ir.actions.act_window">
         <field name="name">Fabricações</field>
         <field name="res_model">repair.order</field>
-        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_mode">kanban,tree,form</field>
         <field name="view_ids" eval="[(5,0,0),
             (0,0,{'view_mode':'tree','view_id':ref('cylinder_repair_os.view_repair_order_os_tree')}),
             (0,0,{'view_mode':'form','view_id':ref('cylinder_repair_os.view_repair_order_os_form')})]"/>

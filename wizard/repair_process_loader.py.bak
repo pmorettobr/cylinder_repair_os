@@ -108,13 +108,12 @@ class RepairProcessLoader(models.TransientModel):
             ct = proc.component_type_id.id or 0
             existing_seqs[ct] = max(existing_seqs.get(ct, 0), proc.sequence)
 
-        # Monta lista de vals e cria tudo de uma vez — evita N inserts individuais
-        vals_list = []
         for line in selected:
             ct_id = line.component_type_id.id or 0
             next_seq = existing_seqs.get(ct_id, 0) + 10
             existing_seqs[ct_id] = next_seq
-            vals_list.append({
+
+            self.env['repair.os.process'].create({
                 'repair_id':          repair.id,
                 'sequence':           next_seq,
                 'name':               line.name,
@@ -125,8 +124,5 @@ class RepairProcessLoader(models.TransientModel):
                 'duration_planned':   line.duration_planned or 0.0,
                 'state':              'ready',
             })
-
-        if vals_list:
-            self.env['repair.os.process'].create(vals_list)
 
         return {'type': 'ir.actions.act_window_close'}

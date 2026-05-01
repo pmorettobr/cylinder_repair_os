@@ -56,11 +56,11 @@
 
                             <!-- Cliente / Produto -->
                             <div class="o_repair_card_info">
-                                <div t-if="record.partner_id.raw_value">
+                                <div t-if="record.partner_id.value">
                                     <i class="fa fa-building text-muted me-1"/>
                                     <t t-esc="record.partner_id.value"/>
                                 </div>
-                                <div t-if="record.cylinder_id.raw_value">
+                                <div t-if="record.cylinder_id.value">
                                     <i class="fa fa-cog text-muted me-1"/>
                                     <t t-esc="record.cylinder_id.value"/>
                                 </div>
@@ -99,7 +99,7 @@
     <record id="action_repair_dashboard" model="ir.actions.act_window">
         <field name="name">Dashboard — Ordens de Serviço</field>
         <field name="res_model">repair.order</field>
-        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_mode">kanban,tree,form</field>
         <field name="view_ids" eval="[(5,0,0),
             (0,0,{'view_mode':'kanban',
                   'view_id':ref('cylinder_repair_os.view_repair_dashboard_kanban')}),

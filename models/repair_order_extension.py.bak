@@ -125,11 +125,6 @@ class RepairOrder(models.Model):
         compute='_compute_progress',
         store=False,
     )
-    is_near_deadline = fields.Boolean(
-        string='Prazo Próximo',
-        compute='_compute_progress',
-        store=False,
-    )
 
     # ── Campos display (evitam totalização no agrupamento) ───────────────────
     process_done_display = fields.Char(
@@ -161,12 +156,6 @@ class RepairOrder(models.Model):
             rec.is_overdue = bool(
                 rec.deadline_date
                 and rec.deadline_date < today
-                and rec.os_state not in ('done', 'cancel')
-            )
-            rec.is_near_deadline = bool(
-                rec.deadline_date
-                and not rec.is_overdue
-                and (rec.deadline_date - today).days <= 7
                 and rec.os_state not in ('done', 'cancel')
             )
 

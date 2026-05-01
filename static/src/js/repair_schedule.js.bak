@@ -163,27 +163,16 @@ class RepairSchedule extends Component {
             const ct   = r.component_type_id;
             const id   = ct ? ct[0] : 0;
             const name = ct ? ct[1] : "(Sem Componente)";
-            if (!map.has(id)) map.set(id, { id, name, records: [], prog: 0, done: 0, cancelled: 0 });
+            if (!map.has(id)) map.set(id, { id, name, records: [], prog: 0, done: 0 });
             const g = map.get(id);
             g.records.push(r);
             if (r.state === "progress") g.prog++;
             if (r.state === "done")     g.done++;
-            if (r.state === "cancel")   g.cancelled++;
-        }
-        // terminal = done + cancel; allDone quando todos encerrados (done ou cancel)
-        for (const g of map.values()) {
-            g.terminal = g.done + g.cancelled;
-            g.allDone  = g.records.length > 0 && g.terminal === g.records.length;
         }
         return [...map.values()];
     }
 
     // ── Progresso geral ────────────────────────────────────────────────
-
-    get totalTerminal() {
-        // done + cancel = encerrados (cancel é terminal, não conta como pendente)
-        return this.state.processes.filter(p => p.state === "done" || p.state === "cancel").length;
-    }
 
     get totalDone() {
         return this.state.processes.filter(p => p.state === "done").length;
@@ -192,7 +181,7 @@ class RepairSchedule extends Component {
     get totalProgress() {
         const total = this.state.processes.length;
         if (!total) return 0;
-        return Math.round((this.totalTerminal / total) * 100);
+        return Math.round((this.totalDone / total) * 100);
     }
 
     // ── Ações de processo ─────────────────────────────────────────────
@@ -236,8 +225,6 @@ class RepairSchedule extends Component {
     // ── Edição inline — Data ──────────────────────────────────────────
 
     startEditDate(id) {
-        const rec = this.state.processes.find(p => p.id === id);
-        if (rec && this.isEditLocked(rec)) return;
         this.state.editDateId = id;
         this.state.editOperatorId = null;
         this.state.editPlannedId  = null;
@@ -258,7 +245,6 @@ class RepairSchedule extends Component {
     // ── Edição inline — Operador ──────────────────────────────────────
 
     async startEditOperator(rec) {
-        if (this.isEditLocked(rec)) return;
         this.state.editOperatorId = rec.id;
         this.state.editDateId     = null;
         this.state.editPlannedId  = null;
@@ -289,8 +275,6 @@ class RepairSchedule extends Component {
     // ── Edição inline — Tempo Previsto (timepicker) ───────────────────
 
     startEditPlanned(id, currentMinutes) {
-        const rec = this.state.processes.find(p => p.id === id);
-        if (rec && this.isEditLocked(rec)) return;
         this.state.editPlannedId   = id;
         this.state.editPlannedText = this._min2hhmm(currentMinutes || 0);
         this.state.editDateId      = null;
@@ -320,8 +304,6 @@ class RepairSchedule extends Component {
     // ── Edição inline — Operação ──────────────────────────────────────
 
     startEditName(id, currentName) {
-        const rec = this.state.processes.find(p => p.id === id);
-        if (rec && this.isEditLocked(rec)) return;
         this.state.editNameId    = id;
         this.state.editNameVal   = currentName || "";
         this.state.editDateId    = null;
@@ -353,8 +335,6 @@ class RepairSchedule extends Component {
     // ── Edição inline — Máquina ───────────────────────────────────────
 
     startEditMachine(id) {
-        const rec = this.state.processes.find(p => p.id === id);
-        if (rec && this.isEditLocked(rec)) return;
         this.state.editMachineId  = id;
         this.state.editDateId     = null;
         this.state.editOperatorId = null;
@@ -495,11 +475,7 @@ class RepairSchedule extends Component {
     }
 
     // Retorna style string completo para o cabeçalho do grupo
-    // Quando allDone: degradê verde "Liberado para Montagem"
-    groupHeaderStyle(group, idx) {
-        if (group.allDone) {
-            return 'border-left: 4px solid #059669; background: linear-gradient(90deg, #d1fae5, #a7f3d0); position: relative;';
-        }
+    groupHeaderStyle(idx) {
         const c = this._groupPalette(idx);
         return `border-left: 4px solid ${c.border}; background: ${c.bg};`;
     }
@@ -517,7 +493,7 @@ class RepairSchedule extends Component {
     groupProgress(group) {
         const total = group.records.length;
         if (!total) return 0;
-        return Math.round((group.terminal / total) * 100);
+        return Math.round((group.done / total) * 100);
     }
 
     // ── Item 11 — Localização inline no cabeçalho do grupo ───────────
@@ -660,12 +636,6 @@ class RepairSchedule extends Component {
             pending:  { icon: "fa-certificate", cls: "o_cq_none",     title: "Sem CQ" },
         };
         return map[rec.cq_result] || map.pending;
-    }
-
-    // Retorna true para estados onde edição inline deve ser bloqueada
-    // ready e paused = editável; progress, pending_cq, done, cancel = bloqueado
-    isEditLocked(rec) {
-        return ['progress', 'pending_cq', 'done', 'cancel'].includes(rec.state);
     }
 
     rowCls(s, isDragOver) {

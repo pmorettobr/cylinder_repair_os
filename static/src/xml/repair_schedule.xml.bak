@@ -45,7 +45,7 @@
                 <div class="vr"/>
 
                 <span class="text-muted" style="font-size:0.9rem;white-space:nowrap;">
-                    <t t-esc="totalTerminal"/>/<t t-esc="state.processes.length"/> concluídos
+                    <t t-esc="totalDone"/>/<t t-esc="state.processes.length"/> concluídos
                 </span>
                 <div style="width:160px;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;flex-shrink:0;">
                     <div t-att-style="globalBarStyle()"/>
@@ -71,10 +71,10 @@
 
                 <!-- Cabeçalho do componente -->
                 <div class="o_repair_group_header mt-3 rounded overflow-hidden"
-                     t-att-style="groupHeaderStyle(group, group_index)">
+                     t-att-style="groupHeaderStyle(group_index)">
 
                     <div class="d-flex align-items-center gap-2 px-3 py-2"
-                         style="cursor:pointer;position:relative;"
+                         style="cursor:pointer;"
                          t-on-click="() => this.toggleGroup(group.id)">
                         <span style="font-size:12px;font-weight:600;color:#374151;">
                             <t t-if="state.collapsed[group.id]">▶</t>
@@ -83,16 +83,18 @@
                         <span style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#374151;">
                             <t t-esc="group.name"/>
                         </span>
-                        <!-- done/total (cancel conta como terminal) -->
+                        <!-- done/total -->
                         <span style="font-size:12px;color:#374151;font-weight:600;">
-                            <t t-esc="group.terminal"/>/<t t-esc="group.records.length"/> concluídos
+                            <t t-esc="group.done"/>/<t t-esc="group.records.length"/> concluídos
                         </span>
                         <t t-if="group.prog > 0">
                             <span class="badge text-bg-warning" style="font-size:11px;">
                                 <t t-esc="group.prog"/> em andamento
                             </span>
                         </t>
-                        <!-- badge "✓ Concluído" removido: header verde com "Liberado para Montagem" substitui -->
+                        <t t-if="group.done === group.records.length and group.records.length > 0">
+                            <span class="badge bg-success" style="font-size:11px;">✓ Concluído</span>
+                        </t>
 
                         <!-- Localização do componente -->
                         <span class="o_repair_loc_sep">|</span>
@@ -139,13 +141,6 @@
                                     t-on-click.stop="() => this.startEditLoc(group.id)">
                                 <i class="fa fa-pencil" style="font-size:11px;"/>
                             </button>
-                        </t>
-
-                        <!-- "Liberado para Montagem" centralizado — visível só quando allDone -->
-                        <t t-if="group.allDone">
-                            <span style="position:absolute;left:50%;transform:translateX(-50%);font-weight:700;color:#065f46;font-size:13px;letter-spacing:0.5px;white-space:nowrap;pointer-events:none;">
-                                ✓ Liberado para Montagem
-                            </span>
                         </t>
 
                         <span class="ms-auto fw-bold" style="font-size:11px;color:#374151;">
@@ -218,8 +213,7 @@
                                                        t-on-blur="(ev) => this.saveName(rec.id, ev)"/>
                                             </t>
                                             <t t-else="">
-                                                <span t-att-title="isEditLocked(rec) ? '' : 'Duplo clique para editar'"
-                                                      t-att-style="isEditLocked(rec) ? 'color:#9ca3af;' : 'cursor:pointer;'"
+                                                <span title="Duplo clique para editar"
                                                       t-on-dblclick="() => this.startEditName(rec.id, rec.name)">
                                                     <t t-esc="rec.name"/>
                                                 </span>
@@ -242,8 +236,8 @@
                                                 </select>
                                             </t>
                                             <t t-else="">
-                                                <span t-att-title="isEditLocked(rec) ? '' : 'Clique para editar máquina'"
-                                                      t-att-style="isEditLocked(rec) ? 'color:#9ca3af;' : 'cursor:pointer;'"
+                                                <span title="Clique para editar máquina"
+                                                      style="cursor:pointer;"
                                                       t-on-click="() => this.startEditMachine(rec.id)">
                                                     <t t-esc="rec.machine_id ? rec.machine_id[1] : '—'"/>
                                                 </span>
@@ -266,11 +260,11 @@
                                                 </select>
                                             </t>
                                             <t t-else="">
-                                                <span t-att-style="isEditLocked(rec) ? 'color:#9ca3af;' : 'cursor:pointer;'"
-                                                      t-att-class="!rec.operator_id and !isEditLocked(rec) ? 'text-muted fst-italic' : ''"
+                                                <span style="cursor:pointer;"
+                                                      t-att-class="!rec.operator_id ? 'text-muted fst-italic' : ''"
                                                       t-on-click="() => this.startEditOperator(rec)">
                                                     <t t-if="rec.operator_id"><t t-esc="rec.operator_id[1]"/></t>
-                                                    <t t-else=""><t t-if="!isEditLocked(rec)">definir</t><t t-else="">—</t></t>
+                                                    <t t-else="">definir</t>
                                                 </span>
                                             </t>
                                         </td>
@@ -284,11 +278,11 @@
                                                        t-on-blur="() => this.cancelEditDate()"/>
                                             </t>
                                             <t t-else="">
-                                                <span t-att-style="isEditLocked(rec) ? 'color:#9ca3af;' : 'cursor:pointer;'"
-                                                      t-att-class="!rec.date_planned and !isEditLocked(rec) ? 'text-muted fst-italic' : ''"
+                                                <span style="cursor:pointer;"
+                                                      t-att-class="!rec.date_planned ? 'text-muted fst-italic' : ''"
                                                       t-on-click="() => this.startEditDate(rec.id)">
                                                     <t t-if="rec.date_planned"><t t-esc="fmtDate(rec.date_planned)"/></t>
-                                                    <t t-else=""><t t-if="!isEditLocked(rec)">definir</t><t t-else="">—</t></t>
+                                                    <t t-else="">definir</t>
                                                 </span>
                                             </t>
                                         </td>
@@ -312,8 +306,8 @@
                                                        t-on-blur="(ev) => this.savePlannedText(rec.id)"/>
                                             </t>
                                             <t t-else="">
-                                                <span t-att-style="isEditLocked(rec) ? 'color:#9ca3af;' : 'cursor:pointer;'"
-                                                      t-att-class="!rec.duration_planned and !isEditLocked(rec) ? 'text-muted fst-italic' : ''"
+                                                <span style="cursor:pointer;"
+                                                      t-att-class="!rec.duration_planned ? 'text-muted fst-italic' : ''"
                                                       t-on-click="() => this.startEditPlanned(rec.id, rec.duration_planned)">
                                                     <t t-esc="_min2hhmm(rec.duration_planned)"/>
                                                 </span>

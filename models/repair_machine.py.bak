@@ -66,36 +66,26 @@ class RepairMachine(models.Model):
     )
 
     def _compute_current_process(self):
-        # Uma query busca todos os processos em andamento para as máquinas do recordset
-        processes = self.env['repair.os.process'].search([
-            ('machine_id', 'in', self.ids),
-            ('state', '=', 'progress'),
-        ])
-        # Mapeia machine_id → processo (limit 1 por máquina via dict)
-        machine_process = {}
-        for proc in processes:
-            if proc.machine_id.id not in machine_process:
-                machine_process[proc.machine_id.id] = proc
         for rec in self:
-            rec.current_process_id = machine_process.get(rec.id, False)
+            process = self.env['repair.os.process'].search([
+                ('machine_id', '=', rec.id),
+                ('state', '=', 'progress'),
+            ], limit=1)
+            rec.current_process_id = process
 
     def _update_busy_status(self):
         """
         Atualiza is_busy baseado nos processos em andamento.
         Chamado pelos métodos action_start / action_pause / action_finish
         do repair.os.process após mudança de estado.
-        Uma única query para todas as máquinas do recordset — sem N+1.
         """
-        # Uma query retorna os IDs de máquinas com processo em andamento
-        busy_ids = set(self.env['repair.os.process'].search([
-            ('machine_id', 'in', self.ids),
-            ('state', '=', 'progress'),
-        ]).mapped('machine_id').ids)
-
         for rec in self:
-            is_busy = rec.id in busy_ids
-            if rec.is_busy != is_busy:
-                rec.is_busy = is_busy
+            has_active = self.env['repair.os.process'].search_count([
+                ('machine_id', '=', rec.id),
+                ('state', '=', 'progress'),
+            ]) > 0
+            if rec.is_busy != has_active:
+                rec.is_busy = has_active
 
     _sql_constraints = [
         ('code_unique', 'unique(code)', 'Já existe uma máquina com este código.'),
